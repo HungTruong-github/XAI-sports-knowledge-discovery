@@ -1,0 +1,9 @@
+# Backbone ĐỀ XUẤT - Tầng 2
+name: "mpnn"
+type: "gnn"
+num_layers: 3
+hidden_dim: 64
+dropout: 0.3
+edge_dim: null             # TODO: bằng số chiều edge_attr sau Bước 3
+readout: "mean"
+head_hidden_dim: 32

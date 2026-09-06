@@ -1,0 +1,34 @@
+# ============================================================
+# Bước 3 — Xây dựng đồ thị chuyền bóng
+# Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 3
+# ============================================================
+
+directed: true
+graph_level_label: true    # một nhãn duy nhất cho cả đồ thị = outcome possession
+
+nodes:
+  # Chỉ cầu thủ THAM GIA possession, không phải cả 11 người (mục 3.1)
+  scope: "players_in_possession"
+  features:
+    position: true          # vị trí thi đấu (DF/MF/FW hoặc position của StatsBomb)
+    mean_xy: true           # tọa độ trung bình trong possession
+    touch_count: true       # số lần chạm bóng
+    season_stats: false     # tùy chọn - làm giàu đặc trưng, bật sau nếu cần
+
+edges:
+  features:
+    start_end_xy: true      # x1, y1, x2, y2
+    distance: true
+    angle: true
+    pass_type: true         # ground / high / through ball...
+    timestamp: true         # thời điểm trong possession
+  # Xử lý khi có nhiều đường chuyền giữa cùng cặp cầu thủ (mục 3.2)
+  multi_edge_strategy: null # TODO: "aggregate_weight" | "keep_multi_edge"
+
+optional:
+  # Node ảo đại diện khung thành đối phương - tiền lệ: TacticAI (mục 3.3)
+  add_goal_node: false
+
+storage:
+  format: "torch_geometric"
+  cache_dir: "data/processed"

@@ -1,0 +1,41 @@
+# ============================================================
+# Bước 5.4-5.6 — Cấu hình huấn luyện (dùng CHUNG cho mọi backbone)
+# Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 5
+# ============================================================
+#
+# Mọi backbone ở Tầng 2 phải dùng CHUNG file này để việc đối sánh
+# cô lập đúng biến số kiến trúc (mục 1.3 Tầng 2 - phản hồi GV).
+# ------------------------------------------------------------
+
+seed: 42
+epochs: 200
+batch_size: 64
+
+optimizer:
+  name: "adamw"            # adam | adamw
+  lr: 0.001
+  weight_decay: 0.0001
+
+scheduler:
+  name: "reduce_on_plateau"
+  monitor: "val_auc_pr"
+  patience: 10
+  factor: 0.5
+
+# Xử lý mất cân bằng lớp (Bước 2.3 / 5.4)
+loss:
+  name: null               # TODO: "weighted_bce" | "focal"
+  pos_weight: null         # TODO: tính từ tỉ lệ lớp thực tế sau Bước 2
+  focal_gamma: 2.0         # chỉ dùng nếu loss = "focal"
+
+early_stopping:
+  monitor: "val_auc_pr"    # ưu tiên AUC-PR hơn accuracy do mất cân bằng lớp
+  mode: "max"
+  patience: 20
+
+# Số lần chạy lặp lại để báo cáo mean/std (đã hứa với GV ở mục 1.3)
+n_runs: 5
+
+tracking:
+  backend: "mlflow"        # mlflow | csv
+  output_dir: "experiments"

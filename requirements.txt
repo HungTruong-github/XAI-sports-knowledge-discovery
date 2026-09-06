@@ -1,0 +1,63 @@
+# ============================================================
+# XAI-Football — Python dependencies
+# ============================================================
+# Cài đặt:
+#     pip install -r requirements.txt
+#     pip install -e .          # cài package src/xai_football ở chế độ dev
+#
+# LƯU Ý QUAN TRỌNG về PyTorch / PyTorch Geometric:
+#   torch và torch-geometric phụ thuộc vào phiên bản CUDA của máy.
+#   Nên cài torch TRƯỚC theo hướng dẫn tại https://pytorch.org/get-started/locally/
+#   rồi mới chạy file này. Trên Windows không có GPU, bản CPU là đủ cho
+#   đồ thị possession (kích thước nhỏ).
+#
+# Trước khi nộp khóa luận, hãy khóa phiên bản để đảm bảo tái lập:
+#     pip freeze > requirements.lock.txt
+# ------------------------------------------------------------
+
+# --- Nền tảng khoa học dữ liệu ---
+numpy
+pandas
+scipy
+
+# --- Nguồn dữ liệu: StatsBomb Open Data (Bước 1) ---
+statsbombpy
+requests
+
+# --- Đồ thị & centrality truyền thống (Bước 9.1) ---
+networkx
+
+# --- Deep learning / GNN (Bước 5) ---
+torch
+torch-geometric
+
+# --- Baseline phi đồ thị Tầng 3(a) + bộ độ đo (Bước 6) ---
+#     Logistic Regression, Random Forest, ANN, AUC-ROC/PR, Brier score
+scikit-learn
+
+# --- XAI (Bước 7-8) ---
+#     GNNExplainer / PGExplainer nằm sẵn trong torch_geometric.explain
+#     shap dùng cho baseline giải thích feature-level — Tầng 3(b)
+shap
+
+# --- Trực quan hóa (Bước 10) ---
+matplotlib
+seaborn
+mplsoccer
+plotly
+
+# --- Quản lý thực nghiệm (mục 11 trong Quy trình) ---
+mlflow
+
+# --- Cấu hình & tiện ích ---
+pyyaml
+tqdm
+
+# --- Notebook ---
+jupyterlab
+ipykernel
+
+# --- Chất lượng mã nguồn ---
+pytest
+ruff
+black

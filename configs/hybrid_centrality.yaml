@@ -1,0 +1,49 @@
+# ============================================================
+# Bước 9 — Hybrid Centrality (ĐÓNG GÓP NGHIÊN CỨU CHÍNH)
+# Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 9
+# ============================================================
+#
+# CẢNH BÁO: công thức chính thức CHƯA ĐƯỢC ĐỊNH NGHĨA trong báo cáo
+# tiến độ. Phải chốt và ghi lại tại
+#     docs/decisions/0002-cong-thuc-hybrid-centrality.md
+# trước khi triển khai. Hệ số alpha KHÔNG được chọn tùy ý, phải trình
+# bày rõ cách xác định để hội đồng không đặt câu hỏi về tính thủ công,
+# thiếu căn cứ của công thức (mục 12 - Rủi ro).
+# ------------------------------------------------------------
+
+# Thành phần 1 - centrality truyền thống (mục 9.1)
+traditional:
+  aggregate_level: null    # TODO: "match" | "season"
+  measures:
+    degree_in: true
+    degree_out: true
+    betweenness: true
+    closeness: true
+    eigenvector: true
+  combine_measures: null   # TODO: cách gộp nhiều độ đo thành 1 giá trị
+
+# Thành phần 2 - điểm quan trọng từ XAI (mục 9.2)
+xai_importance:
+  source_explainer: null   # TODO: chốt sau khi đối sánh ở Bước 8
+  aggregation: null        # TODO: "mean" | "weighted_mean"
+  min_possessions: null    # TODO: số possession tối thiểu để một cầu thủ
+                           #       được tính, tránh nhiễu do cỡ mẫu nhỏ
+
+# Kết hợp (mục 9.3)
+combination:
+  normalization: null      # TODO: "minmax" | "zscore"
+  formula: "alpha * centrality_norm + (1 - alpha) * xai_importance_norm"
+  alpha: null              # TODO: dò trên tập VALIDATION, không chọn tay
+  alpha_search_range: [0.0, 1.0]
+  alpha_search_step: 0.05
+  alpha_selection_criterion: null   # TODO: tiêu chí chọn alpha (mục 9.4)
+
+# Kiểm chứng (mục 9.4)
+validation:
+  compare_with_traditional_only: true   # baseline Tầng 3(b)
+  reference_metrics:                    # đối chiếu face validity
+    - "key_passes"
+    - "assists"
+    - "xA"
+    - "xT"
+  correlation: "spearman"

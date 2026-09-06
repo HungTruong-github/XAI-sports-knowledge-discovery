@@ -1,0 +1,30 @@
+# Baseline PHI ĐỒ THỊ - Tầng 3(a)
+# Mục đích: kiểm chứng giá trị gia tăng thực sự của biểu diễn đồ thị.
+# Tiền lệ: "Passing path predicts shooting outcome in football" dùng đúng
+# ba mô hình này trên đặc trưng passing path, cùng loại bài toán và cùng
+# nguồn dữ liệu StatsBomb.
+type: "tabular"
+
+features:                  # đặc trưng thống kê trích từ passing path
+  - "n_passes"
+  - "sequence_length"
+  - "mean_pass_distance"
+  - "mean_pass_angle"
+  - "duration"
+  - "n_players_involved"
+  - "final_x"
+  - "final_y"
+  # TODO: bổ sung sau khi chốt quy tắc gán nhãn (Bước 2.3)
+
+models:
+  logistic_regression:
+    class_weight: "balanced"
+    max_iter: 1000
+  random_forest:
+    n_estimators: 500
+    class_weight: "balanced"
+    random_state: 42
+  ann:
+    hidden_layers: [64, 32]
+    dropout: 0.3
+    epochs: 200

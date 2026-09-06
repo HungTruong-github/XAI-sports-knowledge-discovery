@@ -1,0 +1,8 @@
+# Backbone ĐỀ XUẤT - Tầng 2
+name: "gcn"
+type: "gnn"
+num_layers: 2              # 2-3 lớp; sâu hơn dễ over-smoothing với đồ thị nhỏ
+hidden_dim: 64
+dropout: 0.3
+readout: "mean"            # mean | attention
+head_hidden_dim: 32

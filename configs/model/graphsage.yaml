@@ -1,0 +1,11 @@
+# Baseline ĐỐI SÁNH - Tầng 2
+# Đại diện hướng sample-and-aggregate, kiểm tra độ nhạy của kết quả
+# với cách tổng hợp thông tin lân cận.
+name: "graphsage"
+type: "gnn"
+num_layers: 2
+hidden_dim: 64
+aggregator: "mean"         # mean | max | lstm
+dropout: 0.3
+readout: "mean"
+head_hidden_dim: 32

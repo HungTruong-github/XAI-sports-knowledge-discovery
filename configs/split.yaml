@@ -1,0 +1,23 @@
+# ============================================================
+# Bước 4 — Chia tập dữ liệu
+# Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 4
+# ============================================================
+#
+# BẮT BUỘC chia theo TRẬN, không chia theo possession.
+# Các possession trong cùng một trận có tương quan (cùng đội hình,
+# cùng chiến thuật) nên chia theo possession sẽ gây RÒ RỈ DỮ LIỆU.
+# ------------------------------------------------------------
+
+level: "match"             # KHÔNG đổi thành "possession"
+
+ratios:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+
+stratify_by: "positive_label_rate"   # theo tỉ lệ nhãn dương ở cấp độ trận
+seed: 42
+
+# Danh sách match_id của từng tập được ghi ra đây và ĐƯỢC COMMIT lên git,
+# là điều kiện bắt buộc để tái lập kết quả và đối sánh công bằng giữa các backbone.
+output_dir: "data/splits"

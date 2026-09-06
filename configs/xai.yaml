@@ -1,0 +1,37 @@
+# ============================================================
+# Bước 7-8 — Cấu hình XAI và đánh giá chất lượng giải thích
+# Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 7-8
+# ============================================================
+
+explainers:
+  gnn_explainer:
+    enabled: true
+    epochs: 200            # số bước tối ưu mask cho mỗi possession
+    lr: 0.01
+  pg_explainer:
+    enabled: true
+    epochs: 30             # huấn luyện mạng giải thích chung
+    lr: 0.003
+
+# Ngưỡng cắt để lấy subgraph quan trọng
+subgraph:
+  top_k_edges: null        # TODO: chốt sau khi khảo sát đường cong Sparsity-Fidelity
+  edge_mask_threshold: null
+
+# Bộ độ đo đã thống nhất với GV (mục 1.2b)
+metrics:
+  fidelity_plus: true
+  fidelity_minus: true
+  sparsity: true
+  stability: true
+  roar: true
+  insertion_deletion_curve: true
+
+stability:
+  n_repeats: 5             # chạy lại XAI nhiều lần trên cùng possession
+  noise_std: 0.01          # thêm nhiễu nhẹ vào node/edge feature
+
+# Baseline giải thích ở mức đặc trưng - Tầng 3(b)
+shap_baseline:
+  enabled: true
+  target_model: "tabular"  # chạy trên baseline phi đồ thị, không phải GNN

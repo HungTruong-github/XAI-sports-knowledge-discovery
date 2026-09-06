@@ -1,0 +1,11 @@
+# Baseline ĐỐI SÁNH - Tầng 2
+# Căn cứ đưa vào so sánh: TacticAI cho thấy GATv2 cân bằng tốt giữa
+# độ biểu diễn và khả năng khái quát hóa trên đồ thị cầu thủ so với MPNN.
+name: "gatv2"
+type: "gnn"
+num_layers: 2
+hidden_dim: 64
+heads: 4
+dropout: 0.3
+readout: "mean"
+head_hidden_dim: 32

@@ -1,0 +1,18 @@
+# Chuẩn hóa xuống dòng: repo dùng LF, Windows tự chuyển đổi khi checkout
+* text=auto eol=lf
+
+# File nhị phân — không diff, không chuyển đổi xuống dòng
+*.docx  binary
+*.doc   binary
+*.pdf   binary
+*.xlsx  binary
+*.pptx  binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.pt    binary
+*.pth   binary
+*.pkl   binary
+
+# Notebook: giảm nhiễu khi diff
+*.ipynb text

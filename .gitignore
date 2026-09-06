@@ -1,0 +1,119 @@
+# ============================================================
+# XAI-Football — .gitignore
+# ============================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# --- Môi trường ảo ---
+.venv/
+venv/
+env/
+ENV/
+.conda/
+
+# --- Notebook ---
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================================
+# DỮ LIỆU — KHÔNG commit dữ liệu nặng lên git
+# StatsBomb raw event JSON có thể lên tới vài GB.
+# Chỉ commit cấu trúc thư mục (.gitkeep) và file mô tả (README).
+# ============================================================
+data/raw/**
+data/interim/**
+data/processed/**
+data/external/**
+!data/**/.gitkeep
+!data/**/README.md
+
+# Danh sách match_id của từng tập PHẢI được commit (yêu cầu tái lập
+# kết quả — mục 4 trong docs/Quy_trinh_XAI_Football.md)
+!data/splits/**
+
+# --- Định dạng dữ liệu nặng ---
+*.csv
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.pt
+*.pth
+*.ckpt
+*.pkl
+*.joblib
+*.npy
+*.npz
+# ...trừ các file nhỏ nằm trong results/ dùng cho báo cáo
+!results/**/*.csv
+
+# ============================================================
+# ĐẦU RA THỰC NGHIỆM
+# ============================================================
+# experiments/ : output thô của từng lần chạy (log, checkpoint tạm)
+experiments/**
+!experiments/.gitkeep
+!experiments/README.md
+
+# models/ : model đã huấn luyện (nặng) — chỉ giữ cấu trúc + mô tả
+models/**
+!models/.gitkeep
+!models/README.md
+
+# --- Experiment tracking ---
+mlruns/
+mlartifacts/
+wandb/
+lightning_logs/
+outputs/
+.hydra/
+
+# ============================================================
+# results/ : bảng + hình CUỐI CÙNG đưa vào khóa luận -> CÓ commit
+# (chỉ chặn file quá nặng)
+# ============================================================
+results/**/*.mp4
+results/**/*.avi
+
+# --- Tài liệu tạm ---
+~$*.docx
+~$*.xlsx
+~$*.pptx
+*.tmp
+
+# --- Bí mật / cấu hình cục bộ ---
+.env
+.env.local
+secrets.yaml
+configs/local.yaml
+
+# --- Node (frontend demo, nếu triển khai) ---
+node_modules/
+frontend/dist/
+frontend/build/
+npm-debug.log*
+
+# --- Test / lint cache ---
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
