@@ -1,0 +1,64 @@
+# ============================================================
+# CẤU HÌNH CHẠY THỬ — KHÔNG PHẢI CẤU HÌNH CHÍNH THỨC
+# ============================================================
+#
+# Dùng để kiểm tra đường ống Bước 1-2 chạy thông trước khi chạy quy mô lớn,
+# và để tái lập lại các số liệu trong
+#     docs/meetings/2026-09-19_Bao_cao_tuan.md  mục 1.3
+#
+# Cách chạy:
+#     python scripts/01_download_data.py --config configs/data_pilot.yaml --limit-matches 5
+#     python scripts/02_descriptive_stats.py --config configs/data_pilot.yaml
+#
+# Kết quả mong đợi (5 trận Premier League 2015/16):
+#     585 possession sau làm sạch, 106 dẫn đến sút = 18,12%
+#     Trung vị 5 đỉnh / 5 cạnh mỗi đồ thị
+#     4/4 phép kiểm tra chất lượng đạt
+#
+# LƯU Ý: cấu hình CHÍNH THỨC của đề tài là configs/data.yaml — hiện còn để
+# trống phần `competitions` và `labeling` vì đang chờ giảng viên chốt phạm vi
+# dữ liệu (xem báo cáo 19/09 mục 2). KHÔNG dùng tệp pilot này thay cho nó.
+# ------------------------------------------------------------
+
+source: statsbomb_open_data
+
+competitions:
+  - name: "Premier League"
+    season: "2015/2016"
+    competition_id: 2
+    season_id: 27
+
+paths:
+  raw: "data/raw"
+  interim: "data/interim"
+  processed: "data/processed"
+
+event_types_keep:
+  - "Pass"
+  - "Shot"
+  - "Carry"
+  - "Dribble"
+  - "Ball Receipt*"
+  - "Dispossessed"
+
+preprocessing:
+  min_passes_per_possession: 2
+  drop_extra_time: true
+  drop_missing_coordinates: true
+  impute_coordinates: false
+
+pitch:
+  length: 120
+  width: 80
+  normalize_attack_direction: true
+  # StatsBomb đã chuẩn hóa sẵn hướng tấn công nên để false.
+  # Chỉ bật cho nguồn đã xác minh là CHƯA chuẩn hóa (ví dụ Wyscout).
+  force_flip_misoriented: false
+
+# Quy tắc gán nhãn dùng cho lần chạy thử này.
+# Quyết định chính thức vẫn đang chờ giảng viên — xem
+# docs/decisions/0001-quy-tac-gan-nhan.md
+labeling:
+  mode: "possession_level"
+  target: "shot"
+  shot_window_seconds: null
