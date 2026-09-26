@@ -12,6 +12,6 @@ Module:
     labeling.py      Gán nhãn nhị phân possession -> sút/bàn thắng (Bước 2.3)
                      XEM docs/decisions/0001-quy-tac-gan-nhan.md — CHƯA CHỐT
     validation.py    Data quality / sanity checks (PASS/WARNING/FAIL)
-    splits.py        Chia train/val/test theo TRẬN, stratified, cố định seed
-                     (Bước 4) — chống rò rỉ dữ liệu
+    splits.py        [Planned / Not Implemented] Chia train/val/test theo TRẬN
+                     (Bước 4) — sẽ được thực hiện ở Giai đoạn Modeling
 """

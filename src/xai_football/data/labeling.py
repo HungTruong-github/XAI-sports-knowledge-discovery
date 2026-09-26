@@ -67,17 +67,19 @@ def label_passes(
 ) -> list[int]:
     """Phương án B — nhãn ở mức đường chuyền.
 
-    Gán 1 cho đường chuyền xảy ra trong vòng `window_seconds` trước cú sút.
-    Trả về danh sách nhãn cùng thứ tự với `possession.passes`.
+    Gán 1 cho đường chuyền nếu có ÍT NHẤT MỘT cú sút (phù hợp với target)
+    xảy ra SAU đường chuyền và trong vòng `window_seconds`.
     """
-    if not _hit(possession, target) or possession.shot_second is None:
+    valid_shots = [s for s in possession.shots if (target != "goal" or s.is_goal)]
+    if not valid_shots:
         return [0] * possession.n_passes
 
-    shot_at = possession.shot_second
+    shot_times = [s.time_seconds for s in valid_shots]
     labels = []
     for p in possession.passes:
-        pass_at = p.minute * 60 + p.second
-        labels.append(int(0 <= shot_at - pass_at <= window_seconds))
+        pass_time = p.minute * 60 + p.second
+        is_pos = any(0 <= (st - pass_time) <= window_seconds for st in shot_times)
+        labels.append(int(is_pos))
     return labels
 
 
@@ -99,9 +101,7 @@ def resolve_labeling(config: dict[str, Any]) -> tuple[Mode, Target, float | None
 
     window = labeling.get("shot_window_seconds")
     if mode == "pass_level" and window is None:
-        raise ValueError(
-            "labeling.mode = 'pass_level' thì bắt buộc phải có shot_window_seconds."
-        )
+        raise ValueError("labeling.mode = 'pass_level' thì bắt buộc phải có shot_window_seconds.")
     return mode, target, window
 
 
@@ -127,22 +127,26 @@ def compare_labeling_schemes(
     stats: list[LabelStats] = []
 
     for target in ("shot", "goal"):
-        stats.append(LabelStats(
-            mode="possession_level",
-            target=target,
-            n_units=len(possessions),
-            n_positive=sum(label_possession(p, target) for p in possessions),
-        ))
+        stats.append(
+            LabelStats(
+                mode="possession_level",
+                target=target,
+                n_units=len(possessions),
+                n_positive=sum(label_possession(p, target) for p in possessions),
+            )
+        )
 
     n_passes = sum(p.n_passes for p in possessions)
     for target in ("shot", "goal"):
         for window in pass_level_windows:
-            stats.append(LabelStats(
-                mode="pass_level",
-                target=target,
-                n_units=n_passes,
-                n_positive=sum(sum(label_passes(p, target, window)) for p in possessions),
-                shot_window_seconds=window,
-            ))
+            stats.append(
+                LabelStats(
+                    mode="pass_level",
+                    target=target,
+                    n_units=n_passes,
+                    n_positive=sum(sum(label_passes(p, target, window)) for p in possessions),
+                    shot_window_seconds=window,
+                )
+            )
 
     return stats

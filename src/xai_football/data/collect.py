@@ -33,10 +33,16 @@ class CollectionReport:
     competition_id: int
     season_id: int
     n_matches_listed: int = 0
-    n_matches_downloaded: int = 0
+    n_matches_attempted: int = 0
+    n_matches_complete: int = 0
     n_matches_failed: int = 0
     n_events_total: int = 0
     failed_match_ids: list[int] = field(default_factory=list)
+
+    @property
+    def n_matches_downloaded(self) -> int:
+        """Alias cho backward compatibility — tương đương n_matches_complete."""
+        return self.n_matches_complete
 
     @property
     def drop_rate(self) -> float:
@@ -50,13 +56,15 @@ class CollectionReport:
             "competition_id": self.competition_id,
             "season_id": self.season_id,
             "matches_listed": self.n_matches_listed,
+            "matches_attempted": self.n_matches_attempted,
+            "matches_complete": self.n_matches_complete,
             "matches_downloaded": self.n_matches_downloaded,
             "matches_failed": self.n_matches_failed,
             "drop_rate": round(self.drop_rate, 4),
             "events_total": self.n_events_total,
             "events_per_match": (
-                round(self.n_events_total / self.n_matches_downloaded, 1)
-                if self.n_matches_downloaded
+                round(self.n_events_total / self.n_matches_complete, 1)
+                if self.n_matches_complete
                 else 0.0
             ),
         }
@@ -85,8 +93,9 @@ def resolve_competitions(config: dict[str, Any]) -> list[dict[str, Any]]:
     nhưng vẫn chạy đúng khi chỉ có id.
     """
     entries = config.get("competitions") or []
-    need_lookup = any(e.get("competition_id") is None or e.get("season_id") is None
-                      for e in entries)
+    need_lookup = any(
+        e.get("competition_id") is None or e.get("season_id") is None for e in entries
+    )
     catalogue = list_competitions() if need_lookup else None
 
     resolved: list[dict[str, Any]] = []
@@ -115,12 +124,14 @@ def resolve_competitions(config: dict[str, Any]) -> list[dict[str, Any]]:
                 f"Cần competition_id + season_id, hoặc name + season để tra."
             )
 
-        resolved.append({
-            "name": entry.get("name") or f"competition_{comp_id}",
-            "season": entry.get("season"),
-            "competition_id": int(comp_id),
-            "season_id": int(season_id),
-        })
+        resolved.append(
+            {
+                "name": entry.get("name") or f"competition_{comp_id}",
+                "season": entry.get("season"),
+                "competition_id": int(comp_id),
+                "season_id": int(season_id),
+            }
+        )
     return resolved
 
 
@@ -133,14 +144,22 @@ def download_competition(
     with_lineups: bool = True,
 ) -> CollectionReport:
     """Tải toàn bộ event (và đội hình) của một cặp giải–mùa."""
+    import json
+
     sb = _statsbombpy()
-    report = CollectionReport(competition_name or f"competition_{competition_id}",
-                              competition_id, season_id)
+    report = CollectionReport(
+        competition_name or f"competition_{competition_id}", competition_id, season_id
+    )
 
     matches = sb.matches(competition_id=competition_id, season_id=season_id)
     report.n_matches_listed = len(matches)
-    logger.info("%s (comp=%s, season=%s): %d trận trong kho",
-                report.competition_name, competition_id, season_id, len(matches))
+    logger.info(
+        "%s (comp=%s, season=%s): %d trận trong kho",
+        report.competition_name,
+        competition_id,
+        season_id,
+        len(matches),
+    )
 
     match_ids = matches["match_id"].astype(int).tolist()
     if limit_matches is not None:
@@ -148,55 +167,81 @@ def download_competition(
         logger.info("Giới hạn chạy thử: chỉ tải %d trận đầu", len(match_ids))
 
     for match_id in match_ids:
+        report.n_matches_attempted += 1
         events_path = match_json_path(competition_id, season_id, match_id)
+        lineup_path = lineup_json_path(competition_id, season_id, match_id)
 
+        events_valid = False
         if events_path.exists() and not overwrite:
             try:
-                import json
-
                 with open(events_path, encoding="utf-8") as f:
-                    report.n_events_total += len(json.load(f))
-                report.n_matches_downloaded += 1
-                continue
+                    data = json.load(f)
+                    if isinstance(data, (list, dict)) and len(data) > 0:
+                        events_valid = True
             except (OSError, ValueError):
-                logger.warning("Tệp %s hỏng, tải lại", events_path.name)
+                events_valid = False
+
+        lineups_valid = False
+        if with_lineups:
+            if lineup_path.exists() and not overwrite:
+                try:
+                    with open(lineup_path, encoding="utf-8") as f:
+                        ldata = json.load(f)
+                        if isinstance(ldata, (list, dict)):
+                            lineups_valid = True
+                except (OSError, ValueError):
+                    lineups_valid = False
+        else:
+            lineups_valid = True
 
         try:
-            events = sb.events(match_id=match_id, fmt="dict")
-            records = list(events.values()) if isinstance(events, dict) else events
-            save_json(records, events_path)
-            report.n_events_total += len(records)
-            report.n_matches_downloaded += 1
+            if not events_valid:
+                events = sb.events(match_id=match_id, fmt="dict")
+                records = list(events.values()) if isinstance(events, dict) else events
+                save_json(records, events_path)
+            else:
+                with open(events_path, encoding="utf-8") as f:
+                    records = json.load(f)
 
-            if with_lineups:
+            if with_lineups and not lineups_valid:
                 lineups = sb.lineups(match_id=match_id)
                 save_json(
                     {team: df.to_dict("records") for team, df in lineups.items()},
-                    lineup_json_path(competition_id, season_id, match_id),
+                    lineup_path,
                 )
+
+            report.n_events_total += len(records)
+            report.n_matches_complete += 1
         except Exception as exc:  # noqa: BLE001 — ghi nhận trận lỗi rồi đi tiếp
-            logger.warning("Trận %s lỗi, bỏ qua: %s", match_id, exc)
+            logger.warning("Trận %s lỗi download/load, bỏ qua: %s", match_id, exc)
             report.n_matches_failed += 1
             report.failed_match_ids.append(match_id)
 
-    logger.info("%s: tải xong %d/%d trận, %d sự kiện, tỉ lệ loại %.2f%%",
-                report.competition_name, report.n_matches_downloaded,
-                len(match_ids), report.n_events_total, report.drop_rate * 100)
+    logger.info(
+        "%s: hoàn thành %d/%d trận, %d sự kiện, tỉ lệ loại %.2f%%",
+        report.competition_name,
+        report.n_matches_complete,
+        len(match_ids),
+        report.n_events_total,
+        report.drop_rate * 100,
+    )
     return report
 
 
-def download_all(config_path: str = "data.yaml",
-                 limit_matches: int | None = None,
-                 overwrite: bool = False) -> list[CollectionReport]:
+def download_all(
+    config_path: str = "data.yaml", limit_matches: int | None = None, overwrite: bool = False
+) -> list[CollectionReport]:
     """Tải toàn bộ các cặp giải–mùa khai báo trong configs/data.yaml."""
     config = load_yaml(config_path)
     reports = []
     for entry in resolve_competitions(config):
-        reports.append(download_competition(
-            competition_id=entry["competition_id"],
-            season_id=entry["season_id"],
-            competition_name=entry["name"],
-            limit_matches=limit_matches,
-            overwrite=overwrite,
-        ))
+        reports.append(
+            download_competition(
+                competition_id=entry["competition_id"],
+                season_id=entry["season_id"],
+                competition_name=entry["name"],
+                limit_matches=limit_matches,
+                overwrite=overwrite,
+            )
+        )
     return reports

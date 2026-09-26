@@ -117,7 +117,8 @@ def canonicalize_season(
     competition_id: int,
     season_id: int,
     match_ids: list[int] | None = None,
-) -> pd.DataFrame:
+    strict: bool = True,
+) -> tuple[pd.DataFrame, list[int]]:
     """Chuyển toàn bộ trận của một mùa giải sang canonical DataFrame.
 
     Parameters
@@ -126,28 +127,48 @@ def canonicalize_season(
         Xác định thư mục raw.
     match_ids : list[int] | None
         Nếu None, quét toàn bộ thư mục raw.
+    strict : bool
+        Nếu True và có trận lỗi, raise RuntimeError.
+
+    Returns
+    -------
+    tuple[pd.DataFrame, list[int]]
+        (DataFrame events, danh sách match_id bị lỗi)
     """
     season_dir = RAW_DIR / str(competition_id) / str(season_id)
     if match_ids is None:
         match_files = sorted(
-            p for p in season_dir.glob("*.json")
-            if not p.name.endswith(".lineups.json")
+            p for p in season_dir.glob("*.json") if not p.name.endswith(".lineups.json")
         )
         match_ids = [int(p.stem) for p in match_files]
 
     all_records: list[dict[str, Any]] = []
+    failed_match_ids: list[int] = []
+
     for mid in match_ids:
         try:
-            all_records.extend(canonicalize_match(mid, competition_id, season_id))
+            records = canonicalize_match(mid, competition_id, season_id)
+            all_records.extend(records)
         except Exception as exc:  # noqa: BLE001
-            logger.warning("Trận %s: lỗi canonicalize — %s", mid, exc)
+            logger.error("Trận %s: lỗi canonicalize — %s", mid, exc)
+            failed_match_ids.append(mid)
+
+    if failed_match_ids:
+        msg = f"Canonicalize thất bại ở {len(failed_match_ids)} trận: {failed_match_ids}"
+        if strict:
+            raise RuntimeError(msg)
+        logger.warning(msg)
 
     df = pd.DataFrame(all_records)
     logger.info(
-        "Canonicalize comp=%s season=%s: %d trận, %d events",
-        competition_id, season_id, len(match_ids), len(df),
+        "Canonicalize comp=%s season=%s: %d/%d trận thành công, %d events",
+        competition_id,
+        season_id,
+        len(match_ids) - len(failed_match_ids),
+        len(match_ids),
+        len(df),
     )
-    return df
+    return df, failed_match_ids
 
 
 def save_canonical_events(df: pd.DataFrame, path: str | None = None) -> str:
@@ -162,6 +183,7 @@ def save_canonical_events(df: pd.DataFrame, path: str | None = None) -> str:
         out = ensure_dir(INTERIM_DIR) / "events.parquet"
     else:
         from pathlib import Path
+
         out = Path(path)
         ensure_dir(out.parent)
 

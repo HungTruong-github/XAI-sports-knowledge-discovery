@@ -22,6 +22,7 @@
 # File data_pilot.yaml này chỉ dùng cho smoke test / development.
 # ------------------------------------------------------------
 
+run_name: "pilot"
 source: statsbomb_open_data
 
 competitions:

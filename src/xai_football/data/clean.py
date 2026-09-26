@@ -32,8 +32,13 @@ class CleaningReport:
 
     @property
     def n_output(self) -> int:
-        return (self.n_input - self.dropped_extra_time - self.dropped_missing_coords
-                - self.dropped_too_short - self.dropped_no_players)
+        return (
+            self.n_input
+            - self.dropped_extra_time
+            - self.dropped_missing_coords
+            - self.dropped_too_short
+            - self.dropped_no_players
+        )
 
     def as_row(self) -> dict[str, Any]:
         return {
@@ -111,9 +116,7 @@ def clean_possessions(
 
         # Cạnh cần cả hai đầu; đường chuyền không xác định được người nhận
         # thì không dựng được cạnh có hướng A -> B (mục 3.2).
-        possession.passes = [
-            p for p in possession.passes if p.passer_id and p.recipient_id
-        ]
+        possession.passes = [p for p in possession.passes if p.passer_id and p.recipient_id]
         if possession.n_passes < min_passes or possession.n_players < 2:
             report.dropped_no_players += 1
             continue
@@ -122,7 +125,9 @@ def clean_possessions(
 
     if pitch.get("normalize_attack_direction", True):
         normalize_attack_direction(
-            kept, pitch_length, pitch_width,
+            kept,
+            pitch_length,
+            pitch_width,
             force_flip=bool(pitch.get("force_flip_misoriented", False)),
         )
 
@@ -150,7 +155,8 @@ def normalize_attack_direction(
     hóa (ví dụ Wyscout), và phải ghi lại trong biên bản quyết định.
     """
     suspicious = [
-        p for p in possessions
+        p
+        for p in possessions
         if p.ends_with_shot
         and (xs := [x.end_x for x in p.passes if x.end_x is not None])
         and max(xs) < pitch_length / 2
@@ -165,14 +171,15 @@ def normalize_attack_direction(
             "%d/%d possession (%.1f%%) có cú sút nhưng đường chuyền dừng ở nửa sân nhà "
             "— dự kiến là pha dẫn bóng dài rồi sút, không lật tọa độ. "
             "Nếu tỉ lệ này vượt ~5%% thì mới nghi ngờ nguồn dữ liệu chưa chuẩn hóa.",
-            len(suspicious), len(possessions), share,
+            len(suspicious),
+            len(possessions),
+            share,
         )
         return 0
 
     for possession in suspicious:
         flip_possession(possession, pitch_length, pitch_width)
-    logger.warning("Đã lật hướng tấn công cho %d possession (force_flip=True)",
-                   len(suspicious))
+    logger.warning("Đã lật hướng tấn công cho %d possession (force_flip=True)", len(suspicious))
     return len(suspicious)
 
 

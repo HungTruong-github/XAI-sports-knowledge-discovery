@@ -1,0 +1,2 @@
+﻿run_name,n_matches,n_events,n_raw_possessions,n_clean_possessions,n_successful_passes,n_unique_players,n_unique_teams,shot_positive_count,shot_positive_rate,goal_positive_count,goal_positive_rate,median_passes_per_possession,median_players_per_possession,overall_event_missing_coordinate_rate,successful_pass_missing_coordinate_rate,successful_pass_missing_recipient_rate
+official,380,1313773,71884,45977,269017,546,20,6510,0.1416,663,0.0144,4.0,5.0,0.0061,0.0,0.0

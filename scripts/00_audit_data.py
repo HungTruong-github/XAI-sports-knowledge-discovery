@@ -26,7 +26,6 @@ import pandas as pd  # noqa: E402
 from xai_football.data.collect import _statsbombpy, resolve_competitions  # noqa: E402
 from xai_football.utils.io import load_yaml  # noqa: E402
 from xai_football.utils.logging import get_logger  # noqa: E402
-from xai_football.utils.paths import TABLES_DIR, ensure_dir  # noqa: E402
 
 logger = get_logger("audit")
 
@@ -91,11 +90,15 @@ def audit_competition(
         result["match_count_ok"] = False
         logger.warning(
             "⚠ %s: kỳ vọng %d trận nhưng thực tế có %d trận!",
-            competition_name, expected_matches, n_matches,
+            competition_name,
+            expected_matches,
+            n_matches,
         )
     else:
         logger.info(
-            "✓ %s: %d trận (khớp kỳ vọng)", competition_name, n_matches,
+            "✓ %s: %d trận (khớp kỳ vọng)",
+            competition_name,
+            n_matches,
         )
 
     return result
@@ -109,8 +112,9 @@ def main() -> int:
             pass
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", default="data.yaml",
-                        help="Tệp cấu hình (mặc định: configs/data.yaml)")
+    parser.add_argument(
+        "--config", default="data.yaml", help="Tệp cấu hình (mặc định: configs/data.yaml)"
+    )
     args = parser.parse_args()
 
     config = load_yaml(args.config)
@@ -131,8 +135,11 @@ def main() -> int:
         if not result["match_count_ok"]:
             any_mismatch = True
 
+    from xai_football.utils.paths import get_tables_dir
+
     table = pd.DataFrame(rows)
-    out_path = ensure_dir(TABLES_DIR) / "dataset_inventory.csv"
+    out_dir = get_tables_dir(config)
+    out_path = out_dir / "dataset_inventory.csv"
     table.to_csv(out_path, index=False, encoding="utf-8-sig")
 
     print("\n=== DATASET INVENTORY ===")

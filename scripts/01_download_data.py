@@ -22,21 +22,29 @@ import pandas as pd  # noqa: E402
 
 from xai_football.data.collect import download_all, list_competitions  # noqa: E402
 from xai_football.utils.logging import get_logger  # noqa: E402
-from xai_football.utils.paths import TABLES_DIR, ensure_dir  # noqa: E402
 
 logger = get_logger("download")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", default="data.yaml",
-                        help="Tệp cấu hình (mặc định: configs/data.yaml)")
-    parser.add_argument("--limit-matches", type=int, default=None,
-                        help="Chỉ tải N trận đầu mỗi giải — dùng để chạy thử")
-    parser.add_argument("--overwrite", action="store_true",
-                        help="Tải lại cả những trận đã có sẵn trong data/raw")
-    parser.add_argument("--list-competitions", action="store_true",
-                        help="Chỉ in danh sách giải-mùa có trong kho rồi thoát")
+    parser.add_argument(
+        "--config", default="data.yaml", help="Tệp cấu hình (mặc định: configs/data.yaml)"
+    )
+    parser.add_argument(
+        "--limit-matches",
+        type=int,
+        default=None,
+        help="Chỉ tải N trận đầu mỗi giải — dùng để chạy thử",
+    )
+    parser.add_argument(
+        "--overwrite", action="store_true", help="Tải lại cả những trận đã có sẵn trong data/raw"
+    )
+    parser.add_argument(
+        "--list-competitions",
+        action="store_true",
+        help="Chỉ in danh sách giải-mùa có trong kho rồi thoát",
+    )
     args = parser.parse_args()
 
     if args.list_competitions:
@@ -52,8 +60,13 @@ def main() -> int:
         overwrite=args.overwrite,
     )
 
+    from xai_football.utils.io import load_yaml
+    from xai_football.utils.paths import get_tables_dir
+
+    config = load_yaml(args.config)
     table = pd.DataFrame([r.as_row() for r in reports])
-    out_path = ensure_dir(TABLES_DIR) / "collection_report.csv"
+    out_dir = get_tables_dir(config)
+    out_path = out_dir / "collection_report.csv"
     table.to_csv(out_path, index=False, encoding="utf-8-sig")
 
     print()

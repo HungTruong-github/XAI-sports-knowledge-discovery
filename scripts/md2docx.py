@@ -3,6 +3,7 @@
 Hỗ trợ: heading, đoạn văn, bảng GFM, danh sách gạch đầu dòng / đánh số,
 khối mã, đường kẻ ngang, và inline **đậm** / *nghiêng* / `mã`.
 """
+
 import re
 import sys
 
@@ -162,9 +163,14 @@ def convert(md_path, docx_path):
         i += 1
         while i < len(lines):
             nxt = lines[i].strip()
-            if (not nxt or nxt.startswith("#") or nxt.startswith("|")
-                    or nxt.startswith("```") or nxt == "---"
-                    or re.match(r"^\s*([-*]|\d+\.)\s", lines[i])):
+            if (
+                not nxt
+                or nxt.startswith("#")
+                or nxt.startswith("|")
+                or nxt.startswith("```")
+                or nxt == "---"
+                or re.match(r"^\s*([-*]|\d+\.)\s", lines[i])
+            ):
                 break
             buf.append(nxt)
             i += 1

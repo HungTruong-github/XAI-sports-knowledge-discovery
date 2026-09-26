@@ -139,47 +139,39 @@ pip install -e .
 
 ---
 
-## Trạng thái hiện tại
+## Trạng thái hiện tại (Branch: `feature-data`)
 
-Dự án đang ở **giai đoạn thiết kế**. Cấu trúc thư mục và cấu hình đã dựng
-xong, **chưa triển khai mã nguồn**.
+Giai đoạn **Data Pipeline (Bước 1-2 & Validation)** đã được chuẩn hóa và cài đặt hoàn chỉnh:
 
-### Hai quyết định đang chặn việc bắt đầu code
+- **Dataset chính thức**: Premier League 2015/2016 (`competition_id: 2`, `season_id: 27`, 380 trận đấu) từ StatsBomb Open Data (xem [Decision 0004](docs/decisions/0004-main-dataset-premier-league-2015-16.md)).
+- **Mã nguồn đã hoàn thành**:
+  - `00_audit_data.py`: Kiểm tra kho dữ liệu thô và tạo `dataset_inventory.csv`.
+  - `canonicalize.py`: Lớp trung gian phẳng hóa event thô StatsBomb, lưu `events.parquet`.
+  - `possession.py`: Trích xuất chuỗi possession với identity theo `player_id` và ngữ nghĩa sút/bàn thắng rõ ràng.
+  - `clean.py`: Loại bỏ possession quá ngắn, hiệp phụ, thiếu tọa độ và chuẩn hóa hướng tấn công.
+  - `validation.py`: Kiểm tra chất lượng dữ liệu với các mức `PASS`, `WARNING`, `FAIL`.
+  - `03_preprocess.py`: Pipeline tiền xử lý hoàn chỉnh, gán nhãn so sánh và tổng hợp thống kê.
+  - `02_descriptive_stats.py`: Thống kê mô tả từ interim parquet dataset.
+  - Unit test suite đầy đủ trong `tests/data/test_data_pipeline.py`.
 
-| # | Quyết định | Vì sao phải chốt trước |
+### Tiến độ theo từng phần
+
+| Thành phần | Trạng thái | Ghi chú |
 |---|---|---|
-| [0001](docs/decisions/0001-quy-tac-gan-nhan.md) | Quy tắc gán nhãn possession | Ảnh hưởng dây chuyền tới cách dựng đồ thị ở Bước 3 và toàn bộ pipeline phía sau; không được đổi sau khi đã huấn luyện |
-| [0002](docs/decisions/0002-cong-thuc-hybrid-centrality.md) | Công thức Hybrid Centrality | Là đóng góp chính của đề tài nhưng chưa có công thức toán học chính thức; hệ số alpha phải có căn cứ rõ ràng |
-
-Các giá trị `null` kèm ghi chú `TODO` trong `configs/` tương ứng với hai
-quyết định này — cố ý để trống thay vì điền bừa.
-
----
-
-## Nguyên tắc nghiên cứu
-
-Trích từ [`docs/XAI-Football_Project_Content.md`](docs/XAI-Football_Project_Content.md)
-mục 18 — **không được mặc định** rằng:
-
-- GNN sẽ tốt hơn mô hình phi đồ thị
-- GCN hoặc MPNN là mô hình cuối cùng
-- GNNExplainer tốt hơn PGExplainer
-- Hybrid Centrality là hợp lệ trước khi được kiểm chứng
-- Một đặc trưng có điểm XAI cao là **nguyên nhân** gây ra kết quả
-
-Mọi khẳng định phải có bằng chứng thực nghiệm hoặc tài liệu đáng tin cậy.
-
-Ngoài ra: điểm importance của XAI phản ánh **hành vi của mô hình**, không phải
-quan hệ nhân quả trong bóng đá. Cần kiểm tra Stability trước khi diễn giải bất
-kỳ subgraph nào.
+| Audit & Collection | **Đã hoàn thành** | Audit 380/380 trận Premier League 2015/16 |
+| Canonicalization | **Đã hoàn thành** | Persist `events.parquet` theo `run_name` |
+| Possession & Clean | **Đã hoàn thành** | Persist `possessions.parquet` & `possession_events.parquet` |
+| Quality Sanity Checks | **Đã hoàn thành** | Schema chuẩn `check`, `value`, `status`, `note` |
+| Graph Construction | *Chưa triển khai* | Bước 3 (Giai đoạn tiếp theo) |
+| Split Train/Val/Test | *Chưa triển khai* | Bước 4 (Chủ động phân chia ở Giai đoạn Modeling) |
+| GNN Modeling | *Chưa triển khai* | Bước 5 |
+| XAI & Hybrid Centrality | *Chưa triển khai* | Bước 7-10 |
 
 ---
 
 ## Nguồn dữ liệu
 
-[StatsBomb Open Data](https://github.com/statsbomb/open-data) — Bundesliga
-2023/24 và UEFA Champions League. Cần trích dẫn đúng StatsBomb trong khóa luận
-và bài báo theo điều khoản sử dụng của họ.
+[StatsBomb Open Data](https://github.com/statsbomb/open-data) — Premier League 2015/2016 (380 trận đấu). Cần trích dẫn đúng StatsBomb trong khóa luận và bài báo theo điều khoản sử dụng của họ.
 
 ## Giấy phép
 

@@ -15,8 +15,9 @@ Quy ước identity:
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Any, Iterable
+from typing import Any
 
 from ..utils.io import load_json
 from ..utils.paths import match_json_path
@@ -304,9 +305,7 @@ def extract_possessions(
     return sorted(possessions, key=lambda p: p.possession_id)
 
 
-def load_match_possessions(
-    competition_id: int, season_id: int, match_id: int
-) -> list[Possession]:
+def load_match_possessions(competition_id: int, season_id: int, match_id: int) -> list[Possession]:
     """Đọc tệp event thô của một trận và trích ra danh sách possession."""
     events = load_json(match_json_path(competition_id, season_id, match_id))
     if isinstance(events, dict):

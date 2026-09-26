@@ -13,6 +13,7 @@
 #     không có Bundesliga full season (xem docs/Nguon_du_lieu_XAI_Football.md mục 1.3)
 # ============================================================
 
+run_name: "official"
 source: statsbomb_open_data
 
 competitions:

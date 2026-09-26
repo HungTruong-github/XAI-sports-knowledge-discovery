@@ -6,7 +6,7 @@ FAIL nghiêm trọng khiến pipeline trả exit code != 0.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 import pandas as pd
@@ -257,10 +257,43 @@ def check_graph_size_proxy(
     return CheckResult(
         check="graph_size_proxy",
         value=f"median_players={float(np.median(p_arr)):.0f}, "
-              f"median_passes={float(np.median(e_arr)):.0f}",
+        f"median_passes={float(np.median(e_arr)):.0f}",
         status="PASS",
         note=f"players: [{int(p_arr.min())}, {int(p_arr.max())}], "
-             f"passes: [{int(e_arr.min())}, {int(e_arr.max())}]",
+        f"passes: [{int(e_arr.min())}, {int(e_arr.max())}]",
+    )
+
+
+def check_duplicate_possession_keys(
+    keys: list[tuple[int, int]],
+) -> CheckResult:
+    """Kiểm tra tính duy nhất của cặp (match_id, possession_id)."""
+    n_total = len(keys)
+    n_unique = len(set(keys))
+    n_dup = n_total - n_unique
+    ok = n_dup == 0
+    return CheckResult(
+        check="no_duplicate_possession_keys",
+        value=n_dup,
+        status="PASS" if ok else "FAIL",
+        note=f"{n_dup} duplicate (match_id, possession_id) keys!" if n_dup else "",
+    )
+
+
+def check_successful_pass_coordinate_missingness(
+    n_missing_start: int,
+    n_missing_end: int,
+    n_passes: int,
+    threshold: float = 0.01,
+) -> CheckResult:
+    """Kiểm tra missing coordinate trên các đường chuyền thành công (nơi dựng cạnh đồ thị)."""
+    rate = max(n_missing_start, n_missing_end) / n_passes if n_passes else 0.0
+    ok = rate < threshold
+    return CheckResult(
+        check=f"successful_pass_coordinate_missingness < {threshold}",
+        value=round(rate, 4),
+        status="PASS" if ok else "WARNING",
+        note=f"start_missing={n_missing_start}, end_missing={n_missing_end} / {n_passes} passes",
     )
 
 
@@ -272,7 +305,9 @@ def run_all_checks(results: list[CheckResult]) -> pd.DataFrame:
     n_pass = int((df["status"] == "PASS").sum())
     logger.info(
         "Sanity checks: %d PASS, %d WARNING, %d FAIL",
-        n_pass, n_warn, n_fail,
+        n_pass,
+        n_warn,
+        n_fail,
     )
     if n_fail:
         logger.error("%d phép kiểm tra FAIL — cần xem lại trước khi tiếp tục", n_fail)

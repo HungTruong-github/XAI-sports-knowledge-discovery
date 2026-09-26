@@ -19,6 +19,7 @@
 numpy
 pandas
 scipy
+pyarrow
 
 # --- Nguồn dữ liệu: StatsBomb Open Data (Bước 1) ---
 statsbombpy

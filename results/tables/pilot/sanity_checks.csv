@@ -1,0 +1,16 @@
+﻿check,value,status,note
+match_count == 5,5,PASS,
+"unique_teams in [18, 24]",6,WARNING,"Số đội = 6, ngoài khoảng [18, 24]"
+"median_events_per_match in [1000, 4500]",3715.0,PASS,"min=3451, max=3858"
+"median_possessions_per_match in [90, 130]",118.0,PASS,"min=112, max=121"
+"median_successful_passes_per_match in [500, 1200]",846.0,PASS,"min=816, max=882"
+missing_coordinate_rate < 0.05,0.0066,PASS,121/18245 events thiếu tọa độ
+successful_pass_coordinate_missingness < 0.01,0.0,PASS,"start_missing=0, end_missing=0 / 4234 passes"
+missing_recipient_rate < 0.15,0.065,PASS,348/5353 passes thiếu recipient
+no_duplicate_possession_keys,0,PASS,
+no_duplicate_event_ids,0,PASS,
+"positive_shot_rate in [0.1, 0.25]",0.1812,PASS,106/585 possessions dẫn đến sút
+"shots_per_match in [15.0, 35.0]",21.2,PASS,106 shots / 5 matches
+attack_direction_gap > 0,15.22,PASS,
+possession_team_consistency,0,PASS,
+graph_size_proxy,"median_players=5, median_passes=5",PASS,"players: [2, 15], passes: [2, 51]"
