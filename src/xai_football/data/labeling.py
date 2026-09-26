@@ -5,7 +5,7 @@ Tham chiếu: docs/decisions/0001-quy-tac-gan-nhan.md.
 Module cài đặt **cả hai** phương án để so sánh tỉ lệ lớp dương trên dữ liệu
 thật, đúng cam kết với giảng viên ở báo cáo 19/09 mục 3.1:
 
-    Phương án A (`possession_level`) — nhãn 1 nếu possession kết thúc bằng
+    Phương án A (`possession_level`) — nhãn 1 nếu possession chứa ít nhất
         một cú sút. Một possession = một đồ thị = một nhãn.
     Phương án B (`pass_level`) — nhãn 1 cho đường chuyền dẫn đến cú sút trong
         N giây tiếp theo, tương tự cách tiếp cận của các mô hình xThreat.
@@ -52,11 +52,15 @@ class LabelStats:
 
 
 def _hit(possession: Possession, target: Target) -> bool:
-    return possession.ends_with_goal if target == "goal" else possession.ends_with_shot
+    return possession.has_goal if target == "goal" else possession.has_shot
 
 
 def label_possession(possession: Possession, target: Target = "shot") -> int:
-    """Phương án A — nhãn ở mức possession."""
+    """Phương án A — nhãn ở mức possession.
+
+    Nhãn 1 nếu possession chứa ít nhất một cú sút (hoặc bàn thắng nếu
+    target="goal") từ đội kiểm soát bóng.
+    """
     return int(_hit(possession, target))
 
 

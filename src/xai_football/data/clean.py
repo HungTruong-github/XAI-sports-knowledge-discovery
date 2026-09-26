@@ -157,7 +157,7 @@ def normalize_attack_direction(
     suspicious = [
         p
         for p in possessions
-        if p.ends_with_shot
+        if p.has_shot
         and (xs := [x.end_x for x in p.passes if x.end_x is not None])
         and max(xs) < pitch_length / 2
     ]
@@ -195,7 +195,7 @@ def attack_direction_diagnostic(possessions: list[Possession]) -> dict[str, floa
         xs = [p.end_x for p in possession.passes if p.end_x is not None]
         if not xs:
             continue
-        (shot_xs if possession.ends_with_shot else other_xs).append(sum(xs) / len(xs))
+        (shot_xs if possession.has_shot else other_xs).append(sum(xs) / len(xs))
 
     mean_shot = sum(shot_xs) / len(shot_xs) if shot_xs else float("nan")
     mean_other = sum(other_xs) / len(other_xs) if other_xs else float("nan")

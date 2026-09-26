@@ -1,2 +1,2 @@
-﻿run_name,n_matches,n_events,n_raw_possessions,n_clean_possessions,n_successful_passes,n_unique_players,n_unique_teams,shot_positive_count,shot_positive_rate,goal_positive_count,goal_positive_rate,median_passes_per_possession,median_players_per_possession,overall_event_missing_coordinate_rate,successful_pass_missing_coordinate_rate,successful_pass_missing_recipient_rate
-pilot,5,18245,836,585,4234,89,6,106,0.1812,9,0.0154,5.0,5.0,0.0066,0.0,0.0
+﻿run_name,n_matches,n_events,n_raw_possessions,n_clean_possessions,n_successful_passes,n_unique_players,n_unique_teams,shot_positive_count,shot_positive_rate,goal_positive_count,goal_positive_rate,actual_shot_count,actual_shots_per_match,median_passes_per_possession,median_players_per_possession,overall_event_missing_coordinate_rate,successful_pass_missing_coordinate_rate,successful_pass_missing_recipient_rate
+pilot,5,18431,914,615,3833,118,8,99,0.161,8,0.013,147,29.4,5.0,5.0,0.0054,0.0,0.0

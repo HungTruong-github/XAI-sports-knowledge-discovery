@@ -141,7 +141,7 @@ pip install -e .
 
 ## Trạng thái hiện tại (Branch: `feature-data`)
 
-Giai đoạn **Data Pipeline (Bước 1-2 & Validation)** đã được chuẩn hóa và cài đặt hoàn chỉnh:
+Giai đoạn **Data Pipeline (Bước 1-2 & Validation)** đã hoàn thành và được kiểm chứng trên toàn bộ 380 trận:
 
 - **Dataset chính thức**: Premier League 2015/2016 (`competition_id: 2`, `season_id: 27`, 380 trận đấu) từ StatsBomb Open Data (xem [Decision 0004](docs/decisions/0004-main-dataset-premier-league-2015-16.md)).
 - **Mã nguồn đã hoàn thành**:

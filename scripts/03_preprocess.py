@@ -40,6 +40,7 @@ from xai_football.data.labeling import compare_labeling_schemes  # noqa: E402
 from xai_football.data.possession import Possession, load_match_possessions  # noqa: E402
 from xai_football.data.validation import (  # noqa: E402
     CheckResult,
+    check_actual_shots_per_match,
     check_attack_direction,
     check_duplicate_event_ids,
     check_duplicate_possession_keys,
@@ -49,8 +50,8 @@ from xai_football.data.validation import (  # noqa: E402
     check_missing_coordinate_rate,
     check_missing_recipient_rate,
     check_positive_shot_rate,
+    check_possession_team_consistency,
     check_possessions_per_match,
-    check_shots_per_match,
     check_successful_pass_coordinate_missingness,
     check_successful_passes_per_match,
     check_unique_teams,
@@ -116,6 +117,7 @@ def main() -> int:
     pass_events_total = 0
     pass_events_missing_recipient = 0
     missing_coords_count = 0
+    actual_shot_count = 0  # Actual Shot events (not shot-positive possessions)
 
     for entry in entries:
         comp_id, season_id = entry["competition_id"], entry["season_id"]
@@ -157,6 +159,8 @@ def main() -> int:
                         pass_events_missing_recipient += int(
                             passes_chunk["pass_recipient_id"].isna().sum()
                         )
+
+                    actual_shot_count += int((df_chunk["event_type"] == "Shot").sum())
 
             except Exception as exc:  # noqa: BLE001
                 logger.error("Trận %s: lỗi canonicalize — %s", mid, exc)
@@ -335,8 +339,8 @@ def main() -> int:
     # ================================================================
     checks: list[CheckResult] = []
 
-    # 1. Match count
-    checks.append(check_match_count(n_matches, expected_matches))
+    # 1. Match count (official = strict: any mismatch is FAIL)
+    checks.append(check_match_count(n_matches, expected_matches, strict=is_official))
 
     # 2. Unique teams
     all_teams = {p.team_name for p in all_possessions_clean if p.team_name}
@@ -384,33 +388,25 @@ def main() -> int:
     if event_ids_all:
         checks.append(check_duplicate_event_ids(event_ids_all))
 
-    # 11. Shot rates
+    # 11. Shot-positive possession rate
     n_shot_pos = sum(1 for p in all_possessions_clean if p.has_shot)
     checks.append(check_positive_shot_rate(n_shot_pos, len(all_possessions_clean)))
-    checks.append(check_shots_per_match(n_shot_pos, n_matches))
 
-    # 12. Attack direction diagnostic
+    # 12. Actual shots per match (Shot events, not shot-positive possessions)
+    checks.append(check_actual_shots_per_match(actual_shot_count, n_matches))
+
+    # 13. Attack direction diagnostic
     diagnostic = attack_direction_diagnostic(all_possessions_clean)
     checks.append(check_attack_direction(diagnostic))
 
-    # 13. Possession team consistency (from clean possessions)
-    inconsistent_teams = 0
-    for p in all_possessions_clean:
-        teams_in_p = {p.team_name}
-        for pass_ev in p.passes:
-            if pass_ev.passer_name and pass_ev.passer_name != p.team_name:
-                pass
-        if len(teams_in_p) > 1:
-            inconsistent_teams += 1
-    checks.append(
-        CheckResult(
-            check="possession_team_consistency",
-            value=inconsistent_teams,
-            status="PASS" if inconsistent_teams == 0 else "WARNING",
-        )
+    # 14. Possession team consistency (from canonical events)
+    events_df = pd.read_parquet(
+        events_parquet_path,
+        columns=["match_id", "possession_id", "possession_team_id"],
     )
+    checks.append(check_possession_team_consistency(events_df))
 
-    # 14. Graph size proxy
+    # 15. Graph size proxy
     if all_possessions_clean:
         checks.append(
             check_graph_size_proxy(
@@ -462,6 +458,8 @@ def main() -> int:
         "goal_positive_rate": (
             round(n_goal_pos / len(all_possessions_clean), 4) if all_possessions_clean else 0.0
         ),
+        "actual_shot_count": actual_shot_count,
+        "actual_shots_per_match": (round(actual_shot_count / n_matches, 2) if n_matches else 0.0),
         "median_passes_per_possession": float(np.median(pass_counts)) if pass_counts else 0,
         "median_players_per_possession": float(np.median(player_counts)) if player_counts else 0,
         "overall_event_missing_coordinate_rate": (

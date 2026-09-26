@@ -11,10 +11,12 @@ from xai_football.data.clean import clean_possessions
 from xai_football.data.labeling import label_passes
 from xai_football.data.possession import PassEvent, Possession, ShotInfo, extract_possessions
 from xai_football.data.validation import (
+    check_actual_shots_per_match,
     check_duplicate_possession_keys,
     check_match_count,
     check_missing_coordinate_rate,
     check_missing_recipient_rate,
+    check_possession_team_consistency,
     has_critical_failure,
     run_all_checks,
 )
@@ -376,9 +378,90 @@ def test_official_and_pilot_paths_no_collision():
 
 
 def test_validation_fail_on_mismatched_match_count():
-    """P. Test validation FAIL when official match count != 380."""
-    res_fail = check_match_count(n_matches=300, expected=380)
+    """P. Test validation FAIL when official match count != 380 (strict mode)."""
+    res_fail = check_match_count(n_matches=300, expected=380, strict=True)
     assert res_fail.status == "FAIL"
 
     df_checks = run_all_checks([res_fail])
     assert has_critical_failure(df_checks)
+
+
+def test_official_strict_match_count_379_fails():
+    """Q. Official run: 379/380 must FAIL, not WARNING."""
+    res = check_match_count(n_matches=379, expected=380, strict=True)
+    assert res.status == "FAIL"
+
+
+def test_official_strict_match_count_380_passes():
+    """R. Official run: exactly 380 must PASS."""
+    res = check_match_count(n_matches=380, expected=380, strict=True)
+    assert res.status == "PASS"
+
+
+def test_pilot_match_count_not_forced_to_380():
+    """S. Pilot: mismatch is only WARNING, not FAIL."""
+    res = check_match_count(n_matches=5, expected=380, strict=False)
+    assert res.status == "WARNING"
+    assert res.status != "FAIL"
+
+
+def test_actual_shot_count_differs_from_shot_positive_possessions():
+    """T. 1 possession with 2 Shot events: shot-positive = 1, actual shots = 2."""
+    p = Possession(
+        match_id=1,
+        competition_id=2,
+        season_id=27,
+        possession_id=1,
+        team_id=1,
+        team_name="Team A",
+        play_pattern="Regular Play",
+        period=1,
+        shots=[
+            ShotInfo(event_id="s1", minute=0, second=15, outcome="Saved", xg=0.1),
+            ShotInfo(event_id="s2", minute=0, second=18, outcome="Goal", xg=0.5),
+        ],
+    )
+    # Shot-positive possessions = 1
+    assert p.has_shot is True
+    # Actual shot count = 2 (len(p.shots))
+    assert len(p.shots) == 2
+    # These are distinct concepts
+    shot_positive_count = 1 if p.has_shot else 0
+    actual_shot_count = len(p.shots)
+    assert shot_positive_count != actual_shot_count
+
+    # Validation check uses actual shots
+    res = check_actual_shots_per_match(n_actual_shots=2, n_matches=1)
+    assert res.status == "WARNING"  # 2 shots/match < 15.0 lower bound
+
+
+def test_possession_team_consistency_pass():
+    """U. Same possession_team_id within a possession -> PASS."""
+    import pandas as pd
+
+    df = pd.DataFrame(
+        {
+            "match_id": [1, 1, 1],
+            "possession_id": [1, 1, 1],
+            "possession_team_id": [10, 10, 10],
+        }
+    )
+    res = check_possession_team_consistency(df)
+    assert res.status == "PASS"
+    assert res.value == 0
+
+
+def test_possession_team_consistency_mixed():
+    """V. Mixed possession_team_id within a possession -> WARNING."""
+    import pandas as pd
+
+    df = pd.DataFrame(
+        {
+            "match_id": [1, 1, 1],
+            "possession_id": [1, 1, 1],
+            "possession_team_id": [10, 10, 20],
+        }
+    )
+    res = check_possession_team_consistency(df)
+    assert res.status == "WARNING"
+    assert res.value == 1

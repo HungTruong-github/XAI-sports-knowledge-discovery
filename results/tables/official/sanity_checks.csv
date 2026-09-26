@@ -10,7 +10,7 @@ missing_recipient_rate < 0.15,0.0768,PASS,28294/368619 passes thiếu recipient
 no_duplicate_possession_keys,0,PASS,
 no_duplicate_event_ids,0,PASS,
 "positive_shot_rate in [0.1, 0.25]",0.1416,PASS,6510/45977 possessions dẫn đến sút
-"shots_per_match in [15.0, 35.0]",17.1,PASS,6510 shots / 380 matches
+"actual_shots_per_match in [15.0, 35.0]",26.1,PASS,9908 actual Shot events / 380 matches
 attack_direction_gap > 0,17.76,PASS,
 possession_team_consistency,0,PASS,
 graph_size_proxy,"median_players=5, median_passes=4",PASS,"players: [2, 18], passes: [2, 83]"

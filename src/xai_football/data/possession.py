@@ -145,10 +145,11 @@ class Possession:
         """Possession chứa ít nhất một bàn thắng."""
         return any(s.is_goal for s in self.shots)
 
-    # Backward compatibility aliases
+    # Deprecated aliases — no internal code uses these anymore.
+    # Kept only for backward compatibility with notebooks / external references.
     @property
     def ends_with_shot(self) -> bool:
-        """Alias cho has_shot — giữ backward compatibility.
+        """Deprecated: use ``has_shot`` instead.
 
         Lưu ý ngữ nghĩa: đây là "possession chứa shot", không nhất thiết
         "event cuối cùng là shot". Tên gốc có thể gây hiểu nhầm.
@@ -157,7 +158,7 @@ class Possession:
 
     @property
     def ends_with_goal(self) -> bool:
-        """Alias cho has_goal — giữ backward compatibility."""
+        """Deprecated: use ``has_goal`` instead."""
         return self.has_goal
 
     @property

@@ -37,13 +37,21 @@ class CheckResult:
 def check_match_count(
     n_matches: int,
     expected: int | None = None,
+    strict: bool = False,
 ) -> CheckResult:
-    """Kiểm tra số trận."""
+    """Kiểm tra số trận.
+
+    Parameters
+    ----------
+    strict : bool
+        Nếu True (official run), bất kỳ sai lệch nào so với expected đều FAIL.
+        Nếu False (pilot), chỉ WARNING khi lệch.
+    """
     if expected is not None and n_matches != expected:
         return CheckResult(
             check=f"match_count == {expected}",
             value=n_matches,
-            status="FAIL" if abs(n_matches - expected) > 5 else "WARNING",
+            status="FAIL" if strict else "WARNING",
             note=f"Kỳ vọng {expected}, thực tế {n_matches}",
         )
     return CheckResult(
@@ -174,20 +182,24 @@ def check_positive_shot_rate(
     )
 
 
-def check_shots_per_match(
-    n_shots: int,
+def check_actual_shots_per_match(
+    n_actual_shots: int,
     n_matches: int,
     expected_range: tuple[float, float] = (15.0, 35.0),
 ) -> CheckResult:
-    """Số cú sút mỗi trận (cả hai đội)."""
-    spm = n_shots / n_matches if n_matches else 0.0
+    """Số cú sút thực tế mỗi trận (cả hai đội).
+
+    Lưu ý: n_actual_shots là số Shot events, KHÔNG phải số
+    shot-positive possessions.
+    """
+    spm = n_actual_shots / n_matches if n_matches else 0.0
     lo, hi = expected_range
     ok = lo <= spm <= hi
     return CheckResult(
-        check=f"shots_per_match in [{lo}, {hi}]",
+        check=f"actual_shots_per_match in [{lo}, {hi}]",
         value=round(spm, 1),
         status="PASS" if ok else "WARNING",
-        note=f"{n_shots} shots / {n_matches} matches",
+        note=f"{n_actual_shots} actual Shot events / {n_matches} matches",
     )
 
 
@@ -226,15 +238,20 @@ def check_attack_direction(
 def check_possession_team_consistency(
     events_df: pd.DataFrame,
 ) -> CheckResult:
-    """Kiểm tra possession_team nhất quán trong cùng possession."""
-    if events_df.empty or "possession_team_name" not in events_df.columns:
+    """Kiểm tra possession_team_id nhất quán trong cùng possession.
+
+    Dùng possession_team_id (numeric) thay vì so sánh tên để tránh
+    sai lệch do tên team khác nhau giữa các nguồn dữ liệu.
+    """
+    col = "possession_team_id"
+    if events_df.empty or col not in events_df.columns:
         return CheckResult(
             check="possession_team_consistency",
             value="N/A",
             status="WARNING",
             note="Không có dữ liệu để kiểm tra",
         )
-    grouped = events_df.groupby(["match_id", "possession_id"])["possession_team_name"].nunique()
+    grouped = events_df.groupby(["match_id", "possession_id"])[col].nunique()
     n_inconsistent = int((grouped > 1).sum())
     ok = n_inconsistent == 0
     return CheckResult(

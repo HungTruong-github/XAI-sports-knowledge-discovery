@@ -9,7 +9,7 @@
 
 ## 1. Bối cảnh & Thay đổi so với kế hoạch ban đầu
 
-Ban đầu, đề tài dự kiến sử dụng **Bundesliga 2023/24** kết hợp với **UEFA Champions League** (xem [Decision 0002](0002-chuyen-huong-sang-statsbomb-open-data.md) và `docs/Nguon_du_lieu_XAI_Football.md`).
+Ban đầu, đề tài dự kiến sử dụng **Bundesliga 2023/24** kết hợp với **UEFA Champions League** (xem `docs/Nguon_du_lieu_XAI_Football.md` mục 1.1 và 1.3).
 
 Tuy nhiên, qua kiểm tra kho StatsBomb Open Data thực tế:
 - StatsBomb Open Data **không cung cấp trọn vẹn mùa giải Bundesliga** (chỉ có các trận đấu đơn lẻ / sự kiện đặc biệt).

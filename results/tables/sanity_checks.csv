@@ -1,5 +1,0 @@
-﻿check,value,passed,note
-"possession/trận trong [90, 130] — Premier League",113.5,True,Lệch nhiều nghĩa là logic nhóm possession sai
-"tỉ lệ lớp dương (possession_level/shot) trong [0.1, 0.25]",0.207,True,Cao bất thường -> nghi đếm nhầm cú sút của đội đối phương
-"số possession dẫn đến sút mỗi trận trong [15, 35]",23.5,True,Cả hai đội cộng lại; Premier League trung bình ~25 cú sút/trận
-hướng tấn công: x trung bình của pha dẫn đến sút cao hơn (A5),14.78,True,gap <= 0 nghĩa là tọa độ chưa chuẩn hóa đồng bộ
