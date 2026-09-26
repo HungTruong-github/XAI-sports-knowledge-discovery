@@ -1,6 +1,9 @@
 # ============================================================
-# CẤU HÌNH CHẠY THỬ — KHÔNG PHẢI CẤU HÌNH CHÍNH THỨC
+# CẤU HÌNH CHẠY THỬ (SMOKE TEST / DEVELOPMENT ONLY)
 # ============================================================
+#
+# data_pilot.yaml = smoke test / development only
+# data.yaml       = official dataset (Premier League 2015/16, 380 matches)
 #
 # Dùng để kiểm tra đường ống Bước 1-2 chạy thông trước khi chạy quy mô lớn,
 # và để tái lập lại các số liệu trong
@@ -15,9 +18,8 @@
 #     Trung vị 5 đỉnh / 5 cạnh mỗi đồ thị
 #     4/4 phép kiểm tra chất lượng đạt
 #
-# LƯU Ý: cấu hình CHÍNH THỨC của đề tài là configs/data.yaml — hiện còn để
-# trống phần `competitions` và `labeling` vì đang chờ giảng viên chốt phạm vi
-# dữ liệu (xem báo cáo 19/09 mục 2). KHÔNG dùng tệp pilot này thay cho nó.
+# LƯU Ý: Cấu hình CHÍNH THỨC của đề tài là configs/data.yaml (Premier League 2015/16).
+# File data_pilot.yaml này chỉ dùng cho smoke test / development.
 # ------------------------------------------------------------
 
 source: statsbomb_open_data

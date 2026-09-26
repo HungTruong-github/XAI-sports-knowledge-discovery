@@ -112,7 +112,7 @@ def clean_possessions(
         # Cạnh cần cả hai đầu; đường chuyền không xác định được người nhận
         # thì không dựng được cạnh có hướng A -> B (mục 3.2).
         possession.passes = [
-            p for p in possession.passes if p.passer and p.recipient
+            p for p in possession.passes if p.passer_id and p.recipient_id
         ]
         if possession.n_passes < min_passes or possession.n_players < 2:
             report.dropped_no_players += 1
