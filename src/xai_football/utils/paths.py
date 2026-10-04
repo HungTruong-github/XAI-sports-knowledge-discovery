@@ -44,3 +44,23 @@ def ensure_dir(path: Path) -> Path:
     """Tạo thư mục nếu chưa có; trả lại chính path để gọi nối chuỗi được."""
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def get_run_name(config: dict) -> str:
+    """Lấy `run_name` từ config (mặc định 'official')."""
+    return str(config.get("run_name") or "official")
+
+
+def get_interim_dir(config: dict) -> Path:
+    """Lấy thư mục interim theo run_name (ví dụ data/interim/official hoặc data/interim/pilot)."""
+    return ensure_dir(INTERIM_DIR / get_run_name(config))
+
+
+def get_tables_dir(config: dict) -> Path:
+    """Lấy thư mục tables theo run_name (results/tables/official hoặc results/tables/pilot)."""
+    return ensure_dir(TABLES_DIR / get_run_name(config))
+
+
+def get_processed_dir(config: dict) -> Path:
+    """Lấy thư mục processed theo run_name."""
+    return ensure_dir(PROCESSED_DIR / get_run_name(config))

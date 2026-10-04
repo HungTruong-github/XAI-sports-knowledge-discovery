@@ -5,7 +5,7 @@ Tham chiếu: docs/decisions/0001-quy-tac-gan-nhan.md.
 Module cài đặt **cả hai** phương án để so sánh tỉ lệ lớp dương trên dữ liệu
 thật, đúng cam kết với giảng viên ở báo cáo 19/09 mục 3.1:
 
-    Phương án A (`possession_level`) — nhãn 1 nếu possession kết thúc bằng
+    Phương án A (`possession_level`) — nhãn 1 nếu possession chứa ít nhất
         một cú sút. Một possession = một đồ thị = một nhãn.
     Phương án B (`pass_level`) — nhãn 1 cho đường chuyền dẫn đến cú sút trong
         N giây tiếp theo, tương tự cách tiếp cận của các mô hình xThreat.
@@ -52,11 +52,15 @@ class LabelStats:
 
 
 def _hit(possession: Possession, target: Target) -> bool:
-    return possession.ends_with_goal if target == "goal" else possession.ends_with_shot
+    return possession.has_goal if target == "goal" else possession.has_shot
 
 
 def label_possession(possession: Possession, target: Target = "shot") -> int:
-    """Phương án A — nhãn ở mức possession."""
+    """Phương án A — nhãn ở mức possession.
+
+    Nhãn 1 nếu possession chứa ít nhất một cú sút (hoặc bàn thắng nếu
+    target="goal") từ đội kiểm soát bóng.
+    """
     return int(_hit(possession, target))
 
 
@@ -67,17 +71,19 @@ def label_passes(
 ) -> list[int]:
     """Phương án B — nhãn ở mức đường chuyền.
 
-    Gán 1 cho đường chuyền xảy ra trong vòng `window_seconds` trước cú sút.
-    Trả về danh sách nhãn cùng thứ tự với `possession.passes`.
+    Gán 1 cho đường chuyền nếu có ÍT NHẤT MỘT cú sút (phù hợp với target)
+    xảy ra SAU đường chuyền và trong vòng `window_seconds`.
     """
-    if not _hit(possession, target) or possession.shot_second is None:
+    valid_shots = [s for s in possession.shots if (target != "goal" or s.is_goal)]
+    if not valid_shots:
         return [0] * possession.n_passes
 
-    shot_at = possession.shot_second
+    shot_times = [s.time_seconds for s in valid_shots]
     labels = []
     for p in possession.passes:
-        pass_at = p.minute * 60 + p.second
-        labels.append(int(0 <= shot_at - pass_at <= window_seconds))
+        pass_time = p.minute * 60 + p.second
+        is_pos = any(0 <= (st - pass_time) <= window_seconds for st in shot_times)
+        labels.append(int(is_pos))
     return labels
 
 
@@ -99,9 +105,7 @@ def resolve_labeling(config: dict[str, Any]) -> tuple[Mode, Target, float | None
 
     window = labeling.get("shot_window_seconds")
     if mode == "pass_level" and window is None:
-        raise ValueError(
-            "labeling.mode = 'pass_level' thì bắt buộc phải có shot_window_seconds."
-        )
+        raise ValueError("labeling.mode = 'pass_level' thì bắt buộc phải có shot_window_seconds.")
     return mode, target, window
 
 
@@ -127,22 +131,26 @@ def compare_labeling_schemes(
     stats: list[LabelStats] = []
 
     for target in ("shot", "goal"):
-        stats.append(LabelStats(
-            mode="possession_level",
-            target=target,
-            n_units=len(possessions),
-            n_positive=sum(label_possession(p, target) for p in possessions),
-        ))
+        stats.append(
+            LabelStats(
+                mode="possession_level",
+                target=target,
+                n_units=len(possessions),
+                n_positive=sum(label_possession(p, target) for p in possessions),
+            )
+        )
 
     n_passes = sum(p.n_passes for p in possessions)
     for target in ("shot", "goal"):
         for window in pass_level_windows:
-            stats.append(LabelStats(
-                mode="pass_level",
-                target=target,
-                n_units=n_passes,
-                n_positive=sum(sum(label_passes(p, target, window)) for p in possessions),
-                shot_window_seconds=window,
-            ))
+            stats.append(
+                LabelStats(
+                    mode="pass_level",
+                    target=target,
+                    n_units=n_passes,
+                    n_positive=sum(sum(label_passes(p, target, window)) for p in possessions),
+                    shot_window_seconds=window,
+                )
+            )
 
     return stats
