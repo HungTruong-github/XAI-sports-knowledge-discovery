@@ -34,6 +34,7 @@ from xai_football.data.clean import (  # noqa: E402
     CleaningReport,
     attack_direction_diagnostic,
     clean_possessions,
+    play_pattern_distribution,
 )
 from xai_football.data.collect import resolve_competitions  # noqa: E402
 from xai_football.data.labeling import compare_labeling_schemes  # noqa: E402
@@ -49,6 +50,7 @@ from xai_football.data.validation import (  # noqa: E402
     check_match_count,
     check_missing_coordinate_rate,
     check_missing_recipient_rate,
+    check_no_opponent_passes,
     check_positive_shot_rate,
     check_possession_team_consistency,
     check_possessions_per_match,
@@ -239,6 +241,9 @@ def main() -> int:
 
     possession_rows = []
     possession_event_rows = []
+    # Song song từng đường chuyền: đội chuyền vs đội của possession (check 9b)
+    pass_team_ids: list[int | None] = []
+    pass_possession_team_ids: list[int | None] = []
     for p in all_possessions_clean:
         possession_rows.append(
             {
@@ -256,15 +261,19 @@ def main() -> int:
                 "has_shot": p.has_shot,
                 "has_goal": p.has_goal,
                 "shot_second": p.shot_second,
+                "first_shot_index": p.first_shot_index,
                 "n_shots": len(p.shots),
             }
         )
         for pass_ev in p.passes:
+            pass_team_ids.append(pass_ev.team_id)
+            pass_possession_team_ids.append(p.team_id)
             possession_event_rows.append(
                 {
                     "match_id": p.match_id,
                     "possession_id": p.possession_id,
                     "event_id": pass_ev.event_id,
+                    "team_id": pass_ev.team_id,
                     "event_index": pass_ev.index,
                     "period": pass_ev.period,
                     "minute": pass_ev.minute,
@@ -309,30 +318,23 @@ def main() -> int:
     print(labels_df.to_string(index=False))
 
     # ================================================================
-    # Phase 5: Play Pattern Distribution
+    # Phase 5: Play Pattern Distribution (raw vs clean + shot rate)
     # ================================================================
-    play_pattern_counts: dict[str, int] = {}
-    for p in all_possessions_raw:
-        pp = p.play_pattern or "Unknown"
-        play_pattern_counts[pp] = play_pattern_counts.get(pp, 0) + 1
-
-    pp_df = pd.DataFrame(
-        [
-            {
-                "play_pattern": k,
-                "count": v,
-                "pct": round(100 * v / len(all_possessions_raw), 2) if all_possessions_raw else 0,
-            }
-            for k, v in sorted(play_pattern_counts.items(), key=lambda x: -x[1])
-        ]
-    )
+    pp_df = pd.DataFrame(play_pattern_distribution(all_possessions_raw, all_possessions_clean))
     pp_df.to_csv(out_dir / "play_pattern_distribution.csv", index=False, encoding="utf-8-sig")
+
+    print("\n=== PHÂN BỐ PLAY PATTERN (RAW vs CLEAN) ===")
+    print(pp_df.to_string(index=False))
 
     # ================================================================
     # Phase 6: Cleaning Report
     # ================================================================
     cleaning_df = pd.DataFrame([total_report.as_row()])
     cleaning_df.to_csv(out_dir / "cleaning_report.csv", index=False, encoding="utf-8-sig")
+
+    print("\n=== CLEANING REPORT ===")
+    for k, v in total_report.as_row().items():
+        print(f"  {k}: {v}")
 
     # ================================================================
     # Phase 7: Sanity Checks (Schema: check, value, status, note)
@@ -383,6 +385,9 @@ def main() -> int:
 
     # 9. Duplicate possession keys
     checks.append(check_duplicate_possession_keys(possession_keys))
+
+    # 9b. Mọi đường chuyền giữ lại thuộc đội kiểm soát bóng (FAIL nếu lệch)
+    checks.append(check_no_opponent_passes(pass_team_ids, pass_possession_team_ids))
 
     # 10. Duplicate event IDs
     if event_ids_all:
@@ -458,6 +463,10 @@ def main() -> int:
         "goal_positive_rate": (
             round(n_goal_pos / len(all_possessions_clean), 4) if all_possessions_clean else 0.0
         ),
+        "n_opponent_passes_excluded": sum(
+            p.n_opponent_passes_excluded for p in all_possessions_raw
+        ),
+        "n_opponent_shots_excluded": sum(p.n_opponent_shots_excluded for p in all_possessions_raw),
         "actual_shot_count": actual_shot_count,
         "actual_shots_per_match": (round(actual_shot_count / n_matches, 2) if n_matches else 0.0),
         "median_passes_per_possession": float(np.median(pass_counts)) if pass_counts else 0,

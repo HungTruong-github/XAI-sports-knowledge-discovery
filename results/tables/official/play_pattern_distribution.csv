@@ -1,10 +1,10 @@
-﻿play_pattern,count,pct
-Regular Play,28550,39.72
-From Throw In,17559,24.43
-From Free Kick,9551,13.29
-From Goal Kick,6341,8.82
-From Corner,4108,5.71
-From Keeper,2313,3.22
-From Kick Off,1773,2.47
-From Counter,1326,1.84
-Other,363,0.5
+﻿play_pattern,count_raw,pct_raw,count_clean,pct_clean,shot_count_clean,shot_rate_clean
+Regular Play,28550,39.72,21000,46.29,2756,13.12
+From Throw In,17559,24.43,11664,25.71,1549,13.28
+From Free Kick,9551,13.29,5224,11.52,834,15.96
+From Goal Kick,6341,8.82,2886,6.36,334,11.57
+From Corner,4108,5.71,1487,3.28,553,37.19
+From Keeper,2313,3.22,795,1.75,121,15.22
+From Kick Off,1773,2.47,1590,3.5,97,6.1
+From Counter,1326,1.84,676,1.49,219,32.4
+Other,363,0.5,43,0.09,8,18.6

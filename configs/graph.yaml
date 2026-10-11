@@ -1,6 +1,7 @@
 # ============================================================
 # Bước 3 — Xây dựng đồ thị chuyền bóng
 # Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 3
+# Chạy: python scripts/04_build_graphs.py --config configs/data.yaml
 # ============================================================
 
 directed: true
@@ -10,25 +11,40 @@ nodes:
   # Chỉ cầu thủ THAM GIA possession, không phải cả 11 người (mục 3.1)
   scope: "players_in_possession"
   features:
-    position: true          # vị trí thi đấu (DF/MF/FW hoặc position của StatsBomb)
-    mean_xy: true           # tọa độ trung bình trong possession
-    touch_count: true       # số lần chạm bóng
-    season_stats: false     # tùy chọn - làm giàu đặc trưng, bật sau nếu cần
+    position: true          # vai trò GK/DF/MF/FW (one-hot, gom từ position của StatsBomb)
+    mean_xy: true           # tọa độ trung bình các lần chạm bóng trong possession
+    touch_count: true       # số đường chuyền đi + số đường chuyền nhận
+    season_stats: false     # tùy chọn - làm giàu đặc trưng, CHƯA cài đặt
 
 edges:
   features:
     start_end_xy: true      # x1, y1, x2, y2
     distance: true
-    angle: true
-    pass_type: true         # ground / high / through ball...
-    timestamp: true         # thời điểm trong possession
+    angle: true             # mã hóa sin/cos để tránh gián đoạn tại ±pi
+    pass_type: true         # độ cao đường chuyền: Ground / Low / High (one-hot)
+    timestamp: true         # thứ tự trong possession (0..1) + số giây từ đường chuyền đầu
   # Xử lý khi có nhiều đường chuyền giữa cùng cặp cầu thủ (mục 3.2)
-  multi_edge_strategy: null # TODO: "aggregate_weight" | "keep_multi_edge"
+  #   keep_multi_edge: mỗi đường chuyền là một cạnh riêng — XAI chấm điểm được
+  #                    từng đường chuyền cụ thể; GCN cộng dồn cạnh trùng nên
+  #                    tương đương cạnh có trọng số.
+  # ĐỀ XUẤT TẠM THỜI — chờ GV xác nhận.
+  multi_edge_strategy: "keep_multi_edge"
+
+# Chỉ giữ đường chuyền xảy ra TRƯỚC cú sút đầu tiên (so theo event index).
+# Không cắt thì đồ thị chứa diễn biến sau cú sút -> rò rỉ nhãn.
+# ĐỀ XUẤT TẠM THỜI — chờ GV xác nhận.
+truncate_at_first_shot: true
+
+# Danh sách play pattern được giữ. null = giữ tất cả.
+# Ví dụ chỉ open-play: ["Regular Play", "From Counter", "From Keeper", ...]
+# QUYẾT ĐỊNH PHẠM VI OPEN-PLAY CHƯA CHỐT.
+play_patterns_keep: null
 
 optional:
   # Node ảo đại diện khung thành đối phương - tiền lệ: TacticAI (mục 3.3)
+  # CHƯA cài đặt — bật lên sẽ báo lỗi.
   add_goal_node: false
 
 storage:
   format: "torch_geometric"
-  cache_dir: "data/processed"
+  cache_dir: "data/processed"   # thực tế ghi vào data/processed/<run_name>/

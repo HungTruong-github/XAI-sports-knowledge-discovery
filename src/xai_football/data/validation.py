@@ -242,6 +242,11 @@ def check_possession_team_consistency(
 
     Dùng possession_team_id (numeric) thay vì so sánh tên để tránh
     sai lệch do tên team khác nhau giữa các nguồn dữ liệu.
+
+    GIỚI HẠN: với StatsBomb, `possession_team` luôn cố định trong một
+    possession nên check này gần như luôn PASS. Nó KHÔNG phát hiện được sự
+    kiện của đối phương nằm lẫn trong possession — việc đó do
+    `check_no_opponent_passes` đảm nhận.
     """
     col = "possession_team_id"
     if events_df.empty or col not in events_df.columns:
@@ -259,6 +264,28 @@ def check_possession_team_consistency(
         value=n_inconsistent,
         status="PASS" if ok else "WARNING",
         note=f"{n_inconsistent} possessions có nhiều hơn 1 team" if not ok else "",
+    )
+
+
+def check_no_opponent_passes(
+    pass_team_ids: list[int | None],
+    possession_team_ids: list[int | None],
+) -> CheckResult:
+    """Mọi đường chuyền giữ lại phải thuộc đội đang kiểm soát bóng.
+
+    Hai danh sách song song, mỗi phần tử ứng với một đường chuyền trong
+    possession_events: đội thực hiện đường chuyền và đội của possession.
+    Chỉ cần một đường chuyền lệch đội là FAIL — đồ thị sẽ có đỉnh là cầu thủ
+    đối phương và cạnh nằm sai hướng sân.
+    """
+    n_total = len(pass_team_ids)
+    n_mismatch = sum(1 for a, b in zip(pass_team_ids, possession_team_ids) if a != b)
+    ok = n_mismatch == 0
+    return CheckResult(
+        check="no_opponent_passes_in_possession",
+        value=n_mismatch,
+        status="PASS" if ok else "FAIL",
+        note=f"{n_mismatch}/{n_total} passes không thuộc đội kiểm soát bóng" if not ok else "",
     )
 
 
