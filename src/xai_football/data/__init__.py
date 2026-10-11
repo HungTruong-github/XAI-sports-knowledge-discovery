@@ -11,7 +11,23 @@ Module:
                      (Bước 2.2); chuẩn hóa hệ tọa độ sân 120x80 (Bước 2.4)
     labeling.py      Gán nhãn nhị phân possession -> sút/bàn thắng (Bước 2.3)
                      XEM docs/decisions/0001-quy-tac-gan-nhan.md — CHƯA CHỐT
-    validation.py    Data quality / sanity checks (PASS/WARNING/FAIL)
-    splits.py        [Planned / Not Implemented] Chia train/val/test theo TRẬN
-                     (Bước 4) — sẽ được thực hiện ở Giai đoạn Modeling
+    splits.py        Chia train/val/test theo TRẬN ĐẤU (Bước 4) — chống rò rỉ
 """
+
+from xai_football.data.splits import (
+    compute_match_stats,
+    load_match_splits,
+    make_stratified_match_split,
+    save_match_splits,
+    summarize_splits,
+    validate_splits,
+)
+
+__all__ = [
+    "compute_match_stats",
+    "make_stratified_match_split",
+    "save_match_splits",
+    "load_match_splits",
+    "summarize_splits",
+    "validate_splits",
+]

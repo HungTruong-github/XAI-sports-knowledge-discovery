@@ -221,17 +221,21 @@ def test_build_dataset_refuses_old_interim_without_first_shot_index():
     """Dữ liệu Bước 2 cũ (thiếu first_shot_index) phải báo lỗi, không được âm thầm không cắt."""
     possessions = _possessions_df([{"possession_id": 1, "has_shot": True}])
     with pytest.raises(ValueError, match="first_shot_index"):
-        build_dataset(possessions, pd.DataFrame([_pass("a1", 1, 10, 11, 0, 0, 1, 1)]), {},
-                      DATA_CFG, GRAPH_CFG)
+        build_dataset(
+            possessions, pd.DataFrame([_pass("a1", 1, 10, 11, 0, 0, 1, 1)]), {}, DATA_CFG, GRAPH_CFG
+        )
 
 
 def test_build_dataset_requires_possession_level_labeling():
-    cfg = {**DATA_CFG, "labeling": {"mode": "pass_level", "target": "shot",
-                                    "shot_window_seconds": 10}}
+    cfg = {
+        **DATA_CFG,
+        "labeling": {"mode": "pass_level", "target": "shot", "shot_window_seconds": 10},
+    }
     possessions = _possessions_df([{"possession_id": 1, "has_shot": True, "first_shot_index": 5}])
     with pytest.raises(ValueError, match="possession_level"):
-        build_dataset(possessions, pd.DataFrame([_pass("a1", 1, 10, 11, 0, 0, 1, 1)]), {},
-                      cfg, GRAPH_CFG)
+        build_dataset(
+            possessions, pd.DataFrame([_pass("a1", 1, 10, 11, 0, 0, 1, 1)]), {}, cfg, GRAPH_CFG
+        )
 
 
 def test_load_player_roles_uses_most_frequent_position(tmp_path):

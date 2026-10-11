@@ -77,12 +77,8 @@ def graph_integrity_checks(
         CheckResult("edge_index_within_nodes", bad_index, "PASS" if bad_index == 0 else "FAIL")
     )
 
-    isolated = sum(
-        1 for g in graphs if len(set(g.edge_index.flatten().tolist())) != g.num_nodes
-    )
-    checks.append(
-        CheckResult("no_isolated_nodes", isolated, "PASS" if isolated == 0 else "FAIL")
-    )
+    isolated = sum(1 for g in graphs if len(set(g.edge_index.flatten().tolist())) != g.num_nodes)
+    checks.append(CheckResult("no_isolated_nodes", isolated, "PASS" if isolated == 0 else "FAIL"))
 
     bad_shape = sum(
         1
@@ -99,9 +95,7 @@ def graph_integrity_checks(
     non_finite = sum(
         1 for g in graphs if not (g.x.isfinite().all() and g.edge_attr.isfinite().all())
     )
-    checks.append(
-        CheckResult("features_finite", non_finite, "PASS" if non_finite == 0 else "FAIL")
-    )
+    checks.append(CheckResult("features_finite", non_finite, "PASS" if non_finite == 0 else "FAIL"))
 
     out_of_range = 0
     for g in graphs:
@@ -147,9 +141,7 @@ def graph_integrity_checks(
             ):
                 after_shot += 1
     checks.append(
-        CheckResult(
-            "edges_match_source_passes", wrong_edge, "PASS" if wrong_edge == 0 else "FAIL"
-        )
+        CheckResult("edges_match_source_passes", wrong_edge, "PASS" if wrong_edge == 0 else "FAIL")
     )
     checks.append(
         CheckResult(

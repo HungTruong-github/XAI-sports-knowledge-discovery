@@ -1,0 +1,6 @@
+﻿model,tier,type,accuracy,precision,recall,f1,auc_roc,auc_pr,brier_score,loss
+GCN (đề xuất),Tier 2 — GNN Backbone,Graph,0.6806,0.268,0.7582,0.396,0.7769,0.3261,0.1885,0.976
+MPNN (đề xuất),Tier 2 — GNN Backbone,Graph,0.8471,0.463,0.6678,0.5468,0.8732,0.5747,0.104,0.8365
+Logistic Regression,Tier 3(a) — Non-graph Baseline,Tabular,0.7084,0.3019,0.8464,0.445,0.8221,0.3379,0.1847,
+Random Forest,Tier 3(a) — Non-graph Baseline,Tabular,0.8834,0.5702,0.6329,0.5999,0.8844,0.6234,0.087,
+ANN (MLP),Tier 3(a) — Non-graph Baseline,Tabular,0.8945,0.677,0.4521,0.5421,0.8831,0.6141,0.0782,

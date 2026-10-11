@@ -530,8 +530,15 @@ def test_opponent_incomplete_pass_not_counted_as_excluded():
     """X. Đường chuyền hỏng của đối phương bị loại vì hỏng, không tính là 'opponent excluded'."""
     events = [
         _event("a1", 1, "Pass", team_id=1, player_id=10, recipient_id=11),
-        _event("c1", 2, "Pass", team_id=2, player_id=20, recipient_id=21,
-               outcome={"name": "Incomplete"}),
+        _event(
+            "c1",
+            2,
+            "Pass",
+            team_id=2,
+            player_id=20,
+            recipient_id=21,
+            outcome={"name": "Incomplete"},
+        ),
     ]
     p = extract_possessions(events, match_id=1)[0]
     assert p.n_passes == 1
@@ -630,8 +637,13 @@ def test_play_pattern_distribution_raw_vs_clean():
     by_pattern = {r["play_pattern"]: r for r in rows}
 
     expected_cols = {
-        "play_pattern", "count_raw", "pct_raw", "count_clean",
-        "pct_clean", "shot_count_clean", "shot_rate_clean",
+        "play_pattern",
+        "count_raw",
+        "pct_raw",
+        "count_clean",
+        "pct_clean",
+        "shot_count_clean",
+        "shot_rate_clean",
     }
     assert all(set(r) == expected_cols for r in rows)
     assert sum(r["count_raw"] for r in rows) == len(raw)

@@ -62,8 +62,10 @@ data/external/**
 *.joblib
 *.npy
 *.npz
-# ...trừ các file nhỏ nằm trong results/ dùng cho báo cáo
+# ...trừ các file nhỏ nằm trong results/ dùng cho báo cáo và data/splits/
 !results/**/*.csv
+!data/splits/**/*.csv
+!data/splits/*.csv
 
 # ============================================================
 # ĐẦU RA THỰC NGHIỆM

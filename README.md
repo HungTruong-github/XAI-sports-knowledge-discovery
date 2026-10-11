@@ -158,7 +158,16 @@ pip install -e .
   - `build.py`: Chuyển một possession thành `torch_geometric.data.Data` có hướng, mỗi đường chuyền một cạnh, cắt tại cú sút đầu tiên.
   - `dataset.py`: Dựng toàn bộ tập đồ thị, lưu `graphs.pt`, `graph_index.parquet`, `feature_names.json` vào `data/processed/official/`.
   - `04_build_graphs.py`: Script chạy Bước 3 kèm 8 phép kiểm tra toàn vẹn đồ thị, xuất `graph_build_report.csv` và `graph_checks.csv`.
-- **Kiểm thử**: 38 unit test trong `tests/data/` và `tests/graphs/`, tất cả đạt.
+- **Mã nguồn Bước 4** (`src/xai_football/data/splits.py`, `scripts/05_make_splits.py`):
+  - Chia match-level 70/15/15 theo trận, phân tầng theo tỉ lệ nhãn dương.
+  - Lưu danh sách match_id vào `data/splits/` (train: 266 trận, val: 57 trận, test: 57 trận).
+  - 5/5 bài kiểm tra toàn vẹn PASS, xác nhận chống rò rỉ dữ liệu hoàn toàn.
+- **Mã nguồn Bước 5** (`src/xai_football/modeling/`, `src/xai_football/training/`, `scripts/06_train.py`, `scripts/06_train_baselines.py`, `scripts/07_evaluate.py`):
+  - Backbones GNN: GCN, MPNN, GATv2, GraphSAGE cùng chung GlobalReadout và BinaryClassifierHead.
+  - Baselines phi đồ thị (Tầng 3a): Logistic Regression, Random Forest, ANN trên đặc trưng passing path.
+  - Loss functions: Weighted BCE with Logits và Binary Focal Loss xử lý mất cân bằng lớp.
+  - GNNTrainer: mini-batch training, AdamW, ReduceLROnPlateau, early stopping theo AUC-PR, lưu trọng số vào `models/`.
+- **Kiểm thử**: 52 unit test trong `tests/data/`, `tests/graphs/`, `tests/modeling/`, tất cả đạt.
 
 **Kết quả trên 380 trận**: 45.365 possession sạch, 261.205 đường chuyền thành
 công, 45.047 đồ thị (13,66% nhãn dương với `target = shot`), đồ thị trung vị
@@ -174,8 +183,8 @@ công, 45.047 đồ thị (13,66% nhãn dương với `target = shot`), đồ th
 | Quality Sanity Checks | **Đã hoàn thành** | 16/16 PASS, schema chuẩn `check`, `value`, `status`, `note` |
 | Graph Construction | **Đã hoàn thành** | Bước 3: 45.047 đồ thị PyG, 8 node feature, 12 edge feature, 7/8 check PASS + 1 WARNING |
 | Decision 0001 (gán nhãn) | *Áp dụng tạm thời* | Possession-level, `target = shot` — chờ giảng viên chốt |
-| Split Train/Val/Test | *Chưa triển khai* | Bước 4 (bước tiếp theo, chia theo trận 70/15/15) |
-| GNN Modeling | *Chưa triển khai* | Bước 5 |
+| Split Train/Val/Test | **Đã hoàn thành** | Bước 4: chia theo trận 70/15/15 (266/57/57 trận), 5/5 check PASS |
+| GNN Modeling & Training | **Đã hoàn thành** | Bước 5: GCN, MPNN, GATv2, GraphSAGE + Baselines phi đồ thị (LR, RF, ANN) |
 | XAI & Hybrid Centrality | *Chưa triển khai* | Bước 7-10 |
 
 ---
