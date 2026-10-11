@@ -61,7 +61,13 @@ pitch:
 #
 # Sẽ được chốt SAU KHI chạy thống kê trên đủ 380 trận.
 # ------------------------------------------------------------
+#
+# TẠM THỜI (04/10/2026): điền Phương án A + shot để dựng được đồ thị Bước 3.
+# Căn cứ: báo cáo 12/09 mục 1.1 đã xác nhận với GV bài toán là phân loại ở
+# mức đồ thị (possession). Target shot/goal CHỜ GV XÁC NHẬN — chưa huấn luyện
+# mô hình trước khi Decision 0001 được chốt chính thức.
+# ------------------------------------------------------------
 labeling:
-  mode: null                 # TODO: "possession_level" | "pass_level"
-  target: null               # TODO: "shot" | "goal"
-  shot_window_seconds: null  # TODO: chỉ dùng nếu mode = "pass_level"
+  mode: "possession_level"   # TẠM THỜI — "possession_level" | "pass_level"
+  target: "shot"             # TẠM THỜI — "shot" | "goal"
+  shot_window_seconds: null  # chỉ dùng nếu mode = "pass_level"

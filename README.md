@@ -139,20 +139,30 @@ pip install -e .
 
 ---
 
-## Trạng thái hiện tại (Branch: `feature-data`)
+## Trạng thái hiện tại (Branch: `an---nn`)
 
-Giai đoạn **Data Pipeline (Bước 1-2 & Validation)** đã hoàn thành và được kiểm chứng trên toàn bộ 380 trận:
+**Bước 1-3 (Data Pipeline, Validation và Graph Construction)** đã hoàn thành và
+được kiểm chứng trên toàn bộ 380 trận (cập nhật 04/10/2026):
 
 - **Dataset chính thức**: Premier League 2015/2016 (`competition_id: 2`, `season_id: 27`, 380 trận đấu) từ StatsBomb Open Data (xem [Decision 0004](docs/decisions/0004-main-dataset-premier-league-2015-16.md)).
-- **Mã nguồn đã hoàn thành**:
+- **Mã nguồn Bước 1-2** (`src/xai_football/data/`, `scripts/00-03`):
   - `00_audit_data.py`: Kiểm tra kho dữ liệu thô và tạo `dataset_inventory.csv`.
   - `canonicalize.py`: Lớp trung gian phẳng hóa event thô StatsBomb, lưu `events.parquet`.
-  - `possession.py`: Trích xuất chuỗi possession với identity theo `player_id` và ngữ nghĩa sút/bàn thắng rõ ràng.
-  - `clean.py`: Loại bỏ possession quá ngắn, hiệp phụ, thiếu tọa độ và chuẩn hóa hướng tấn công.
-  - `validation.py`: Kiểm tra chất lượng dữ liệu với các mức `PASS`, `WARNING`, `FAIL`.
-  - `03_preprocess.py`: Pipeline tiền xử lý hoàn chỉnh, gán nhãn so sánh và tổng hợp thống kê.
-  - `02_descriptive_stats.py`: Thống kê mô tả từ interim parquet dataset.
-  - Unit test suite đầy đủ trong `tests/data/test_data_pipeline.py`.
+  - `possession.py`: Trích xuất chuỗi possession với identity theo `player_id`; chỉ giữ sự kiện của đội kiểm soát bóng; lưu `first_shot_index` để cắt ở Bước 3.
+  - `clean.py`: Loại bỏ possession quá ngắn, hiệp phụ, thiếu tọa độ; chẩn đoán hướng tấn công; thống kê play pattern.
+  - `labeling.py`: Cài đặt cả hai phương án gán nhãn (possession-level / pass-level) để so sánh tỉ lệ lớp dương.
+  - `validation.py`: 16 phép kiểm tra chất lượng dữ liệu với các mức `PASS`, `WARNING`, `FAIL`.
+  - `03_preprocess.py`: Pipeline tiền xử lý hoàn chỉnh, xuất 7 bảng vào `results/tables/official/`.
+- **Mã nguồn Bước 3** (`src/xai_football/graphs/`, `scripts/04_build_graphs.py`):
+  - `features.py`: 8 đặc trưng đỉnh (vai trò GK/DF/MF/FW, tọa độ trung bình, số chuyền đi/nhận) và 12 đặc trưng cạnh (tọa độ, độ dài, góc sin/cos, độ cao, thứ tự và thời điểm).
+  - `build.py`: Chuyển một possession thành `torch_geometric.data.Data` có hướng, mỗi đường chuyền một cạnh, cắt tại cú sút đầu tiên.
+  - `dataset.py`: Dựng toàn bộ tập đồ thị, lưu `graphs.pt`, `graph_index.parquet`, `feature_names.json` vào `data/processed/official/`.
+  - `04_build_graphs.py`: Script chạy Bước 3 kèm 8 phép kiểm tra toàn vẹn đồ thị, xuất `graph_build_report.csv` và `graph_checks.csv`.
+- **Kiểm thử**: 38 unit test trong `tests/data/` và `tests/graphs/`, tất cả đạt.
+
+**Kết quả trên 380 trận**: 45.365 possession sạch, 261.205 đường chuyền thành
+công, 45.047 đồ thị (13,66% nhãn dương với `target = shot`), đồ thị trung vị
+4 đỉnh / 4 cạnh.
 
 ### Tiến độ theo từng phần
 
@@ -160,10 +170,11 @@ Giai đoạn **Data Pipeline (Bước 1-2 & Validation)** đã hoàn thành và 
 |---|---|---|
 | Audit & Collection | **Đã hoàn thành** | Audit 380/380 trận Premier League 2015/16 |
 | Canonicalization | **Đã hoàn thành** | Persist `events.parquet` theo `run_name` |
-| Possession & Clean | **Đã hoàn thành** | Persist `possessions.parquet` & `possession_events.parquet` |
-| Quality Sanity Checks | **Đã hoàn thành** | Schema chuẩn `check`, `value`, `status`, `note` |
-| Graph Construction | *Chưa triển khai* | Bước 3 (Giai đoạn tiếp theo) |
-| Split Train/Val/Test | *Chưa triển khai* | Bước 4 (Chủ động phân chia ở Giai đoạn Modeling) |
+| Possession & Clean | **Đã hoàn thành** | Persist `possessions.parquet` & `possession_events.parquet`; lọc sự kiện đội đối phương |
+| Quality Sanity Checks | **Đã hoàn thành** | 16/16 PASS, schema chuẩn `check`, `value`, `status`, `note` |
+| Graph Construction | **Đã hoàn thành** | Bước 3: 45.047 đồ thị PyG, 8 node feature, 12 edge feature, 7/8 check PASS + 1 WARNING |
+| Decision 0001 (gán nhãn) | *Áp dụng tạm thời* | Possession-level, `target = shot` — chờ giảng viên chốt |
+| Split Train/Val/Test | *Chưa triển khai* | Bước 4 (bước tiếp theo, chia theo trận 70/15/15) |
 | GNN Modeling | *Chưa triển khai* | Bước 5 |
 | XAI & Hybrid Centrality | *Chưa triển khai* | Bước 7-10 |
 

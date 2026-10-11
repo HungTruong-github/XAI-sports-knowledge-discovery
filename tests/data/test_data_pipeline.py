@@ -7,7 +7,7 @@ import copy
 import pytest
 
 from xai_football.data.canonicalize import canonicalize_events
-from xai_football.data.clean import clean_possessions
+from xai_football.data.clean import clean_possessions, play_pattern_distribution
 from xai_football.data.labeling import label_passes
 from xai_football.data.possession import PassEvent, Possession, ShotInfo, extract_possessions
 from xai_football.data.validation import (
@@ -16,6 +16,7 @@ from xai_football.data.validation import (
     check_match_count,
     check_missing_coordinate_rate,
     check_missing_recipient_rate,
+    check_no_opponent_passes,
     check_possession_team_consistency,
     has_critical_failure,
     run_all_checks,
@@ -465,3 +466,181 @@ def test_possession_team_consistency_mixed():
     res = check_possession_team_consistency(df)
     assert res.status == "WARNING"
     assert res.value == 1
+
+
+MIN_2_PASSES = {"preprocessing": {"min_passes_per_possession": 2}}
+
+
+def _event(
+    event_id,
+    index,
+    event_type,
+    team_id,
+    player_id,
+    recipient_id=None,
+    possession=1,
+    possession_team_id=1,
+    second=0,
+    outcome=None,
+):
+    """Raw StatsBomb event tối giản cho test lọc theo đội."""
+    team_names = {1: "Arsenal", 2: "Chelsea"}
+    event = {
+        "id": event_id,
+        "index": index,
+        "period": 1,
+        "minute": 0,
+        "second": second,
+        "type": {"name": event_type},
+        "possession": possession,
+        "possession_team": {"id": possession_team_id, "name": team_names[possession_team_id]},
+        "play_pattern": {"name": "Regular Play"},
+        "team": {"id": team_id, "name": team_names[team_id]},
+        "player": {"id": player_id, "name": f"P{player_id}"},
+        "location": [50.0, 40.0],
+    }
+    if event_type == "Pass":
+        event["pass"] = {
+            "recipient": {"id": recipient_id, "name": f"P{recipient_id}"},
+            "end_location": [60.0, 40.0],
+            "outcome": outcome,
+        }
+    elif event_type == "Shot":
+        event["shot"] = {"outcome": {"name": "Saved"}, "statsbomb_xg": 0.1}
+    return event
+
+
+def test_opponent_pass_excluded_from_possession():
+    """W. Đường chuyền thành công của đối phương cùng mã possession bị loại và được đếm."""
+    events = [
+        _event("a1", 1, "Pass", team_id=1, player_id=10, recipient_id=11),
+        # Chelsea cướp bóng, chuyền 1 quả — vẫn mang mã possession của Arsenal
+        _event("c1", 2, "Pass", team_id=2, player_id=20, recipient_id=21),
+        _event("a2", 3, "Pass", team_id=1, player_id=11, recipient_id=12),
+    ]
+    p = extract_possessions(events, match_id=1)[0]
+
+    assert [x.event_id for x in p.passes] == ["a1", "a2"]
+    assert all(x.team_id == p.team_id == 1 for x in p.passes)
+    assert p.n_opponent_passes_excluded == 1
+    assert 20 not in p.players and 21 not in p.players
+
+
+def test_opponent_incomplete_pass_not_counted_as_excluded():
+    """X. Đường chuyền hỏng của đối phương bị loại vì hỏng, không tính là 'opponent excluded'."""
+    events = [
+        _event("a1", 1, "Pass", team_id=1, player_id=10, recipient_id=11),
+        _event("c1", 2, "Pass", team_id=2, player_id=20, recipient_id=21,
+               outcome={"name": "Incomplete"}),
+    ]
+    p = extract_possessions(events, match_id=1)[0]
+    assert p.n_passes == 1
+    assert p.n_opponent_passes_excluded == 0
+
+
+def test_opponent_shot_excluded_by_team_id():
+    """Y. Cú sút so khớp theo team id: sút của đối phương không làm has_shot = True."""
+    events = [
+        _event("a1", 1, "Pass", team_id=1, player_id=10, recipient_id=11),
+        _event("c_shot", 2, "Shot", team_id=2, player_id=20),
+    ]
+    p = extract_possessions(events, match_id=1)[0]
+    assert p.has_shot is False
+    assert p.n_opponent_shots_excluded == 1
+
+    events_own = [
+        _event("a1", 1, "Pass", team_id=1, player_id=10, recipient_id=11),
+        _event("a_shot", 2, "Shot", team_id=1, player_id=11),
+    ]
+    p_own = extract_possessions(events_own, match_id=1)[0]
+    assert p_own.has_shot is True
+    assert p_own.n_opponent_shots_excluded == 0
+
+
+def test_opponent_pass_cannot_rescue_possession_from_min_passes():
+    """Z. Pha chỉ có 1 đường chuyền thật không qua được bộ lọc nhờ đường chuyền đối phương."""
+    events = [
+        _event("a1", 1, "Pass", team_id=1, player_id=10, recipient_id=11),
+        _event("c1", 2, "Pass", team_id=2, player_id=20, recipient_id=21),
+    ]
+    possessions = extract_possessions(events, match_id=1)
+    cleaned, report = clean_possessions(possessions, MIN_2_PASSES)
+    assert cleaned == []
+    assert report.dropped_too_short == 1
+
+
+def test_check_no_opponent_passes():
+    """AA. Check FAIL khi có dù chỉ một đường chuyền lệch đội."""
+    ok = check_no_opponent_passes([1, 1, 2], [1, 1, 2])
+    assert ok.status == "PASS"
+    assert ok.value == 0
+
+    bad = check_no_opponent_passes([1, 2, 1], [1, 1, 1])
+    assert bad.status == "FAIL"
+    assert bad.value == 1
+    assert has_critical_failure(run_all_checks([bad]))
+
+
+def test_cleaning_report_counts_dropped_shot_possessions():
+    """AB. Possession có sút nhưng chỉ 1 đường chuyền -> đếm vào shot_dropped_too_short."""
+    events = [
+        # Possession 1: 1 pass + sút -> bị loại vì quá ngắn
+        _event("a1", 1, "Pass", team_id=1, player_id=10, recipient_id=11, possession=1),
+        _event("a_shot", 2, "Shot", team_id=1, player_id=11, possession=1),
+        # Possession 2: 2 pass + sút -> giữ lại
+        _event("a2", 3, "Pass", team_id=1, player_id=10, recipient_id=11, possession=2),
+        _event("a3", 4, "Pass", team_id=1, player_id=11, recipient_id=12, possession=2),
+        _event("a_shot2", 5, "Shot", team_id=1, player_id=12, possession=2),
+        # Possession 3: 1 pass, không sút -> bị loại, không tính vào shot_*
+        _event("a4", 6, "Pass", team_id=1, player_id=10, recipient_id=11, possession=3),
+    ]
+    possessions = extract_possessions(events, match_id=1)
+    cleaned, report = clean_possessions(possessions, MIN_2_PASSES)
+
+    assert [p.possession_id for p in cleaned] == [2]
+    assert report.dropped_too_short == 2
+    assert report.shot_input == 2
+    assert report.shot_dropped_too_short == 1
+    assert report.shot_output == 1
+
+    row = report.as_row()
+    assert row["shot_possessions_output"] == 1
+    assert row["shot_retention_rate"] == 0.5
+
+    merged = report.merge(report)
+    assert merged.shot_input == 4
+    assert merged.shot_dropped_too_short == 2
+
+
+def test_play_pattern_distribution_raw_vs_clean():
+    """AC. Bảng play pattern có đủ cột, tổng count_clean = số possession sạch, shot rate đúng."""
+
+    def _poss(pid, pattern, has_shot):
+        shots = [ShotInfo(f"s{pid}", 0, 1, "Saved", 0.1)] if has_shot else []
+        return Possession(1, 2, 27, pid, 1, "Arsenal", pattern, 1, shots=shots)
+
+    raw = [
+        _poss(1, "Regular Play", True),
+        _poss(2, "Regular Play", False),
+        _poss(3, "From Corner", True),
+        _poss(4, None, False),
+    ]
+    clean = [raw[0], raw[1], raw[2]]
+    rows = play_pattern_distribution(raw, clean)
+    by_pattern = {r["play_pattern"]: r for r in rows}
+
+    expected_cols = {
+        "play_pattern", "count_raw", "pct_raw", "count_clean",
+        "pct_clean", "shot_count_clean", "shot_rate_clean",
+    }
+    assert all(set(r) == expected_cols for r in rows)
+    assert sum(r["count_raw"] for r in rows) == len(raw)
+    assert sum(r["count_clean"] for r in rows) == len(clean)
+
+    assert by_pattern["Regular Play"]["count_clean"] == 2
+    assert by_pattern["Regular Play"]["shot_rate_clean"] == 50.0
+    assert by_pattern["From Corner"]["shot_rate_clean"] == 100.0
+    # Possession thiếu play_pattern -> "Unknown", bị loại hết khi làm sạch
+    assert by_pattern["Unknown"]["count_raw"] == 1
+    assert by_pattern["Unknown"]["count_clean"] == 0
+    assert by_pattern["Unknown"]["shot_rate_clean"] == 0.0

@@ -70,6 +70,9 @@ class PassEvent:
     height: str | None
     pass_type: str | None
     outcome: str | None
+    # Đội thực hiện đường chuyền (event["team"]["id"]) — dùng để kiểm chứng
+    # mọi cạnh trong possession đều thuộc đội đang kiểm soát bóng.
+    team_id: int | None = None
 
     @property
     def is_complete(self) -> bool:
@@ -100,6 +103,9 @@ class ShotInfo:
     second: int
     outcome: str | None
     xg: float | None
+    # Thứ tự sự kiện trong trận (event["index"]) — độ phân giải giây không đủ
+    # để xác định đường chuyền nào xảy ra trước cú sút (Bước 3: cắt tại cú sút).
+    index: int | None = None
 
     @property
     def time_seconds(self) -> float:
@@ -122,6 +128,10 @@ class Possession:
       has_goal: possession CÓ CHỨA ít nhất một bàn thắng (của đội kiểm soát bóng)
       ends_with_shot: backward compatibility — cùng ngữ nghĩa với has_shot
       ends_with_goal: backward compatibility — cùng ngữ nghĩa với has_goal
+
+    `passes` và `shots` CHỈ chứa sự kiện của đội kiểm soát bóng. Sự kiện của
+    đối phương mang cùng mã possession bị loại và được đếm vào
+    `n_opponent_passes_excluded` / `n_opponent_shots_excluded`.
     """
 
     match_id: int
@@ -134,6 +144,8 @@ class Possession:
     period: int
     passes: list[PassEvent] = field(default_factory=list)
     shots: list[ShotInfo] = field(default_factory=list)
+    n_opponent_passes_excluded: int = 0
+    n_opponent_shots_excluded: int = 0
 
     @property
     def has_shot(self) -> bool:
@@ -167,6 +179,12 @@ class Possession:
         if not self.shots:
             return None
         return self.shots[0].time_seconds
+
+    @property
+    def first_shot_index(self) -> int | None:
+        """event index của cú sút đầu tiên — mốc cắt possession ở Bước 3."""
+        indices = [s.index for s in self.shots if s.index is not None]
+        return min(indices) if indices else None
 
     @property
     def shot_times(self) -> list[float]:
@@ -239,6 +257,7 @@ def parse_pass(event: dict[str, Any]) -> PassEvent:
         height=_name(_nested(event, "pass", "height")),
         pass_type=_name(_nested(event, "pass", "type")),
         outcome=_name(_nested(event, "pass", "outcome")),
+        team_id=_id(event.get("team")),
     )
 
 
@@ -249,6 +268,7 @@ def _parse_shot(event: dict[str, Any]) -> ShotInfo:
         second=int(event.get("second") or 0),
         outcome=_name(_nested(event, "shot", "outcome")),
         xg=_nested(event, "shot", "statsbomb_xg"),
+        index=int(event.get("index") or 0),
     )
 
 
@@ -262,6 +282,13 @@ def extract_possessions(
 
     Chỉ giữ đường chuyền **thành công** trong chuỗi (mục 2.1), nhưng vẫn đọc
     toàn bộ sự kiện của possession để xác định pha đó có chứa cú sút hay không.
+
+    Trường `possession` của StatsBomb gắn cho sự kiện của CẢ HAI đội (ví dụ
+    pha Recovery/Interception ngắn của đối phương vẫn mang mã possession cũ).
+    Vì vậy đường chuyền và cú sút đều được lọc theo `team.id` ==
+    `possession_team.id`. Không lọc thì đồ thị của đội A sẽ có đỉnh là cầu
+    thủ đội B, và cạnh nằm sai hướng sân (StatsBomb ghi tọa độ theo hướng
+    tấn công của đội thực hiện sự kiện).
     """
     events = sorted(events, key=lambda e: int(e.get("index") or 0))
     buckets: dict[int, list[dict[str, Any]]] = {}
@@ -287,17 +314,25 @@ def extract_possessions(
 
         for event in group:
             event_type = _name(event.get("type"))
+            if event_type not in ("Pass", "Shot"):
+                continue
+
+            # Chỉ tính sự kiện của chính đội đang kiểm soát bóng — so theo id,
+            # không so theo tên (kiểm tra 4.2).
+            is_own_team = _id(event.get("team")) == possession.team_id
 
             if event_type == "Pass":
                 pass_event = parse_pass(event)
-                if pass_event.is_complete:
-                    possession.passes.append(pass_event)
+                if not pass_event.is_complete:
+                    continue
+                if not is_own_team:
+                    possession.n_opponent_passes_excluded += 1
+                    continue
+                possession.passes.append(pass_event)
 
-            elif event_type == "Shot":
-                # Chỉ tính cú sút của chính đội đang kiểm soát bóng —
-                # tránh đếm nhầm cú sút của đội đối phương (kiểm tra 4.2).
-                shot_team = _name(event.get("team"))
-                if shot_team != possession.team_name:
+            else:  # Shot
+                if not is_own_team:
+                    possession.n_opponent_shots_excluded += 1
                     continue
                 possession.shots.append(_parse_shot(event))
 
