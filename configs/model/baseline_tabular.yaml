@@ -7,14 +7,15 @@ type: "tabular"
 
 features:                  # đặc trưng thống kê trích từ passing path
   - "n_passes"
+  - "n_players_involved"
   - "sequence_length"
   - "mean_pass_distance"
   - "mean_pass_angle"
   - "duration"
-  - "n_players_involved"
+  - "start_x"
+  - "start_y"
   - "final_x"
   - "final_y"
-  # TODO: bổ sung sau khi chốt quy tắc gán nhãn (Bước 2.3)
 
 models:
   logistic_regression:
@@ -26,5 +27,7 @@ models:
     random_state: 42
   ann:
     hidden_layers: [64, 32]
-    dropout: 0.3
+    # Lưu ý: sklearn.neural_network.MLPClassifier không hỗ trợ dropout.
+    # Regularization được kiểm soát bằng L2 penalty (alpha).
+    alpha: 0.0001
     epochs: 200

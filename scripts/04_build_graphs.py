@@ -114,7 +114,11 @@ def graph_integrity_checks(
             "normalized_features_in_[0,1]",
             out_of_range,
             "PASS" if out_of_range == 0 else "WARNING",
-            note=f"{out_of_range} đồ thị có tọa độ/độ dài ngoài [0, 1]" if out_of_range else "",
+            note=(
+                f"{out_of_range} đồ thị có tọa độ ngoài [0, 1] (hợp lệ: quả phạt góc thực tế start_x=120.9 -> 1.0075)"
+                if out_of_range
+                else ""
+            ),
         )
     )
 

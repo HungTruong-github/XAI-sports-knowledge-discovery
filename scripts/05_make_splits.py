@@ -27,6 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import pandas as pd  # noqa: E402
 
 from xai_football.data.splits import (  # noqa: E402
+    compute_graph_split_summary,
     compute_match_stats,
     make_stratified_match_split,
     save_match_splits,
@@ -36,7 +37,11 @@ from xai_football.data.splits import (  # noqa: E402
 from xai_football.data.validation import has_critical_failure, run_all_checks  # noqa: E402
 from xai_football.utils.io import load_yaml  # noqa: E402
 from xai_football.utils.logging import get_logger  # noqa: E402
-from xai_football.utils.paths import get_interim_dir, get_tables_dir  # noqa: E402
+from xai_football.utils.paths import (  # noqa: E402
+    get_interim_dir,
+    get_processed_dir,
+    get_tables_dir,
+)
 
 logger = get_logger("make_splits")
 
@@ -108,8 +113,23 @@ def main() -> int:
     summary_df.to_csv(tables_dir / "split_summary.csv", index=False, encoding="utf-8-sig")
     checks_df.to_csv(tables_dir / "split_checks.csv", index=False, encoding="utf-8-sig")
 
-    print("\n=== SPLIT SUMMARY ===")
+    print("\n=== SPLIT SUMMARY (POSSESSION-LEVEL) ===")
     print(summary_df.to_string(index=False))
+
+    # 6. Nếu đã có graph_index.parquet, tính và lưu graph-level split summary
+    processed_dir = get_processed_dir(data_cfg)
+    graph_index_path = processed_dir / "graph_index.parquet"
+    if graph_index_path.exists():
+        graph_index_df = pd.read_parquet(graph_index_path)
+        graph_summary_df = compute_graph_split_summary(splits, graph_index_df, possessions_df)
+        graph_summary_df.to_csv(
+            tables_dir / "graph_split_summary.csv", index=False, encoding="utf-8-sig"
+        )
+        graph_summary_df.to_csv(
+            out_split_dir / "graph_split_summary.csv", index=False, encoding="utf-8-sig"
+        )
+        print("\n=== GRAPH-LEVEL SPLIT SUMMARY (POST-GRAPH CONSTRUCTION) ===")
+        print(graph_summary_df.to_string(index=False))
 
     print("\n=== KIỂM TRA TOÀN VẸN PHÂN CHIA (CHỐNG RÒ RỈ) ===")
     print(checks_df.to_string(index=False))

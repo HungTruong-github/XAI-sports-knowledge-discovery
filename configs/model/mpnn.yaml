@@ -1,4 +1,5 @@
 # Backbone ĐỀ XUẤT - Tầng 2
+# Input: Node features (x) + Edge index + Edge attributes (tọa độ, khoảng cách, góc, loại chuyền, thời gian).
 name: "mpnn"
 type: "gnn"
 num_layers: 3

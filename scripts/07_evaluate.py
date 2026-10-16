@@ -55,22 +55,50 @@ def main() -> int:
     ]
 
     for display_name, m_key, tier in gnn_models:
-        metrics_file = Path("experiments") / run_name / m_key / "test_metrics.csv"
-        if metrics_file.exists():
-            df = pd.read_csv(metrics_file)
-            m_dict = df.iloc[0].to_dict()
+        model_dir = Path("experiments") / run_name / m_key
+        all_seeds_file = model_dir / "test_metrics_all_seeds.csv"
+        single_metrics_file = model_dir / "test_metrics.csv"
+
+        df_metrics = None
+        n_runs = 1
+
+        if all_seeds_file.exists():
+            df_all = pd.read_csv(all_seeds_file)
+            if not df_all.empty:
+                df_metrics = df_all
+                n_runs = len(df_all)
+        elif single_metrics_file.exists():
+            df_s = pd.read_csv(single_metrics_file)
+            if not df_s.empty:
+                df_metrics = df_s
+                n_runs = 1
+        else:
+            # Tìm trong các thư mục con theo seed
+            seed_files = list(model_dir.glob("*/test_metrics.csv"))
+            if seed_files:
+                dfs = [pd.read_csv(sf) for sf in seed_files if sf.is_file()]
+                if dfs:
+                    df_metrics = pd.concat(dfs, ignore_index=True)
+                    n_runs = len(df_metrics)
+
+        if df_metrics is not None and not df_metrics.empty:
+            # Lấy giá trị trung bình nếu có nhiều run, hoặc giá trị đơn nếu 1 run
+            mean_series = df_metrics.select_dtypes(include=["number"]).mean()
             row = {
                 "model": display_name,
                 "tier": tier,
                 "type": "Graph",
-                "accuracy": m_dict.get("accuracy"),
-                "precision": m_dict.get("precision"),
-                "recall": m_dict.get("recall"),
-                "f1": m_dict.get("f1"),
-                "auc_roc": m_dict.get("auc_roc"),
-                "auc_pr": m_dict.get("auc_pr"),
-                "brier_score": m_dict.get("brier_score"),
-                "loss": m_dict.get("loss"),
+                "n_runs": n_runs,
+                "accuracy": round(float(mean_series.get("accuracy", 0.0)), 4),
+                "precision": round(float(mean_series.get("precision", 0.0)), 4),
+                "recall": round(float(mean_series.get("recall", 0.0)), 4),
+                "f1": round(float(mean_series.get("f1", 0.0)), 4),
+                "auc_roc": round(float(mean_series.get("auc_roc", 0.0)), 4),
+                "auc_pr": round(float(mean_series.get("auc_pr", 0.0)), 4),
+                "brier_score": round(float(mean_series.get("brier_score", 0.0)), 4),
+                "loss": (
+                    round(float(mean_series.get("loss", 0.0)), 4) if "loss" in mean_series else None
+                ),
             }
             rows.append(row)
 
@@ -89,13 +117,14 @@ def main() -> int:
                 "model": display_name,
                 "tier": "Tier 3(a) — Non-graph Baseline",
                 "type": "Tabular",
-                "accuracy": b_row.get("accuracy"),
-                "precision": b_row.get("precision"),
-                "recall": b_row.get("recall"),
-                "f1": b_row.get("f1"),
-                "auc_roc": b_row.get("auc_roc"),
-                "auc_pr": b_row.get("auc_pr"),
-                "brier_score": b_row.get("brier_score"),
+                "n_runs": int(b_row.get("n_runs", 1)),
+                "accuracy": round(float(b_row.get("accuracy", 0.0)), 4),
+                "precision": round(float(b_row.get("precision", 0.0)), 4),
+                "recall": round(float(b_row.get("recall", 0.0)), 4),
+                "f1": round(float(b_row.get("f1", 0.0)), 4),
+                "auc_roc": round(float(b_row.get("auc_roc", 0.0)), 4),
+                "auc_pr": round(float(b_row.get("auc_pr", 0.0)), 4),
+                "brier_score": round(float(b_row.get("brier_score", 0.0)), 4),
                 "loss": None,
             }
             rows.append(row)

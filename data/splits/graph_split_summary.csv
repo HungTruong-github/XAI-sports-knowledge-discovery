@@ -1,0 +1,4 @@
+﻿split,n_matches,pct_matches,n_graphs,pct_graphs,n_positive,n_negative,positive_rate,n_dropped_graphs,match_overlap
+train,266,70.0,31644,70.25,4328,27316,0.1368,220,NONE
+val,57,15.0,6757,15.0,907,5850,0.1342,54,NONE
+test,57,15.0,6646,14.75,918,5728,0.1381,44,NONE

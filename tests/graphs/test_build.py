@@ -258,3 +258,45 @@ def test_load_player_roles_uses_most_frequent_position(tmp_path):
     assert roles[(1, 10)] == "DF"  # 2 lần Center Back > 1 lần Striker
     assert roles[(1, 11)] == "GK"
     assert roles[(2, 10)] == "FW"  # theo từng trận
+
+
+def test_load_player_starting_roles_temporal_safety(tmp_path):
+    """Kiểm tra load_player_starting_roles lấy đúng vị trí đầu tiên theo event_index,
+    không bị ảnh hưởng bởi vị trí xuất hiện nhiều hơn ở giai đoạn sau của trận đấu.
+    """
+    from xai_football.graphs.dataset import load_player_starting_roles
+
+    ev = pd.DataFrame(
+        {
+            "match_id": [1, 1, 1],
+            "player_id": [10, 10, 10],
+            "event_index": [5, 40, 50],
+            "position_name": ["Right Back", "Center Forward", "Center Forward"],
+        }
+    )
+    path = tmp_path / "events_temporal.parquet"
+    ev.to_parquet(path, index=False)
+
+    dominant_roles = load_player_roles(path)
+    starting_roles = load_player_starting_roles(path)
+
+    # Dominant role (hồi cứu): FW xuất hiện 2 lần > DF 1 lần
+    assert dominant_roles[(1, 10)] == "FW"
+    # Starting role (an toàn thời gian): lấy tại event_index=5 -> DF
+    assert starting_roles[(1, 10)] == "DF"
+
+
+def test_corner_kick_coordinate_boundary():
+    """Trong StatsBomb, quả phạt góc có thể có start_x > 120 (ví dụ 120.9) do góc sân.
+
+    Khi chuẩn hóa chia cho 120, giá trị này = 1.0075 > 1.0.
+    Đây là hiện tượng hợp lệ theo miền bóng đá thực tế, không phải lỗi tính toán.
+    """
+    passes = [
+        _pass("ck1", 1, 10, 11, 120.9, 2.8, 110.0, 38.0),
+        _pass("ck2", 2, 11, 12, 110.0, 38.0, 105.0, 40.0),
+    ]
+    edge_rows = compute_edge_features(passes, GRAPH_CFG["edges"]["features"])
+    ck1 = dict(zip(EDGE_NAMES, edge_rows[0], strict=True))
+    assert ck1["start_x"] == pytest.approx(120.9 / 120.0)
+    assert ck1["start_x"] > 1.0
