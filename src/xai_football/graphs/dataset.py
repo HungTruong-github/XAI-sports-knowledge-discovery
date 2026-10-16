@@ -81,9 +81,7 @@ def load_player_roles(events_parquet: Path) -> dict[tuple[int, int], str | None]
     """
     ev = pd.read_parquet(events_parquet, columns=["match_id", "player_id", "position_name"])
     ev = ev.dropna(subset=["player_id", "position_name"])
-    counts = (
-        ev.groupby(["match_id", "player_id", "position_name"]).size().reset_index(name="n")
-    )
+    counts = ev.groupby(["match_id", "player_id", "position_name"]).size().reset_index(name="n")
     counts = counts.sort_values(
         ["match_id", "player_id", "n", "position_name"], ascending=[True, True, False, True]
     )

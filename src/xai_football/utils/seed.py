@@ -38,3 +38,7 @@ def set_seed(seed: int = 42, deterministic: bool = True) -> int:
         pass
 
     return seed
+
+
+# Alias tương thích
+seed_everything = set_seed

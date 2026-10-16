@@ -16,8 +16,8 @@ import math
 from collections.abc import Sequence
 from typing import Any
 
-# Gom 25 vị trí StatsBomb (position.id 1-25, đúng tên trong dữ liệu) về 4 vai trò. Tiền vệ cánh (Right/Left Wing) xếp
-# vào FW vì hoạt động chủ yếu ở 1/3 sân tấn công.
+# Gom 25 vị trí StatsBomb (position.id 1-25) về 4 vai trò. Tiền vệ cánh (Right/Left Wing)
+# xếp vào FW vì hoạt động chủ yếu ở 1/3 sân tấn công.
 ROLES = ("GK", "DF", "MF", "FW")
 POSITION_TO_ROLE: dict[str, str] = {
     "Goalkeeper": "GK",
