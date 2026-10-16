@@ -1,0 +1,9 @@
+﻿mode,target,shot_window_seconds,n_units,n_positive,positive_rate,positive_rate_pct
+possession_level,shot,,612,99,0.1618,16.18
+possession_level,goal,,612,8,0.0131,1.31
+pass_level,shot,5.0,3737,124,0.0332,3.32
+pass_level,shot,10.0,3737,239,0.064,6.4
+pass_level,shot,15.0,3737,339,0.0907,9.07
+pass_level,goal,5.0,3737,11,0.0029,0.29
+pass_level,goal,10.0,3737,19,0.0051,0.51
+pass_level,goal,15.0,3737,26,0.007,0.7

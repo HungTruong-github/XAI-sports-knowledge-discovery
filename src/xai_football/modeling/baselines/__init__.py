@@ -1,11 +1,20 @@
 """Baseline phi đồ thị — Tầng 3(a) trong chiến lược đối sánh.
 
-Mục đích: kiểm chứng giá trị gia tăng THỰC SỰ của biểu diễn đồ thị,
-tránh việc kết quả tốt chỉ do đặc trưng dữ liệu chứ không do cấu trúc đồ thị.
-
-Module dự kiến:
-    path_features.py  Trích đặc trưng thống kê từ passing path (số lần chuyền,
-                      độ dài chuỗi, góc/khoảng cách trung bình...)
+Module:
+    path_features.py  Trích đặc trưng thống kê từ passing path
     tabular.py        Logistic Regression, Random Forest, ANN
-                      (tiền lệ: "Passing path predicts shooting outcome in football")
 """
+
+from __future__ import annotations
+
+from xai_football.modeling.baselines.path_features import (
+    extract_path_features_from_graph,
+    graphs_to_tabular_dataset,
+)
+from xai_football.modeling.baselines.tabular import train_and_eval_tabular_baselines
+
+__all__ = [
+    "extract_path_features_from_graph",
+    "graphs_to_tabular_dataset",
+    "train_and_eval_tabular_baselines",
+]

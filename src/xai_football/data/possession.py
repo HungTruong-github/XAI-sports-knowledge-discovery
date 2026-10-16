@@ -6,12 +6,18 @@ Dùng trường `possession` có sẵn trong StatsBomb event data để nhóm c�
 kiện thuộc cùng một pha kiểm soát bóng của một đội. Đây là lý do chính khiến
 nhóm chọn StatsBomb: các nguồn khác (ví dụ Wyscout) không có trường này và
 phải tự tái tạo qua SPADL — rủi ro D4.
+
+Quy ước identity:
+  - player_id = identity chính (dùng nhận dạng node, aggregate, join metadata)
+  - player_name = metadata / display
+  - KHÔNG BAO GIỜ dùng player_id làm numerical model feature
 """
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Any, Iterable
+from typing import Any
 
 from ..utils.io import load_json
 from ..utils.paths import match_json_path
@@ -22,6 +28,16 @@ def _name(value: Any) -> str | None:
     if isinstance(value, dict):
         return value.get("name")
     return value
+
+
+def _id(value: Any) -> int | None:
+    """Lấy id từ trường StatsBomb có thể là dict {'id','name'} hoặc int."""
+    if isinstance(value, dict):
+        v = value.get("id")
+        return int(v) if v is not None else None
+    if isinstance(value, (int, float)):
+        return int(value)
+    return None
 
 
 def _nested(event: dict[str, Any], group: str, key: str) -> Any:
@@ -40,8 +56,11 @@ class PassEvent:
     minute: int
     second: int
     timestamp: str | None
-    passer: str | None
-    recipient: str | None
+    # Identity: player_id là chính, player_name là metadata
+    passer_id: int | None
+    passer_name: str | None
+    recipient_id: int | None
+    recipient_name: str | None
     start_x: float | None
     start_y: float | None
     end_x: float | None
@@ -51,46 +70,154 @@ class PassEvent:
     height: str | None
     pass_type: str | None
     outcome: str | None
+    # Đội thực hiện đường chuyền (event["team"]["id"]) — dùng để kiểm chứng
+    # mọi cạnh trong possession đều thuộc đội đang kiểm soát bóng.
+    team_id: int | None = None
 
     @property
     def is_complete(self) -> bool:
-        """StatsBomb: `pass.outcome` rỗng nghĩa là chuyền thành công."""
-        return self.outcome is None
+        """StatsBomb: `pass.outcome` rỗng (None) hoặc 'Complete' nghĩa là chuyền thành công."""
+        return self.outcome is None or self.outcome == "Complete"
 
     @property
     def has_coordinates(self) -> bool:
         return None not in (self.start_x, self.start_y, self.end_x, self.end_y)
 
+    @property
+    def passer(self) -> int | None:
+        """Node identity — dùng player_id."""
+        return self.passer_id
+
+    @property
+    def recipient(self) -> int | None:
+        """Node identity — dùng player_id."""
+        return self.recipient_id
+
+
+@dataclass
+class ShotInfo:
+    """Thông tin một cú sút trong possession."""
+
+    event_id: str
+    minute: int
+    second: int
+    outcome: str | None
+    xg: float | None
+    # Thứ tự sự kiện trong trận (event["index"]) — độ phân giải giây không đủ
+    # để xác định đường chuyền nào xảy ra trước cú sút (Bước 3: cắt tại cú sút).
+    index: int | None = None
+
+    @property
+    def time_seconds(self) -> float:
+        return float(self.minute) * 60 + float(self.second)
+
+    @property
+    def is_goal(self) -> bool:
+        return self.outcome == "Goal"
+
 
 @dataclass
 class Possession:
-    """Một pha kiểm soát bóng — sẽ trở thành một đồ thị ở Bước 3."""
+    """Một pha kiểm soát bóng — sẽ trở thành một đồ thị ở Bước 3.
+
+    Unique key: (match_id, possession_id).
+    possession_id KHÔNG phải unique key một mình — có thể trùng giữa các trận.
+
+    Semantics rõ ràng:
+      has_shot: possession CÓ CHỨA ít nhất một cú sút (của đội kiểm soát bóng)
+      has_goal: possession CÓ CHỨA ít nhất một bàn thắng (của đội kiểm soát bóng)
+      ends_with_shot: backward compatibility — cùng ngữ nghĩa với has_shot
+      ends_with_goal: backward compatibility — cùng ngữ nghĩa với has_goal
+
+    `passes` và `shots` CHỈ chứa sự kiện của đội kiểm soát bóng. Sự kiện của
+    đối phương mang cùng mã possession bị loại và được đếm vào
+    `n_opponent_passes_excluded` / `n_opponent_shots_excluded`.
+    """
 
     match_id: int
     competition_id: int
     season_id: int
     possession_id: int
-    team: str | None
+    team_id: int | None
+    team_name: str | None
     play_pattern: str | None
     period: int
     passes: list[PassEvent] = field(default_factory=list)
-    ends_with_shot: bool = False
-    ends_with_goal: bool = False
-    shot_second: float | None = None
+    shots: list[ShotInfo] = field(default_factory=list)
+    n_opponent_passes_excluded: int = 0
+    n_opponent_shots_excluded: int = 0
+
+    @property
+    def has_shot(self) -> bool:
+        """Possession chứa ít nhất một cú sút."""
+        return len(self.shots) > 0
+
+    @property
+    def has_goal(self) -> bool:
+        """Possession chứa ít nhất một bàn thắng."""
+        return any(s.is_goal for s in self.shots)
+
+    # Deprecated aliases — no internal code uses these anymore.
+    # Kept only for backward compatibility with notebooks / external references.
+    @property
+    def ends_with_shot(self) -> bool:
+        """Deprecated: use ``has_shot`` instead.
+
+        Lưu ý ngữ nghĩa: đây là "possession chứa shot", không nhất thiết
+        "event cuối cùng là shot". Tên gốc có thể gây hiểu nhầm.
+        """
+        return self.has_shot
+
+    @property
+    def ends_with_goal(self) -> bool:
+        """Deprecated: use ``has_goal`` instead."""
+        return self.has_goal
+
+    @property
+    def shot_second(self) -> float | None:
+        """Thời điểm cú sút đầu tiên (seconds). Backward compatibility."""
+        if not self.shots:
+            return None
+        return self.shots[0].time_seconds
+
+    @property
+    def first_shot_index(self) -> int | None:
+        """event index của cú sút đầu tiên — mốc cắt possession ở Bước 3."""
+        indices = [s.index for s in self.shots if s.index is not None]
+        return min(indices) if indices else None
+
+    @property
+    def shot_times(self) -> list[float]:
+        """Danh sách thời điểm của tất cả cú sút (seconds)."""
+        return [s.time_seconds for s in self.shots]
 
     @property
     def n_passes(self) -> int:
         return len(self.passes)
 
     @property
-    def players(self) -> list[str]:
-        """Cầu thủ tham gia possession — sẽ là đỉnh của đồ thị (mục 3.1)."""
-        seen: dict[str, None] = {}
+    def players(self) -> list[int]:
+        """Cầu thủ tham gia possession — sẽ là đỉnh của đồ thị (mục 3.1).
+
+        Trả về danh sách player_id (identity chính).
+        """
+        seen: dict[int, None] = {}
         for p in self.passes:
-            for name in (p.passer, p.recipient):
-                if name is not None:
-                    seen.setdefault(name, None)
+            for pid in (p.passer_id, p.recipient_id):
+                if pid is not None:
+                    seen.setdefault(pid, None)
         return list(seen)
+
+    @property
+    def player_names(self) -> dict[int, str]:
+        """Mapping player_id -> player_name cho display."""
+        names: dict[int, str] = {}
+        for p in self.passes:
+            if p.passer_id is not None and p.passer_name:
+                names.setdefault(p.passer_id, p.passer_name)
+            if p.recipient_id is not None and p.recipient_name:
+                names.setdefault(p.recipient_id, p.recipient_name)
+        return names
 
     @property
     def n_players(self) -> int:
@@ -99,7 +226,7 @@ class Possession:
     @property
     def n_unique_edges(self) -> int:
         """Số cặp (người chuyền, người nhận) khác nhau — số cạnh sau khi gộp."""
-        return len({(p.passer, p.recipient) for p in self.passes})
+        return len({(p.passer_id, p.recipient_id) for p in self.passes})
 
 
 def _to_seconds(event: dict[str, Any]) -> float:
@@ -117,8 +244,10 @@ def parse_pass(event: dict[str, Any]) -> PassEvent:
         minute=int(event.get("minute") or 0),
         second=int(event.get("second") or 0),
         timestamp=event.get("timestamp"),
-        passer=_name(event.get("player")),
-        recipient=_name(_nested(event, "pass", "recipient")),
+        passer_id=_id(event.get("player")),
+        passer_name=_name(event.get("player")),
+        recipient_id=_id(_nested(event, "pass", "recipient")),
+        recipient_name=_name(_nested(event, "pass", "recipient")),
         start_x=location[0],
         start_y=location[1] if len(location) > 1 else None,
         end_x=end_location[0],
@@ -128,20 +257,38 @@ def parse_pass(event: dict[str, Any]) -> PassEvent:
         height=_name(_nested(event, "pass", "height")),
         pass_type=_name(_nested(event, "pass", "type")),
         outcome=_name(_nested(event, "pass", "outcome")),
+        team_id=_id(event.get("team")),
+    )
+
+
+def _parse_shot(event: dict[str, Any]) -> ShotInfo:
+    return ShotInfo(
+        event_id=event.get("id", ""),
+        minute=int(event.get("minute") or 0),
+        second=int(event.get("second") or 0),
+        outcome=_name(_nested(event, "shot", "outcome")),
+        xg=_nested(event, "shot", "statsbomb_xg"),
+        index=int(event.get("index") or 0),
     )
 
 
 def extract_possessions(
     events: Iterable[dict[str, Any]],
     match_id: int,
-    competition_id: int,
-    season_id: int,
+    competition_id: int = 0,
+    season_id: int = 0,
 ) -> list[Possession]:
     """Nhóm sự kiện của một trận thành các possession.
 
     Chỉ giữ đường chuyền **thành công** trong chuỗi (mục 2.1), nhưng vẫn đọc
-    toàn bộ sự kiện của possession để xác định pha đó có kết thúc bằng cú sút
-    hay không.
+    toàn bộ sự kiện của possession để xác định pha đó có chứa cú sút hay không.
+
+    Trường `possession` của StatsBomb gắn cho sự kiện của CẢ HAI đội (ví dụ
+    pha Recovery/Interception ngắn của đối phương vẫn mang mã possession cũ).
+    Vì vậy đường chuyền và cú sút đều được lọc theo `team.id` ==
+    `possession_team.id`. Không lọc thì đồ thị của đội A sẽ có đỉnh là cầu
+    thủ đội B, và cạnh nằm sai hướng sân (StatsBomb ghi tọa độ theo hướng
+    tấn công của đội thực hiện sự kiện).
     """
     events = sorted(events, key=lambda e: int(e.get("index") or 0))
     buckets: dict[int, list[dict[str, Any]]] = {}
@@ -159,38 +306,42 @@ def extract_possessions(
             competition_id=competition_id,
             season_id=season_id,
             possession_id=pid,
-            team=_name(first.get("possession_team")),
+            team_id=_id(first.get("possession_team")),
+            team_name=_name(first.get("possession_team")),
             play_pattern=_name(first.get("play_pattern")),
             period=int(first.get("period") or 0),
         )
 
         for event in group:
             event_type = _name(event.get("type"))
+            if event_type not in ("Pass", "Shot"):
+                continue
+
+            # Chỉ tính sự kiện của chính đội đang kiểm soát bóng — so theo id,
+            # không so theo tên (kiểm tra 4.2).
+            is_own_team = _id(event.get("team")) == possession.team_id
 
             if event_type == "Pass":
                 pass_event = parse_pass(event)
-                if pass_event.is_complete:
-                    possession.passes.append(pass_event)
-
-            elif event_type == "Shot":
-                # Chỉ tính cú sút của chính đội đang kiểm soát bóng —
-                # tránh đếm nhầm cú sút của đội đối phương (kiểm tra 4.2).
-                if _name(event.get("team")) != possession.team:
+                if not pass_event.is_complete:
                     continue
-                possession.ends_with_shot = True
-                if possession.shot_second is None:
-                    possession.shot_second = _to_seconds(event)
-                if _name(_nested(event, "shot", "outcome")) == "Goal":
-                    possession.ends_with_goal = True
+                if not is_own_team:
+                    possession.n_opponent_passes_excluded += 1
+                    continue
+                possession.passes.append(pass_event)
+
+            else:  # Shot
+                if not is_own_team:
+                    possession.n_opponent_shots_excluded += 1
+                    continue
+                possession.shots.append(_parse_shot(event))
 
         possessions.append(possession)
 
     return sorted(possessions, key=lambda p: p.possession_id)
 
 
-def load_match_possessions(
-    competition_id: int, season_id: int, match_id: int
-) -> list[Possession]:
+def load_match_possessions(competition_id: int, season_id: int, match_id: int) -> list[Possession]:
     """Đọc tệp event thô của một trận và trích ra danh sách possession."""
     events = load_json(match_json_path(competition_id, season_id, match_id))
     if isinstance(events, dict):

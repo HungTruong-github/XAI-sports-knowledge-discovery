@@ -27,3 +27,4 @@ Ghi lại tại đây để:
 |---|---|---|---|
 | [0001](0001-quy-tac-gan-nhan.md) | Quy tắc gán nhãn possession | Chưa quyết định | Bước 3 trở đi |
 | [0002](0002-cong-thuc-hybrid-centrality.md) | Công thức Hybrid Centrality | Chưa quyết định | Bước 9 |
+| [0004](0004-main-dataset-premier-league-2015-16.md) | Main dataset — Premier League 2015/16 | Đã chốt (Accepted) | Bước 1 trở đi |

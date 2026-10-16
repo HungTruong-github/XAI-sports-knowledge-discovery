@@ -1,0 +1,4 @@
+split,n_matches,pct_matches,n_possessions,pct_possessions,n_positive,positive_label_rate
+train,266,70.0,31864,70.24,4548,0.1427
+val,57,15.0,6811,15.01,961,0.1411
+test,57,15.0,6690,14.75,962,0.1438

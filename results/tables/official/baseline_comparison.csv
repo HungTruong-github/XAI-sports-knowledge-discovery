@@ -1,0 +1,4 @@
+﻿model,type,accuracy,precision,recall,f1,auc_roc,auc_pr,brier_score
+logistic_regression,non_graph,0.7084,0.3019,0.8464,0.445,0.8221,0.3379,0.1847
+random_forest,non_graph,0.8834,0.5702,0.6329,0.5999,0.8844,0.6234,0.087
+ann,non_graph,0.8945,0.677,0.4521,0.5421,0.8831,0.6141,0.0782

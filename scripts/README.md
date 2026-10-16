@@ -10,16 +10,19 @@ nằm trong `src/xai_football/`.
 
 | Script | Bước | Nhiệm vụ |
 |---|---|---|
-| `01_collect_data.py` | 1 | Tải dữ liệu StatsBomb về `data/raw/` |
-| `02_preprocess.py` | 2 | Trích possession, làm sạch, gán nhãn |
-| `03_build_graphs.py` | 3 | Dựng possession graph, lưu `data/processed/` |
-| `04_make_splits.py` | 4 | Chia train/val/test theo trận, ghi `data/splits/` |
-| `05_train.py` | 5 | Huấn luyện một backbone theo config |
-| `06_evaluate.py` | 6 | Tính bộ độ đo, xuất bảng đối sánh |
-| `07_run_xai.py` | 7 | Chạy GNNExplainer / PGExplainer |
-| `08_eval_xai.py` | 8 | Fidelity, Sparsity, Stability, ROAR |
-| `09_hybrid_centrality.py` | 9 | Tính và kiểm chứng Hybrid Centrality |
-| `10_make_figures.py` | 10 | Sinh hình và bảng vào `results/` |
+| `00_audit_data.py` | 1 | Kiểm tra kho dữ liệu thô và tạo inventory |
+| `01_download_data.py` | 1 | Tải dữ liệu StatsBomb về `data/raw/` |
+| `02_descriptive_stats.py` | 2 | Thống kê mô tả dữ liệu thô và gán nhãn |
+| `03_preprocess.py` | 2 | Trích possession, làm sạch, gán nhãn, xuất bảng |
+| `04_build_graphs.py` | 3 | Dựng possession graph PyG, lưu `data/processed/` |
+| `05_make_splits.py` | 4 | Chia train/val/test theo trận, ghi `data/splits/` |
+| `06_train.py` | 5 | Huấn luyện mô hình GNN (GCN, MPNN, GATv2, GraphSAGE) |
+| `06_train_baselines.py` | 5 | Huấn luyện baseline phi đồ thị (LR, RF, ANN) |
+| `07_evaluate.py` | 6 | Tính bộ độ đo, xuất bảng đối sánh 3 tầng |
+| `08_run_xai.py` | 7 | Chạy GNNExplainer / PGExplainer (chưa triển khai) |
+| `09_eval_xai.py` | 8 | Fidelity, Sparsity, Stability, ROAR (chưa triển khai) |
+| `10_hybrid_centrality.py` | 9 | Tính và kiểm chứng Hybrid Centrality (chưa triển khai) |
+| `11_make_figures.py` | 10 | Sinh hình và bảng vào `results/` (chưa triển khai) |
 
 ## Quy ước
 
