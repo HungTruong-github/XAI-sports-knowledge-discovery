@@ -106,6 +106,7 @@ class ShotInfo:
     # Thứ tự sự kiện trong trận (event["index"]) — độ phân giải giây không đủ
     # để xác định đường chuyền nào xảy ra trước cú sút (Bước 3: cắt tại cú sút).
     index: int | None = None
+    period: int | None = None
 
     @property
     def time_seconds(self) -> float:
@@ -269,6 +270,7 @@ def _parse_shot(event: dict[str, Any]) -> ShotInfo:
         outcome=_name(_nested(event, "shot", "outcome")),
         xg=_nested(event, "shot", "statsbomb_xg"),
         index=int(event.get("index") or 0),
+        period=int(event.get("period") or 0),
     )
 
 

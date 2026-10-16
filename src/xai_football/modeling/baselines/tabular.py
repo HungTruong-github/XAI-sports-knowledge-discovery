@@ -138,12 +138,16 @@ def train_and_eval_tabular_baselines(
         )
 
     # 3. ANN (MLP Classifier)
+    # Lưu ý phương pháp luận: sklearn MLPClassifier không hỗ trợ dropout trong kiến trúc.
+    # Cơ chế regularization được kiểm soát qua tham số L2 penalty (alpha).
     ann_cfg = models_cfg.get("ann", {})
     hidden_layers = tuple(ann_cfg.get("hidden_layers", [64, 32]))
     max_iter = int(ann_cfg.get("epochs", 200))
+    alpha = float(ann_cfg.get("alpha", 0.0001))
     ann = MLPClassifier(
         hidden_layer_sizes=hidden_layers,
         max_iter=max_iter,
+        alpha=alpha,
         random_state=seed,
         early_stopping=True,
     )

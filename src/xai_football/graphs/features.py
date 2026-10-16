@@ -50,6 +50,22 @@ POSITION_TO_ROLE: dict[str, str] = {
 # Giá trị pass.height của StatsBomb
 PASS_HEIGHTS = ("Ground Pass", "Low Pass", "High Pass")
 
+# Schema đặc trưng cạnh mặc định (đầy đủ 12 chiều theo cấu hình chuẩn)
+DEFAULT_EDGE_FEATURE_NAMES: tuple[str, ...] = (
+    "start_x",
+    "start_y",
+    "end_x",
+    "end_y",
+    "length",
+    "angle_sin",
+    "angle_cos",
+    "height_ground",
+    "height_low",
+    "height_high",
+    "order_in_possession",
+    "elapsed_minutes",
+)
+
 
 def role_of(position_name: str | None) -> str | None:
     """Vai trò GK/DF/MF/FW của một vị trí StatsBomb; None nếu không xác định."""

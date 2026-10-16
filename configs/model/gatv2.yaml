@@ -1,4 +1,5 @@
 # Baseline ĐỐI SÁNH - Tầng 2
+# Input: Node features (x) + Edge index (multi-head attention). Không sử dụng edge_attr.
 # Căn cứ đưa vào so sánh: TacticAI cho thấy GATv2 cân bằng tốt giữa
 # độ biểu diễn và khả năng khái quát hóa trên đồ thị cầu thủ so với MPNN.
 name: "gatv2"

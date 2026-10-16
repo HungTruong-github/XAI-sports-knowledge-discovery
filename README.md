@@ -143,12 +143,19 @@ python scripts/04_build_graphs.py --config configs/data.yaml
 python scripts/05_make_splits.py --config configs/data.yaml
 
 # Bước 5: Huấn luyện mô hình
-# Smoke test kiểm tra nhanh (1 epoch):
+# (a) Smoke test kiểm tra nhanh (1 epoch, subset nhỏ, thư mục cách ly official_smoke):
 python scripts/06_train.py --model-config configs/model/mpnn.yaml --smoke-test
-# Huấn luyện baseline phi đồ thị:
+
+# (b) Huấn luyện single-seed (debug / kiểm tra nhanh):
+python scripts/06_train.py --model-config configs/model/mpnn.yaml --seed 42
+
+# (c) Huấn luyện multi-seed đầy đủ (5 seeds theo cấu hình configs/train.yaml):
+python scripts/06_train.py --model-config configs/model/mpnn.yaml --seeds 42,123,456,789,1024
+
+# (d) Huấn luyện baseline phi đồ thị (Logistic Regression, Random Forest, ANN):
 python scripts/06_train_baselines.py --config configs/data.yaml
 
-# Bước 6: Đánh giá mô hình
+# Bước 6: Đánh giá mô hình và tổng hợp kết quả (hỗ trợ cả single-seed và multi-seed)
 python scripts/07_evaluate.py --config configs/data.yaml
 ```
 

@@ -102,3 +102,67 @@ def test_no_label_leakage_in_features():
     f1 = extract_path_features_from_graph(g1)
     f0 = extract_path_features_from_graph(g0)
     assert f1 == f0
+
+
+def test_edge_feature_reordering_produces_identical_results():
+    """Tráo đổi thứ tự cột trong edge_attr kèm schema mới phải cho kết quả giống hệt."""
+    g_standard = _mock_graph()
+    standard_features = extract_path_features_from_graph(g_standard)
+
+    # Đảo thứ tự cột: ví dụ đưa length (index 4) lên đầu, start_x (0) về sau
+    # Tạo g_reordered với edge_attr có thứ tự cột khác
+    from xai_football.graphs.features import DEFAULT_EDGE_FEATURE_NAMES
+
+    reordered_schema = list(DEFAULT_EDGE_FEATURE_NAMES)
+    # Hoán đổi cột 0 (start_x) và cột 4 (length)
+    reordered_schema[0], reordered_schema[4] = reordered_schema[4], reordered_schema[0]
+
+    ea_reordered = g_standard.edge_attr.clone()
+    ea_reordered[:, 0] = g_standard.edge_attr[:, 4]
+    ea_reordered[:, 4] = g_standard.edge_attr[:, 0]
+
+    g_reordered = Data(
+        x=g_standard.x,
+        edge_index=g_standard.edge_index,
+        edge_attr=ea_reordered,
+        y=g_standard.y,
+    )
+    g_reordered.match_id = g_standard.match_id
+    g_reordered.num_nodes = g_standard.num_nodes
+
+    reordered_features = extract_path_features_from_graph(g_reordered, edge_schema=reordered_schema)
+
+    for k in standard_features:
+        assert math.isclose(
+            standard_features[k], reordered_features[k], rel_tol=1e-5
+        ), f"Lệch ở đặc trưng {k}"
+
+
+def test_missing_required_edge_column_raises_error():
+    """Ném ValueError rõ ràng nếu schema thiếu cột bắt buộc."""
+    g = _mock_graph()
+    # Tạo schema thiếu 'length'
+    from xai_football.graphs.features import DEFAULT_EDGE_FEATURE_NAMES
+
+    incomplete_schema = [c for c in DEFAULT_EDGE_FEATURE_NAMES if c != "length"]
+    ea_incomplete = g.edge_attr[:, : len(incomplete_schema)]
+    g_incomplete = Data(x=g.x, edge_index=g.edge_index, edge_attr=ea_incomplete, y=g.y)
+
+    with pytest.raises(ValueError, match="Edge schema thiếu các cột bắt buộc"):
+        extract_path_features_from_graph(g_incomplete, edge_schema=incomplete_schema)
+
+
+def test_edge_dim_mismatch_raises_error():
+    """Ném ValueError khi số cột của edge_attr không khớp với độ dài schema."""
+    g = _mock_graph()
+    # edge_attr có 12 cột, nhưng truyền schema 10 cột
+    with pytest.raises(ValueError, match="Kích thước edge_attr"):
+        extract_path_features_from_graph(g, edge_schema=["start_x"] * 10)
+
+
+def test_non_finite_edge_features_raises_error():
+    """Ném ValueError khi edge_attr chứa NaN hoặc Inf."""
+    g = _mock_graph()
+    g.edge_attr[0, 0] = float("nan")
+    with pytest.raises(ValueError, match="NaN hoặc Inf"):
+        extract_path_features_from_graph(g)

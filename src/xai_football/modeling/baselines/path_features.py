@@ -13,6 +13,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from xai_football.graphs.features import DEFAULT_EDGE_FEATURE_NAMES
+
 # Schema đặc trưng thống nhất cho baseline phi đồ thị
 AVAILABLE_PATH_FEATURES: tuple[str, ...] = (
     "n_passes",
@@ -25,6 +27,17 @@ AVAILABLE_PATH_FEATURES: tuple[str, ...] = (
     "start_y",
     "final_x",
     "final_y",
+)
+
+REQUIRED_EDGE_COLUMNS: tuple[str, ...] = (
+    "start_x",
+    "start_y",
+    "end_x",
+    "end_y",
+    "length",
+    "angle_sin",
+    "angle_cos",
+    "elapsed_minutes",
 )
 
 
@@ -45,6 +58,7 @@ def compute_circular_mean_angle(sin_vals: np.ndarray, cos_vals: np.ndarray) -> f
 def extract_path_features_from_graph(
     graph: Any,
     feature_names: Sequence[str] | None = None,
+    edge_schema: Sequence[str] | None = None,
 ) -> dict[str, float]:
     """Trích xuất vector đặc trưng thống kê từ một đối tượng đồ thị possession (PyG Data).
 
@@ -52,12 +66,16 @@ def extract_path_features_from_graph(
         graph: torch_geometric.data.Data với các thuộc tính x, edge_attr, y.
         feature_names: Danh sách đặc trưng cần lấy theo thứ tự. Nếu None, lấy toàn bộ
             `AVAILABLE_PATH_FEATURES`.
+        edge_schema: Thứ tự tên các cột trong `graph.edge_attr`. Nếu None, dùng
+            `graph.edge_feature_names` nếu có hoặc mặc định `DEFAULT_EDGE_FEATURE_NAMES`.
 
     Returns:
-        dict chứa các giá trị đặc trưng dạng số thực.
+        dict chứa các giá trị đặc trưng dạng số thực theo đúng `feature_names`.
 
     Raises:
-        ValueError: Nếu `feature_names` chứa đặc trưng không nằm trong schema.
+        ValueError: Nếu `feature_names` chứa đặc trưng không nằm trong schema, hoặc
+            `edge_schema` thiếu các cột bắt buộc, hoặc kích thước `edge_attr` không khớp,
+            hoặc `edge_attr` chứa giá trị NaN / Inf.
     """
     if feature_names is not None:
         invalid = [f for f in feature_names if f not in AVAILABLE_PATH_FEATURES]
@@ -74,25 +92,47 @@ def extract_path_features_from_graph(
     n_nodes = int(graph.num_nodes) if hasattr(graph, "num_nodes") else 0
     n_edges = int(graph.num_edges) if hasattr(graph, "num_edges") else 0
 
-    # edge_attr theo quy ước features.py:
-    # 0: start_x, 1: start_y, 2: end_x, 3: end_y, 4: length, 5: angle_sin, 6: angle_cos,
-    # 7: ground, 8: low, 9: high, 10: seq_order, 11: elapsed_sec
     if n_edges > 0 and hasattr(graph, "edge_attr") and graph.edge_attr is not None:
         ea = graph.edge_attr.detach().cpu().numpy()
-        start_x = float(ea[0, 0])
-        start_y = float(ea[0, 1])
-        final_x = float(ea[-1, 2])
-        final_y = float(ea[-1, 3])
-        lengths = ea[:, 4]
+
+        if not np.isfinite(ea).all():
+            raise ValueError(
+                f"Đồ thị chứa giá trị không hợp lệ (NaN hoặc Inf) trong edge_attr: "
+                f"match_id={getattr(graph, 'match_id', 'unknown')}"
+            )
+
+        schema = (
+            list(edge_schema)
+            if edge_schema is not None
+            else getattr(graph, "edge_feature_names", list(DEFAULT_EDGE_FEATURE_NAMES))
+        )
+        if ea.shape[1] != len(schema):
+            raise ValueError(
+                f"Kích thước edge_attr ({ea.shape[1]}) không khớp với số đặc trưng trong edge schema "
+                f"({len(schema)}): {schema}"
+            )
+
+        edge_map = {name: i for i, name in enumerate(schema)}
+        missing_cols = [c for c in REQUIRED_EDGE_COLUMNS if c not in edge_map]
+        if missing_cols:
+            raise ValueError(
+                f"Edge schema thiếu các cột bắt buộc để tính path features: {missing_cols}. "
+                f"Schema hiện tại: {schema}"
+            )
+
+        start_x = float(ea[0, edge_map["start_x"]])
+        start_y = float(ea[0, edge_map["start_y"]])
+        final_x = float(ea[-1, edge_map["end_x"]])
+        final_y = float(ea[-1, edge_map["end_y"]])
+        lengths = ea[:, edge_map["length"]]
         seq_len = float(np.sum(lengths))
         mean_dist = float(np.mean(lengths))
 
-        # Circular mean cho góc chuyền bóng
-        sin_vals = ea[:, 5] if ea.shape[1] > 5 else np.zeros(n_edges)
-        cos_vals = ea[:, 6] if ea.shape[1] > 6 else np.ones(n_edges)
+        sin_vals = ea[:, edge_map["angle_sin"]]
+        cos_vals = ea[:, edge_map["angle_cos"]]
         mean_angle = compute_circular_mean_angle(sin_vals, cos_vals)
 
-        elapsed = ea[:, 11] if ea.shape[1] > 11 else np.zeros(n_edges)
+        elapsed = ea[:, edge_map["elapsed_minutes"]]
         duration = float(np.max(elapsed))
     else:
         start_x, start_y, final_x, final_y = 0.0, 0.0, 0.0, 0.0
@@ -117,12 +157,14 @@ def extract_path_features_from_graph(
 def graphs_to_tabular_dataset(
     graphs: list[Any],
     feature_names: Sequence[str] | None = None,
+    edge_schema: Sequence[str] | None = None,
 ) -> tuple[pd.DataFrame, np.ndarray, list[int]]:
     """Chuyển đổi danh sách đồ thị PyG thành ma trận đặc trưng bảng X và nhãn y.
 
     Args:
         graphs: Danh sách PyG Data objects.
         feature_names: Thứ tự các đặc trưng cần trích xuất.
+        edge_schema: Schema tên cột của edge_attr.
 
     Returns:
         X_df: DataFrame đặc trưng với các cột đúng theo thứ tự khai báo.
@@ -134,7 +176,9 @@ def graphs_to_tabular_dataset(
     match_ids = []
 
     for g in graphs:
-        feat = extract_path_features_from_graph(g, feature_names=feature_names)
+        feat = extract_path_features_from_graph(
+            g, feature_names=feature_names, edge_schema=edge_schema
+        )
         rows.append(feat)
         label = int(g.y.item()) if hasattr(g, "y") and g.y is not None else 0
         labels.append(label)

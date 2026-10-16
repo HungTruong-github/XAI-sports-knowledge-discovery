@@ -1,0 +1,222 @@
+{
+  "dataset": {
+    "name": "Premier League 2015/2016 (StatsBomb Open Data)",
+    "competition_id": 2,
+    "season_id": 27,
+    "expected_matches": 380,
+    "clean_possessions": 45365,
+    "total_graphs": 45047,
+    "target_definition": "possession_level shot classification (Decision 0001 pending)"
+  },
+  "splits": {
+    "strategy": "match_level_stratified",
+    "train_matches": 266,
+    "val_matches": 57,
+    "test_matches": 57,
+    "train_graphs": 31644,
+    "val_graphs": 6757,
+    "test_graphs": 6646,
+    "match_overlap": "NONE (0)"
+  },
+  "models": {
+    "gcn": {
+      "type": "gnn",
+      "tier": "Tier 2 — GNN Backbone",
+      "input_information": "Node features (x) + Edge index (topo)",
+      "config_path": "configs\\model\\gcn.yaml",
+      "config_sha256": "599fe80ac58e7cd51d3748f7382ec1240ddebf5d179181a1131b3854fbe343f8",
+      "checkpoint_path": "models\\official\\gcn_best.pt",
+      "checkpoint_sha256": "ddcb10a9cb441f666ff0d7bcda5ae65766184e2a33b3ebef15535974b8699b39",
+      "validation_metrics": {
+        "model": "gcn",
+        "seed": 42,
+        "split": "validation",
+        "best_epoch": 1,
+        "accuracy": 0.28,
+        "precision": 0.1818,
+        "recall": 1.0,
+        "f1": 0.3077,
+        "auc_roc": 0.4643,
+        "auc_pr": 0.159,
+        "brier_score": 0.2257,
+        "threshold": 0.4591,
+        "loss": 1.1231
+      },
+      "test_metrics": {
+        "accuracy": 0.6806,
+        "precision": 0.268,
+        "recall": 0.7582,
+        "f1": 0.396,
+        "auc_roc": 0.7769,
+        "auc_pr": 0.3261,
+        "brier_score": 0.1885,
+        "loss": 0.976
+      }
+    },
+    "mpnn": {
+      "type": "gnn",
+      "tier": "Tier 2 — GNN Backbone",
+      "input_information": "Node features (x) + Edge index (topo) + Edge attributes (edge_attr 12-dim)",
+      "config_path": "configs\\model\\mpnn.yaml",
+      "config_sha256": "5c4c62e80f94db78f3a3235d4769aa8b813a0d0b28f90e624fde2713e2c268b9",
+      "checkpoint_path": "models\\official\\mpnn_best.pt",
+      "checkpoint_sha256": "afe94d38981644af1d00002e46a93c5ab64cd4819e7ed91cddc7db449ffdb70b",
+      "validation_metrics": null,
+      "test_metrics": {
+        "accuracy": 0.8471,
+        "precision": 0.463,
+        "recall": 0.6678,
+        "f1": 0.5468,
+        "auc_roc": 0.8732,
+        "auc_pr": 0.5747,
+        "brier_score": 0.104,
+        "loss": 0.8365
+      }
+    },
+    "gatv2": {
+      "type": "gnn",
+      "tier": "Tier 2 — GNN Baseline",
+      "input_information": "Node features (x) + Edge index (topo)",
+      "config_path": "configs\\model\\gatv2.yaml",
+      "config_sha256": "eefff6218b25c1643229b98d68df87d2a39a6460fb201e881f8d3fcd045036ad",
+      "checkpoint_path": "models\\official\\gatv2_best.pt",
+      "checkpoint_sha256": "32ae6e050efa51de1f915520abcf4f243b835608666741baa4e84fa7a8ba376b",
+      "validation_metrics": null,
+      "test_metrics": {
+        "accuracy": 0.675,
+        "precision": 0.2561,
+        "recall": 0.7102,
+        "f1": 0.3764,
+        "auc_roc": 0.7526,
+        "auc_pr": 0.2983,
+        "brier_score": 0.1842,
+        "loss": 1.0177
+      }
+    },
+    "graphsage": {
+      "type": "gnn",
+      "tier": "Tier 2 — GNN Baseline",
+      "input_information": "Node features (x) + Edge index (topo)",
+      "config_path": "configs\\model\\graphsage.yaml",
+      "config_sha256": "3ab90dd99d7d2b817b0cee1c4f4e674faab768e2c0f626be360ee467a0602bc2",
+      "checkpoint_path": "models\\official\\graphsage_best.pt",
+      "checkpoint_sha256": "97c63c017bed0717f24245f9032578f6295a054783c2f8df91cc85cff29a648c",
+      "validation_metrics": null,
+      "test_metrics": {
+        "accuracy": 0.6031,
+        "precision": 0.2433,
+        "recall": 0.8878,
+        "f1": 0.3819,
+        "auc_roc": 0.8017,
+        "auc_pr": 0.3763,
+        "brier_score": 0.2312,
+        "loss": 0.9432
+      }
+    },
+    "logistic_regression": {
+      "type": "tabular",
+      "tier": "Tier 3(a) — Non-graph Baseline",
+      "input_information": "10 tabular passing-path summary features (start/end coordinates, sequence length, mean distance, circular mean angle, duration, pass count, player count)",
+      "config_path": "configs\\model\\baseline_tabular.yaml",
+      "config_sha256": "497f740384feb5a4b97ab16903e37b46514c08a912be29a01c9cc22a2571a1fc",
+      "validation_metrics": {
+        "model": "logistic_regression",
+        "tier": "Tier 3(a) — Non-graph Baseline",
+        "type": "Tabular",
+        "split": "validation",
+        "accuracy": 0.7978,
+        "precision": 0.3556,
+        "recall": 0.6229,
+        "f1": 0.4527,
+        "auc_roc": 0.8253,
+        "auc_pr": 0.3517,
+        "brier_score": 0.1803,
+        "threshold": 0.6591
+      },
+      "test_metrics": {
+        "model": "logistic_regression",
+        "tier": "Tier 3(a) — Non-graph Baseline",
+        "type": "Tabular",
+        "split": "test",
+        "accuracy": 0.7893,
+        "precision": 0.3532,
+        "recall": 0.6318,
+        "f1": 0.4531,
+        "auc_roc": 0.8221,
+        "auc_pr": 0.3378,
+        "brier_score": 0.1847,
+        "threshold": 0.6591
+      }
+    },
+    "random_forest": {
+      "type": "tabular",
+      "tier": "Tier 3(a) — Non-graph Baseline",
+      "input_information": "10 tabular passing-path summary features (start/end coordinates, sequence length, mean distance, circular mean angle, duration, pass count, player count)",
+      "config_path": "configs\\model\\baseline_tabular.yaml",
+      "config_sha256": "497f740384feb5a4b97ab16903e37b46514c08a912be29a01c9cc22a2571a1fc",
+      "validation_metrics": {
+        "model": "random_forest",
+        "tier": "Tier 3(a) — Non-graph Baseline",
+        "type": "Tabular",
+        "split": "validation",
+        "accuracy": 0.8704,
+        "precision": 0.5124,
+        "recall": 0.7078,
+        "f1": 0.5944,
+        "auc_roc": 0.889,
+        "auc_pr": 0.6092,
+        "brier_score": 0.0845,
+        "threshold": 0.4136
+      },
+      "test_metrics": {
+        "model": "random_forest",
+        "tier": "Tier 3(a) — Non-graph Baseline",
+        "type": "Tabular",
+        "split": "test",
+        "accuracy": 0.8629,
+        "precision": 0.5027,
+        "recall": 0.7004,
+        "f1": 0.5853,
+        "auc_roc": 0.8856,
+        "auc_pr": 0.6188,
+        "brier_score": 0.0869,
+        "threshold": 0.4136
+      }
+    },
+    "ann": {
+      "type": "tabular",
+      "tier": "Tier 3(a) — Non-graph Baseline",
+      "input_information": "10 tabular passing-path summary features (start/end coordinates, sequence length, mean distance, circular mean angle, duration, pass count, player count)",
+      "config_path": "configs\\model\\baseline_tabular.yaml",
+      "config_sha256": "497f740384feb5a4b97ab16903e37b46514c08a912be29a01c9cc22a2571a1fc",
+      "validation_metrics": {
+        "model": "ann",
+        "tier": "Tier 3(a) — Non-graph Baseline",
+        "type": "Tabular",
+        "split": "validation",
+        "accuracy": 0.8729,
+        "precision": 0.5192,
+        "recall": 0.7144,
+        "f1": 0.6014,
+        "auc_roc": 0.8948,
+        "auc_pr": 0.6187,
+        "brier_score": 0.0751,
+        "threshold": 0.25
+      },
+      "test_metrics": {
+        "model": "ann",
+        "tier": "Tier 3(a) — Non-graph Baseline",
+        "type": "Tabular",
+        "split": "test",
+        "accuracy": 0.8613,
+        "precision": 0.4985,
+        "recall": 0.7059,
+        "f1": 0.5843,
+        "auc_roc": 0.8854,
+        "auc_pr": 0.6187,
+        "brier_score": 0.0783,
+        "threshold": 0.25
+      }
+    }
+  }
+}

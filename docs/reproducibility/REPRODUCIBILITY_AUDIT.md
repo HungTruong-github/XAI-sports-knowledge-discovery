@@ -68,8 +68,6 @@
 - Metadata môi trường: `results/metadata/official/environment.json`.
 - Decision Record `0003` đang được trích dẫn trong tài liệu nhưng chưa có tệp lưu trữ.
 
----
-
 ## 4. Các Lỗi và Điểm Không Nhất Quán Tìm Được (Discrepancy Audit)
 
 1. **Quyết định 0001 (Quy tắc gán nhãn):**
@@ -98,14 +96,39 @@
    - *Phát hiện:* Nhiều tài liệu tham chiếu tới `0003-don-vi-do-thi-cho-xai.md` nhưng tệp này chưa tồn tại trong `docs/decisions/`.
    - *Giải pháp:* Tạo bản thảo Decision 0003 mô tả bài toán lọc ngưỡng độ dài possession cho phần XAI, đặt trạng thái `Chưa quyết định`.
 
+7. **Thứ tự thời gian khi gán nhãn đường chuyền (Priority 2):**
+   - *Phát hiện:* Hàm `label_passes()` trước đây so sánh `0 <= (st - pass_time) <= window_seconds`. Nếu đường chuyền và cú sút xảy ra trong cùng một giây (`st == pass_time`), nhưng cú sút diễn ra TRƯỚC đường chuyền (`s.index < p.index`), đường chuyền sau cú sút vẫn bị gán nhãn dương 1.
+   - *Giải pháp:* Tích hợp hàm `is_shot_after_pass()`, sử dụng `index` tuần tự của sự kiện trong trận từ StatsBomb (`s.index > p.index`); xử lý chặt chẽ trường hợp thiếu index (chính sách bảo thủ không gán nhãn dương khi cùng giây), kiểm tra tính nhất quán timestamp (`dt >= 0`) và kiểm tra chu kỳ thi đấu (`period`).
+   - *Kiểm chứng thực tế:* Trên 380 trận chính thức, toàn bộ 135 cặp pass-shot cùng giây đều diễn ra trước cú sút (`index_pass < index_shot`), nên bảng số liệu chính thức `label_comparison.csv` không bị sai lệch; hàm mới khắc phục triệt để lỗi biên lý thuyết và đã vượt qua 7 unit tests thời gian.
+
+8. **Đặc trưng cạnh trong baseline phi đồ thị (Priority 3):**
+   - *Phát hiện:* `path_features.py` trước đây truy xuất `edge_attr` bằng các chỉ số cột cố định (0, 1, 2, 3, 4, 5, 6, 11). Nếu thứ tự đặc trưng cạnh trong `graph.yaml` thay đổi, dữ liệu bảng sẽ bị trích xuất sai lệch âm thầm.
+   - *Giải pháp:* Thiết lập mapping động từ tên đặc trưng sang chỉ mục cột dựa trên `DEFAULT_EDGE_FEATURE_NAMES` hoặc `edge_schema` của đồ thị; kiểm tra tính hữu hạn (`np.isfinite`), kiểm tra độ dài chiều và ném lỗi rõ ràng nếu thiếu cột bắt buộc. Đã bổ sung 4 unit tests (bao gồm test tráo đổi thứ tự cột cho kết quả tương đương).
+
+9. **Minh bạch hóa đối sánh GNN & Chuẩn hóa cấu hình Baseline (Priority 4):**
+   - *Phát hiện:* MPNN sử dụng cả `edge_attr` (12 chiều), trong khi GCN, GraphSAGE và GATv2 chỉ sử dụng cấu trúc liên kết và đặc trưng đỉnh; cấu hình `ann` trước đây ghi `dropout: 0.3` dù `sklearn.neural_network.MLPClassifier` không hỗ trợ dropout.
+   - *Giải pháp:* Tài liệu hóa minh bạch đầu vào của từng backbone; xóa tham số `dropout` gây hiểu lầm trong `baseline_tabular.yaml` và thay bằng tham số $L_2$ regularization `alpha: 0.0001`; khẳng định rõ trong báo cáo việc MPNN có hiệu năng cao hơn một phần do được cung cấp thêm thông tin cạnh.
+
+10. **Giả định thời gian và Tính sẵn sàng của dữ liệu vai trò cầu thủ (Priority 5):**
+    - *Phát hiện:* `load_player_roles` xác định vai trò cầu thủ dựa trên vị trí xuất hiện nhiều nhất trong toàn bộ 90 phút của trận đấu. Trong kịch bản dự đoán trực tiếp (real-time stream), các sự kiện cuối trận chưa khả dụng tại các pha bóng đầu trận.
+    - *Giải pháp:* Phân định rõ giả định bài toán: Đây là bài toán Đánh giá chuỗi đường chuyền hồi cứu (Retrospective Possession Evaluation / Post-match Knowledge Discovery). Đồng thời, bổ sung hàm `load_player_starting_roles` chỉ lấy vị trí xuất hiện đầu tiên của cầu thủ (`event_index` nhỏ nhất) phục vụ kịch bản dự đoán không rò rỉ thông tin tương lai, kèm unit test kiểm chứng.
+
+11. **Tính bền vững của Notebooks (Priority 7):**
+    - *Phát hiện:* Một số notebook có chứa giá trị fallback tĩnh (`len(raw_files) or 380`, `else 662`, `b.get_height()/380*100`) có nguy cơ che giấu việc thiếu dữ liệu thực tế.
+    - *Giải pháp:* Loại bỏ toàn bộ các fallback tĩnh; đọc dữ liệu trực tiếp từ các bảng kết quả chính thức; bổ sung thông báo hướng dẫn lệnh CLI khi thiếu artifact thay vì ném lỗi không rõ ràng; kiểm định toàn bộ 7 notebook qua `test_notebooks_format.py` (21/21 PASS).
+
+12. **Metadata thực nghiệm và Định danh phiên bản (Priority 8):**
+    - *Giải pháp:* Tạo tệp `results/metadata/official/experiment_manifest.json` liên kết toàn bộ kết quả với cấu hình, mã SHA-256, checkpoint, và split; cập nhật `environment.json` tự động ghi nhận branch, commit SHA, trạng thái git tree thực tế và config hashes.
+
 ---
 
 ## 5. Kết Quả Có Thể Tái Lập Ngay
 
 1. **Toàn bộ bước kiểm tra dữ liệu và tiền xử lý (Bước 0–2):** Dữ liệu thô và Parquet đã có sẵn trên đĩa; các script `00_audit_data.py`, `02_descriptive_stats.py` có thể chạy lại ngay lập tức và cho kết quả trùng khớp 100%.
-2. **Phân chia tập dữ liệu (Bước 4):** Seed 42 và danh sách trận đấu cố định cho ra kết quả chia tập 70/15/15 đồng nhất hoàn toàn với bảng `split_summary.csv` và `split_checks.csv` (5/5 PASS).
-3. **Huấn luyện và đánh giá Baseline phi đồ thị:** Chạy lại `06_train_baselines.py` trên dữ liệu bảng trích xuất từ 45.047 đồ thị mất dưới 1 phút, tái lập chính xác hiệu năng của Logistic Regression, Random Forest và ANN.
-4. **Đánh giá và tổng hợp mô hình (Bước 6):** Script `07_evaluate.py` đọc trực tiếp kết quả các lần chạy và tái lập bảng `model_comparison.csv`.
+2. **Phân chia tập dữ liệu (Bước 4):** Seed 42 và danh sách trận đấu cố định cho ra kết quả chia tập 70/15/15 đồng nhất hoàn toàn với bảng `split_summary.csv`, `graph_split_summary.csv` và `split_checks.csv` (5/5 PASS, 0 match overlap).
+3. **Huấn luyện và đánh giá Baseline phi đồ thị (Bước 5–6):** Chạy lại `06_train_baselines.py` trên dữ liệu bảng trích xuất từ 45.047 đồ thị mất dưới 1 phút, tái lập chính xác hiệu năng của Logistic Regression, Random Forest và ANN theo schema đặc trưng đã chuẩn hóa.
+4. **Đánh giá và tổng hợp mô hình (Bước 6):** Script `07_evaluate.py` hỗ trợ thu thập kết quả đa seed và tái lập bảng `model_comparison.csv`.
+5. **Bộ kiểm thử tự động (Unit Tests & Format):** 100% tests thực thi thành công (59 tests gốc + 15 regression tests mới = 74 tests PASS).
 
 ---
 
@@ -125,4 +148,4 @@
 4. **Khóa checkpoint MPNN chính thức:** Mô hình MPNN (Best Val AUC-PR = 0.5831) đã sẵn sàng làm backbone cho GNNExplainer và PGExplainer.
 
 ---
-*Báo cáo được lập tự động dựa trên kết quả kiểm tra mã nguồn và dữ liệu thực tế tại repository.*
+*Báo cáo được cập nhật sau khi hoàn thành đợt sửa lỗi và kiểm định toàn diện tính tái lập.*

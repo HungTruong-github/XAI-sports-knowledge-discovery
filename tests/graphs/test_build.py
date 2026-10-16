@@ -260,6 +260,32 @@ def test_load_player_roles_uses_most_frequent_position(tmp_path):
     assert roles[(2, 10)] == "FW"  # theo từng trận
 
 
+def test_load_player_starting_roles_temporal_safety(tmp_path):
+    """Kiểm tra load_player_starting_roles lấy đúng vị trí đầu tiên theo event_index,
+    không bị ảnh hưởng bởi vị trí xuất hiện nhiều hơn ở giai đoạn sau của trận đấu.
+    """
+    from xai_football.graphs.dataset import load_player_starting_roles
+
+    ev = pd.DataFrame(
+        {
+            "match_id": [1, 1, 1],
+            "player_id": [10, 10, 10],
+            "event_index": [5, 40, 50],
+            "position_name": ["Right Back", "Center Forward", "Center Forward"],
+        }
+    )
+    path = tmp_path / "events_temporal.parquet"
+    ev.to_parquet(path, index=False)
+
+    dominant_roles = load_player_roles(path)
+    starting_roles = load_player_starting_roles(path)
+
+    # Dominant role (hồi cứu): FW xuất hiện 2 lần > DF 1 lần
+    assert dominant_roles[(1, 10)] == "FW"
+    # Starting role (an toàn thời gian): lấy tại event_index=5 -> DF
+    assert starting_roles[(1, 10)] == "DF"
+
+
 def test_corner_kick_coordinate_boundary():
     """Trong StatsBomb, quả phạt góc có thể có start_x > 120 (ví dụ 120.9) do góc sân.
 

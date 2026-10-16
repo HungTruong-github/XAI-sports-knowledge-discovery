@@ -27,5 +27,7 @@ models:
     random_state: 42
   ann:
     hidden_layers: [64, 32]
-    dropout: 0.3
+    # Lưu ý: sklearn.neural_network.MLPClassifier không hỗ trợ dropout.
+    # Regularization được kiểm soát bằng L2 penalty (alpha).
+    alpha: 0.0001
     epochs: 200
