@@ -258,3 +258,19 @@ def test_load_player_roles_uses_most_frequent_position(tmp_path):
     assert roles[(1, 10)] == "DF"  # 2 lần Center Back > 1 lần Striker
     assert roles[(1, 11)] == "GK"
     assert roles[(2, 10)] == "FW"  # theo từng trận
+
+
+def test_corner_kick_coordinate_boundary():
+    """Trong StatsBomb, quả phạt góc có thể có start_x > 120 (ví dụ 120.9) do góc sân.
+
+    Khi chuẩn hóa chia cho 120, giá trị này = 1.0075 > 1.0.
+    Đây là hiện tượng hợp lệ theo miền bóng đá thực tế, không phải lỗi tính toán.
+    """
+    passes = [
+        _pass("ck1", 1, 10, 11, 120.9, 2.8, 110.0, 38.0),
+        _pass("ck2", 2, 11, 12, 110.0, 38.0, 105.0, 40.0),
+    ]
+    edge_rows = compute_edge_features(passes, GRAPH_CFG["edges"]["features"])
+    ck1 = dict(zip(EDGE_NAMES, edge_rows[0], strict=True))
+    assert ck1["start_x"] == pytest.approx(120.9 / 120.0)
+    assert ck1["start_x"] > 1.0

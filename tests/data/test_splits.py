@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from xai_football.data.splits import (
+    compute_graph_split_summary,
     compute_match_stats,
     load_match_splits,
     make_stratified_match_split,
@@ -108,3 +109,22 @@ def test_invalid_ratios(sample_possessions_df):
     stats = compute_match_stats(sample_possessions_df)
     with pytest.raises(ValueError, match="Tổng các tỉ lệ phải bằng 1.0"):
         make_stratified_match_split(stats, train_ratio=0.8, val_ratio=0.2, test_ratio=0.2)
+
+
+def test_compute_graph_split_summary(sample_possessions_df):
+    stats = compute_match_stats(sample_possessions_df)
+    splits = make_stratified_match_split(stats, seed=42)
+
+    # Giả lập graph_index_df loại bỏ 1 vài possession
+    graph_index_df = sample_possessions_df.iloc[:-5].copy()
+    graph_index_df["y"] = graph_index_df["has_shot"].astype(int)
+
+    summary = compute_graph_split_summary(splits, graph_index_df, sample_possessions_df)
+    assert len(summary) == 3
+    assert list(summary["split"]) == ["train", "val", "test"]
+    assert "n_graphs" in summary.columns
+    assert "n_dropped_graphs" in summary.columns
+    assert "positive_rate" in summary.columns
+    assert "match_overlap" in summary.columns
+    assert (summary["match_overlap"] == "NONE").all()
+    assert summary["n_dropped_graphs"].sum() == 5

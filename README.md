@@ -1,198 +1,185 @@
 # XAI-sports-knowledge-discovery
 
-**Hệ thống trí tuệ nhân tạo có thể giải thích (XAI) trong bài toán đánh giá và
-khám phá tri thức thể thao**
+**Hệ thống trí tuệ nhân tạo có thể giải thích (XAI) trong bài toán đánh giá và khám phá tri thức thể thao**
 
-Hướng nghiên cứu cụ thể: *Mạng chuyền bóng và phân tích chiến thuật bóng đá
-bằng Graph Neural Network (GNN) kết hợp XAI.*
+Hướng nghiên cứu cụ thể: *Mạng chuyền bóng và phân tích chiến thuật bóng đá bằng Graph Neural Network (GNN) kết hợp XAI.*
 
----
-
-## Bài toán
-
-Đề tài gồm **hai bài toán con nối tiếp nhau**, đã được xác nhận với giảng viên
-hướng dẫn (xem `docs/meetings/`):
-
-**Bài toán 1 — Dự đoán.** Biểu diễn một chuỗi tấn công (possession) thành đồ
-thị chuyền bóng có hướng (đỉnh = cầu thủ, cạnh = đường chuyền), mô hình GNN dự
-đoán xác suất chuỗi đó dẫn đến cú sút. Đây là bài toán phân loại nhị phân ở
-**mức đồ thị**.
-
-**Bài toán 2 — Giải thích.** Trên mô hình đã huấn luyện, áp dụng XAI cho đồ thị
-để (a) xác định subgraph quan trọng, và (b) tổng hợp điểm quan trọng qua nhiều
-possession thành chỉ số **Hybrid Centrality** cho từng cầu thủ.
-
-Bài toán 2 phụ thuộc kết quả Bài toán 1: phải có mô hình dự đoán đáng tin cậy
-thì giải thích của XAI mới có ý nghĩa.
+Repository: `https://github.com/HungTruong-github/XAI-sports-knowledge-discovery`  
+Branch hiện tại: `REPRODUCIBILITY`
 
 ---
 
-## Cấu trúc dự án
+## 1. Bài toán nghiên cứu
+
+Đề tài gồm **hai bài toán con nối tiếp nhau**, bám sát định hướng học thuật và phản hồi từ giảng viên hướng dẫn (xem `docs/meetings/`):
+
+1. **Bài toán 1 — Dự đoán (Prediction)**: Biểu diễn một chuỗi kiểm soát bóng (possession) thành đồ thị chuyền bóng có hướng không gian - thời gian (spatio-temporal passing graph). Đỉnh biểu diễn cầu thủ, cạnh biểu diễn đường chuyền. Mô hình GNN dự đoán xác suất possession đó dẫn đến cơ hội dứt điểm (shot). Đây là bài toán phân loại nhị phân ở **mức đồ thị (graph-level binary classification)**.
+2. **Bài toán 2 — Giải thích (Explanation & Knowledge Discovery)**: Trên mô hình GNN có hiệu năng dự đoán tốt nhất, áp dụng phương pháp XAI cho đồ thị để:
+   - (a) Trích xuất giải thích cục bộ (subgraph explanation) chỉ ra các đường chuyền then chốt.
+   - (b) Tổng hợp trọng số giải thích qua các possession thành chỉ số **Hybrid Centrality** nhằm xếp hạng vai trò chiến thuật của từng cầu thủ và so sánh đối chiếu với các mô hình bóng đá truyền thống (xT, xA).
+
+> [!IMPORTANT]
+> Bài toán 2 phụ thuộc hoàn toàn vào Bài toán 1: Mô hình GNN dự đoán phải đạt chất lượng tốt, học đúng biểu diễn cấu trúc mạng chuyền bóng và không bị rò rỉ dữ liệu thì kết quả giải thích XAI mới có giá trị thực tiễn.
+
+---
+
+## 2. Cấu trúc Repository
 
 ```
 .
-├── configs/              # Toàn bộ tham số thực nghiệm (YAML)
+├── configs/              # Toàn bộ cấu hình thực nghiệm định dạng YAML
 │   ├── data.yaml             Bước 1-2: thu thập, tiền xử lý, gán nhãn
 │   ├── graph.yaml            Bước 3:   định nghĩa đồ thị possession
 │   ├── split.yaml            Bước 4:   chia train/val/test theo trận
 │   ├── train.yaml            Bước 5:   cấu hình huấn luyện dùng chung
-│   ├── xai.yaml              Bước 7-8: explainer và độ đo XAI
-│   ├── hybrid_centrality.yaml Bước 9:  công thức Hybrid Centrality
-│   └── model/                Kiến trúc từng backbone và baseline
+│   ├── xai.yaml              Bước 7-8: cấu hình explainer (chưa triển khai)
+│   ├── hybrid_centrality.yaml Bước 9:  công thức Hybrid Centrality (chưa chốt)
+│   └── model/                Kiến trúc từng backbone GNN và baselines
 │
 ├── data/                 # Dữ liệu (KHÔNG commit, trừ splits/)
-│   ├── raw/                  JSON thô từ StatsBomb, giữ nguyên
-│   ├── interim/              Possession đã làm sạch, đã gán nhãn
-│   ├── processed/            Đồ thị PyG đã đóng gói (.pt)
-│   ├── splits/               Danh sách match_id từng tập  ← CÓ commit
-│   └── external/             Chỉ số tham chiếu (xA, xT...) để kiểm chứng
+│   ├── raw/                  Dữ liệu JSON thô StatsBomb
+│   ├── interim/              Possessions và sự kiện đã làm sạch (.parquet)
+│   ├── processed/            Đồ thị PyG đã đóng gói (.pt) và index
+│   └── splits/               Danh sách match_id và tóm tắt phân chia ← CÓ commit
 │
-├── src/xai_football/     # Mã nguồn chính (package cài bằng pip -e .)
-│   ├── data/                 Bước 1-2, 4
-│   ├── graphs/               Bước 3
-│   ├── modeling/             Bước 5  (gnn/ + baselines/)
-│   ├── training/             Bước 5.4-5.6
-│   ├── evaluation/           Bước 6
-│   ├── xai/                  Bước 7-8
-│   ├── centrality/           Bước 9-10
-│   ├── visualization/        Bước 10
-│   └── utils/                seed, đường dẫn, I/O, log
+├── src/xai_football/     # Package cốt lõi (pip install -e .)
+│   ├── data/                 Bước 1-2, 4 (thu thập, làm sạch, split)
+│   ├── graphs/               Bước 3 (dựng đồ thị PyG, trích xuất feature)
+│   ├── modeling/             Bước 5 (GNN backbones + baseline feature extractor)
+│   ├── training/             Bước 5 (trainer, loss functions, early stopping)
+│   ├── evaluation/           Bước 6 (metrics, threshold optimization)
+│   ├── xai/                  Bước 7-8 (chưa triển khai)
+│   ├── centrality/           Bước 9-10 (chưa triển khai)
+│   └── utils/                logging, paths, seed, serialization
 │
-├── scripts/              # Điểm vào chạy từng bước pipeline
-├── notebooks/            # Thăm dò dữ liệu, trực quan hóa
-├── tests/                # Kiểm thử (ưu tiên: chống rò rỉ dữ liệu)
-│
-├── experiments/          # Log thô từng lần chạy      (KHÔNG commit)
-├── models/               # Trọng số đã huấn luyện     (KHÔNG commit)
-├── results/              # Bảng + hình cho khóa luận  (CÓ commit)
-│
-├── docs/                 # Tài liệu nghiên cứu
-│   ├── XAI-Football_Project_Content.md   Bối cảnh, khoảng trống, thuật ngữ
-│   ├── Quy_trinh_XAI_Football.md         Quy trình 12 bước chi tiết
-│   ├── decisions/                        Quyết định nghiên cứu + lý do
-│   ├── meetings/                         Báo cáo tuần, nhận xét GV
-│   ├── figures/                          Sơ đồ cho tài liệu
-│   └── thesis/                           Các chương khóa luận
-│
-├── backend/              # API demo   (Giai đoạn 2, chưa triển khai)
-└── frontend/             # Giao diện  (Giai đoạn 2, chưa triển khai)
+├── scripts/              # Entry points chạy từng bước pipeline từ CLI
+├── notebooks/            # 7 Jupyter Notebooks phân tích, kiểm toán & tái lập
+├── tests/                # Unit tests (chống rò rỉ dữ liệu, kiểm tra schema)
+├── experiments/          # Log thô từng lần chạy (bị gitignore)
+├── models/               # Trọng số mô hình đã huấn luyện (bị gitignore)
+├── results/              # Bảng số liệu, metadata và biểu đồ phục vụ báo cáo
+│   ├── figures/official/     Biểu đồ định dạng PNG + SVG do notebook sinh ra
+│   ├── metadata/official/    Môi trường, config hashes, commit metadata
+│   └── tables/official/      Bảng kết quả đối sánh và kiểm tra chất lượng
+└── docs/                 # Tài liệu quy trình, báo cáo và Decision Records
 ```
-
-Ba thư mục dễ nhầm: **`experiments/`** chứa log thô từng lần chạy,
-**`models/`** chứa trọng số, **`results/`** chứa bảng và hình cuối cùng đưa
-vào khóa luận. Chỉ `results/` được commit.
 
 ---
 
-## Pipeline
+## 3. Quy trình Pipeline & Trạng thái triển khai
 
 ```
-[1] Thu thập dữ liệu (StatsBomb Open Data)
-[2] Tiền xử lý & gán nhãn (possession → sút/bàn thắng)
-[3] Xây dựng đồ thị chuyền bóng
-[4] Chia train/val/test theo TRẬN (chống rò rỉ dữ liệu)
-[5] Huấn luyện GNN                        ← Bài toán 1
-[6] Đánh giá dự đoán + baseline 3 tầng
-[7] Áp dụng XAI trên mô hình đã huấn luyện ← Bài toán 2
-[8] Đánh giá chất lượng XAI
-[9] Tính Hybrid Centrality
-[10] Kiểm chứng & trực quan hóa
+[0] Kiểm toán môi trường & Tính tái lập          ──> notebooks/00
+[1] Thu thập dữ liệu (StatsBomb Open Data)        ──> scripts/00, 01 ──> notebooks/01
+[2] Tiền xử lý & gán nhãn                         ──> scripts/03     ──> notebooks/02
+[3] Xây dựng đồ thị possession                     ──> scripts/04     ──> notebooks/03
+[4] Phân chia train/val/test theo TRẬN ĐẤU         ──> scripts/05     ──> notebooks/04
+[5] Huấn luyện mô hình GNN (Bài toán 1)           ──> scripts/06     ──> notebooks/05
+[6] Đánh giá mô hình & Baseline 3 tầng            ──> scripts/07     ──> notebooks/06
+[7] Áp dụng XAI (Bài toán 2)                      ──> [Chưa triển khai]
+[8] Đánh giá chất lượng giải thích XAI            ──> [Chưa triển khai]
+[9] Tính Hybrid Centrality                        ──> [Chưa triển khai]
+[10] Kiểm chứng chuyên môn & Trực quan hóa        ──> [Chưa triển khai]
 ```
 
-Chi tiết đầy đủ: [`docs/Quy_trinh_XAI_Football.md`](docs/Quy_trinh_XAI_Football.md)
+### Trạng thái chi tiết từng bước
 
-### Chiến lược đối sánh 3 tầng
-
-Theo đúng hướng giảng viên gợi ý (buổi 25/08/2026):
-
-- **Tầng 1** — Rà soát: chưa có công trình nào giải đồng thời cả ba thành phần
-  (dự đoán từ đồ thị chuyền bóng open-play + subgraph XAI + centrality hợp
-  nhất). Gần nhất là TacticAI nhưng chỉ áp dụng cho tình huống phạt góc.
-- **Tầng 2** — So sánh backbone: GCN / MPNN (đề xuất) vs GATv2 / GraphSAGE,
-  cùng dữ liệu, cùng cách chia tập, cùng cấu hình huấn luyện.
-- **Tầng 3** — Tách hai nhóm baseline:
-  - *(a) Dự đoán:* thêm baseline phi đồ thị (Logistic Regression, Random
-    Forest, ANN trên đặc trưng passing path)
-  - *(b) XAI:* GNNExplainer vs PGExplainer, cộng baseline "không dùng XAI"
-    là centrality truyền thống thuần túy, và SHAP ở mức đặc trưng
+| Bước | Tên bước | Trạng thái | Nguồn sự thật & Ghi chú |
+|---|---|---|---|
+| **0** | Environment Audit | **Đã hoàn thành** | `results/metadata/official/environment.json`, `notebooks/00` |
+| **1** | Thu thập dữ liệu | **Đã hoàn thành** | Đủ 380/380 trận Premier League 2015/16 (`data/raw/2/27/`) |
+| **2** | Tiền xử lý & Gán nhãn | **Đã hoàn thành** | 45.365 clean possessions, 261.205 đường chuyền. Bằng chứng định lượng 380 trận: possession-level shot 14,26% vs goal 1,46% |
+| **3** | Xây dựng đồ thị | **Đã hoàn thành** | 45.047 đồ thị PyG, cắt trước cú sút đầu tiên (`truncate_at_first_shot: true`). **Cảnh báo**: 1 WARNING ở `normalized_features_in_[0,1]` do quả phạt góc tại $x=120.9$ (hợp lệ theo miền bóng đá) |
+| **4** | Phân chia tập dữ liệu | **Đã hoàn thành** | Chia theo TRẬN ĐẤU (266 Train, 57 Val, 57 Test), không rò rỉ dữ liệu. Có 2 bảng tóm tắt: `split_summary.csv` (possession) và `graph_split_summary.csv` (post-graph) |
+| **5** | Huấn luyện GNN | **Đã triển khai code** | Hỗ trợ cấu hình multi-seed, smoke test, lưu snapshot config và tách validation/test. Đã hoàn thành 1 run chính thức (seed 42) cho GCN, MPNN, GATv2, GraphSAGE |
+| **6** | Đánh giá & Đối sánh | **Đã hoàn thành** | MPNN dẫn đầu nhóm GNN (AUC-PR 0.5747, AUC-ROC 0.8732). Baselines phi đồ thị (RF AUC-PR 0.6234, ANN AUC-PR 0.6141) đang cao hơn do tận dụng đặc trưng toàn cục |
+| **7–8**| XAI cho đồ thị | *Chưa triển khai* | Dừng lại chờ xác nhận phương án giải thích |
+| **9–10**| Hybrid Centrality & UI | *Chưa triển khai* | Công thức Hybrid Centrality và phạm vi open-play vẫn đang chờ quyết định |
 
 ---
 
-## Cài đặt
+## 4. Trạng thái các Quyết định Nghiên cứu (Research Decisions)
+
+Tất cả các quyết định nghiên cứu được lưu trữ tại `docs/decisions/` và tuân thủ nguyên tắc không tự ý chốt quyết định thay cho giảng viên/người dùng:
+
+- **[Decision 0001: Quy tắc gán nhãn](docs/decisions/0001-quy-tac-gan-nhan.md)**: `Chưa quyết định (Pending)`. Đã cập nhật bằng chứng định lượng từ toàn bộ 380 trận (shot 14,26%, goal 1,46%). Tạm thời áp dụng `possession_level` (mục tiêu `shot`) để chạy pipeline.
+- **[Decision 0002: Công thức Hybrid Centrality](docs/decisions/0002-cong-thuc-hybrid-centrality.md)**: `Chưa quyết định (Pending)`. Chưa triển khai code.
+- **[Decision 0003: Đơn vị đồ thị và Ngưỡng độ dài](docs/decisions/0003-don-vi-do-thi-cho-xai.md)**: `Chưa quyết định (Draft/Pending)`. Làm rõ việc cắt đồ thị tại cú sút đầu tiên và loại các possession < 2 đường chuyền.
+- **[Decision 0004: Chọn Premier League 2015/2016](docs/decisions/0004-main-dataset-premier-league-2015-16.md)**: `Đã chấp thuận (Accepted)`.
+- **Phạm vi Open-play**: Trong `configs/graph.yaml`, hiện tại `play_patterns_keep: null` (giữ mọi play pattern) và vẫn đang ở trạng thái chờ xác nhận.
+
+---
+
+## 5. Hướng dẫn cài đặt và Tái lập Thực nghiệm
+
+### 5.1. Thiết lập môi trường
 
 ```bash
-# 1. Tạo môi trường ảo
+# Tạo và kích hoạt môi trường ảo
 python -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # macOS / Linux
+.venv\Scripts\activate          # Trên Windows
+# source .venv/bin/activate     # Trên Linux / macOS
 
-# 2. Cài PyTorch trước, theo đúng phiên bản CUDA của máy
-#    https://pytorch.org/get-started/locally/
-
-# 3. Cài phần còn lại
+# Cài đặt thư viện phụ thuộc
 pip install -r requirements.txt
 
-# 4. Cài package ở chế độ dev — chạy MỘT LẦN, sau đó mọi notebook và
-#    script đều import được `xai_football` mà không cần sửa sys.path
+# Cài đặt package xai_football ở chế độ editable
 pip install -e .
 ```
 
----
+### 5.2. Chạy pipeline bằng Scripts
 
-## Trạng thái hiện tại (Branch: `an---nn`)
+```bash
+# Bước 1: Kiểm toán dữ liệu thô
+python scripts/00_audit_data.py
 
-**Bước 1-3 (Data Pipeline, Validation và Graph Construction)** đã hoàn thành và
-được kiểm chứng trên toàn bộ 380 trận (cập nhật 04/10/2026):
+# Bước 2: Tiền xử lý và gán nhãn
+python scripts/03_preprocess.py --config configs/data.yaml
 
-- **Dataset chính thức**: Premier League 2015/2016 (`competition_id: 2`, `season_id: 27`, 380 trận đấu) từ StatsBomb Open Data (xem [Decision 0004](docs/decisions/0004-main-dataset-premier-league-2015-16.md)).
-- **Mã nguồn Bước 1-2** (`src/xai_football/data/`, `scripts/00-03`):
-  - `00_audit_data.py`: Kiểm tra kho dữ liệu thô và tạo `dataset_inventory.csv`.
-  - `canonicalize.py`: Lớp trung gian phẳng hóa event thô StatsBomb, lưu `events.parquet`.
-  - `possession.py`: Trích xuất chuỗi possession với identity theo `player_id`; chỉ giữ sự kiện của đội kiểm soát bóng; lưu `first_shot_index` để cắt ở Bước 3.
-  - `clean.py`: Loại bỏ possession quá ngắn, hiệp phụ, thiếu tọa độ; chẩn đoán hướng tấn công; thống kê play pattern.
-  - `labeling.py`: Cài đặt cả hai phương án gán nhãn (possession-level / pass-level) để so sánh tỉ lệ lớp dương.
-  - `validation.py`: 16 phép kiểm tra chất lượng dữ liệu với các mức `PASS`, `WARNING`, `FAIL`.
-  - `03_preprocess.py`: Pipeline tiền xử lý hoàn chỉnh, xuất 7 bảng vào `results/tables/official/`.
-- **Mã nguồn Bước 3** (`src/xai_football/graphs/`, `scripts/04_build_graphs.py`):
-  - `features.py`: 8 đặc trưng đỉnh (vai trò GK/DF/MF/FW, tọa độ trung bình, số chuyền đi/nhận) và 12 đặc trưng cạnh (tọa độ, độ dài, góc sin/cos, độ cao, thứ tự và thời điểm).
-  - `build.py`: Chuyển một possession thành `torch_geometric.data.Data` có hướng, mỗi đường chuyền một cạnh, cắt tại cú sút đầu tiên.
-  - `dataset.py`: Dựng toàn bộ tập đồ thị, lưu `graphs.pt`, `graph_index.parquet`, `feature_names.json` vào `data/processed/official/`.
-  - `04_build_graphs.py`: Script chạy Bước 3 kèm 8 phép kiểm tra toàn vẹn đồ thị, xuất `graph_build_report.csv` và `graph_checks.csv`.
-- **Mã nguồn Bước 4** (`src/xai_football/data/splits.py`, `scripts/05_make_splits.py`):
-  - Chia match-level 70/15/15 theo trận, phân tầng theo tỉ lệ nhãn dương.
-  - Lưu danh sách match_id vào `data/splits/` (train: 266 trận, val: 57 trận, test: 57 trận).
-  - 5/5 bài kiểm tra toàn vẹn PASS, xác nhận chống rò rỉ dữ liệu hoàn toàn.
-- **Mã nguồn Bước 5** (`src/xai_football/modeling/`, `src/xai_football/training/`, `scripts/06_train.py`, `scripts/06_train_baselines.py`, `scripts/07_evaluate.py`):
-  - Backbones GNN: GCN, MPNN, GATv2, GraphSAGE cùng chung GlobalReadout và BinaryClassifierHead.
-  - Baselines phi đồ thị (Tầng 3a): Logistic Regression, Random Forest, ANN trên đặc trưng passing path.
-  - Loss functions: Weighted BCE with Logits và Binary Focal Loss xử lý mất cân bằng lớp.
-  - GNNTrainer: mini-batch training, AdamW, ReduceLROnPlateau, early stopping theo AUC-PR, lưu trọng số vào `models/`.
-- **Kiểm thử**: 52 unit test trong `tests/data/`, `tests/graphs/`, `tests/modeling/`, tất cả đạt.
+# Bước 3: Xây dựng đồ thị possession
+python scripts/04_build_graphs.py --config configs/data.yaml
 
-**Kết quả trên 380 trận**: 45.365 possession sạch, 261.205 đường chuyền thành
-công, 45.047 đồ thị (13,66% nhãn dương với `target = shot`), đồ thị trung vị
-4 đỉnh / 4 cạnh.
+# Bước 4: Chia tập dữ liệu theo trận (xuất graph_split_summary.csv)
+python scripts/05_make_splits.py --config configs/data.yaml
 
-### Tiến độ theo từng phần
+# Bước 5: Huấn luyện mô hình
+# Smoke test kiểm tra nhanh (1 epoch):
+python scripts/06_train.py --model-config configs/model/mpnn.yaml --smoke-test
+# Huấn luyện baseline phi đồ thị:
+python scripts/06_train_baselines.py --config configs/data.yaml
 
-| Thành phần | Trạng thái | Ghi chú |
-|---|---|---|
-| Audit & Collection | **Đã hoàn thành** | Audit 380/380 trận Premier League 2015/16 |
-| Canonicalization | **Đã hoàn thành** | Persist `events.parquet` theo `run_name` |
-| Possession & Clean | **Đã hoàn thành** | Persist `possessions.parquet` & `possession_events.parquet`; lọc sự kiện đội đối phương |
-| Quality Sanity Checks | **Đã hoàn thành** | 16/16 PASS, schema chuẩn `check`, `value`, `status`, `note` |
-| Graph Construction | **Đã hoàn thành** | Bước 3: 45.047 đồ thị PyG, 8 node feature, 12 edge feature, 7/8 check PASS + 1 WARNING |
-| Decision 0001 (gán nhãn) | *Áp dụng tạm thời* | Possession-level, `target = shot` — chờ giảng viên chốt |
-| Split Train/Val/Test | **Đã hoàn thành** | Bước 4: chia theo trận 70/15/15 (266/57/57 trận), 5/5 check PASS |
-| GNN Modeling & Training | **Đã hoàn thành** | Bước 5: GCN, MPNN, GATv2, GraphSAGE + Baselines phi đồ thị (LR, RF, ANN) |
-| XAI & Hybrid Centrality | *Chưa triển khai* | Bước 7-10 |
+# Bước 6: Đánh giá mô hình
+python scripts/07_evaluate.py --config configs/data.yaml
+```
+
+### 5.3. Khảo sát bằng Jupyter Notebooks
+
+7 notebook được lưu trữ trong `notebooks/`, tuân thủ chuẩn `nbformat` v4:
+- `notebooks/00_environment_and_reproducibility.ipynb`
+- `notebooks/01_data_audit_and_collection.ipynb`
+- `notebooks/02_preprocessing_and_labels.ipynb`
+- `notebooks/03_graph_construction.ipynb`
+- `notebooks/04_match_level_split.ipynb`
+- `notebooks/05_model_training.ipynb`
+- `notebooks/06_model_evaluation.ipynb`
+
+Toàn bộ biểu đồ định dạng PNG (300 DPI) và SVG được tự động kết xuất vào `results/figures/official/`.
 
 ---
 
-## Nguồn dữ liệu
+## 6. Kiểm thử và CI
 
-[StatsBomb Open Data](https://github.com/statsbomb/open-data) — Premier League 2015/2016 (380 trận đấu). Cần trích dẫn đúng StatsBomb trong khóa luận và bài báo theo điều khoản sử dụng của họ.
+Dự án tích hợp kiểm thử tự động với Pytest, Ruff và Black:
 
-## Giấy phép
+```bash
+# Kiểm tra code style và import
+ruff check .
 
-Xem [LICENSE](LICENSE).
+# Kiểm tra định dạng code
+black --check .
+
+# Chạy toàn bộ unit tests
+pytest -ra tests/
+```
+
+Workflow GitHub Actions được thiết lập tại `.github/workflows/ci.yml`.
