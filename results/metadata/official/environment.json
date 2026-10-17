@@ -23,8 +23,8 @@
   "cuda_device_name": "CPU only",
   "git": {
     "branch": "REPRODUCIBILITY",
-    "commit_sha": "9fae6c51704f212479c3e2df29ce19d2d2e4a6dd",
-    "clean_working_tree": false
+    "commit_sha": "c05a6138f040f22bbbb70003ad54ec0ecebf8cd0",
+    "clean_working_tree": true
   },
   "config_hashes": {
     "configs\\data.yaml": "640f250f1c7379a24b8336c66b8b53e2ad37cb7a82af598032685c2ba29582f2",
