@@ -19,10 +19,57 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Literal
 
-from .possession import Possession
+from .possession import PassEvent, Possession, ShotInfo
 
 Mode = Literal["possession_level", "pass_level"]
 Target = Literal["shot", "goal"]
+
+
+def is_shot_after_pass(
+    pass_event: PassEvent,
+    shot: ShotInfo,
+    window_seconds: float = 10.0,
+) -> bool:
+    """Xác định cú sút `shot` có xảy ra SAU đường chuyền `pass_event` trong cửa sổ `window_seconds`.
+
+    Nguyên tắc xác định thứ tự thời gian & chống rò rỉ:
+    1. Period: Nếu có thông tin period ở cả hai sự kiện, cả hai phải cùng period.
+    2. Thứ tự sự kiện (Event Order Key):
+       - Nếu cả pass và shot đều có `index` hợp lệ (> 0):
+         Cú sút bắt buộc phải có `shot.index > pass_event.index`.
+         Nếu `shot.index <= pass_event.index`, cú sút xảy ra TRƯỚC hoặc ĐỒNG THỜI -> return False.
+       - Nếu một trong hai thiếu index (None hoặc <= 0):
+         So sánh theo mốc thời gian `pass_time` và `shot.time_seconds`.
+         Nếu `shot.time_seconds == pass_time`: Thiếu chỉ số thứ tự trong cùng giây, không thể chứng minh
+         cú sút xảy ra sau đường chuyền. Chính sách bảo thủ: return False để ngăn chặn việc dùng
+         cú sút xảy ra trước đó trong cùng 1 giây để gán nhãn cho đường chuyền sau.
+         Nếu `shot.time_seconds > pass_time`: Cú sút xảy ra sau đường chuyền.
+    3. Kiểm tra tính nhất quán của mốc thời gian:
+       - Khoảng cách thời gian dt = shot.time_seconds - pass_time.
+       - Cú sút chỉ hợp lệ khi 0 <= dt <= window_seconds.
+       - Nếu dt < 0 (timestamp đi ngược với index), dữ liệu bất nhất -> return False.
+    """
+    if shot.period is not None and pass_event.period is not None:
+        if shot.period != pass_event.period:
+            return False
+
+    pass_time = pass_event.minute * 60 + pass_event.second
+    shot_time = shot.time_seconds
+    dt = shot_time - pass_time
+
+    if dt < 0 or dt > window_seconds:
+        return False
+
+    has_pass_index = pass_event.index is not None and pass_event.index > 0
+    has_shot_index = shot.index is not None and shot.index > 0
+
+    if has_pass_index and has_shot_index:
+        return bool(shot.index > pass_event.index)
+
+    if dt == 0:
+        return False
+
+    return True
 
 
 @dataclass
@@ -72,17 +119,15 @@ def label_passes(
     """Phương án B — nhãn ở mức đường chuyền.
 
     Gán 1 cho đường chuyền nếu có ÍT NHẤT MỘT cú sút (phù hợp với target)
-    xảy ra SAU đường chuyền và trong vòng `window_seconds`.
+    xảy ra SAU đường chuyền (dựa theo index và timestamp) và trong vòng `window_seconds`.
     """
     valid_shots = [s for s in possession.shots if (target != "goal" or s.is_goal)]
     if not valid_shots:
         return [0] * possession.n_passes
 
-    shot_times = [s.time_seconds for s in valid_shots]
     labels = []
     for p in possession.passes:
-        pass_time = p.minute * 60 + p.second
-        is_pos = any(0 <= (st - pass_time) <= window_seconds for st in shot_times)
+        is_pos = any(is_shot_after_pass(p, s, window_seconds) for s in valid_shots)
         labels.append(int(is_pos))
     return labels
 

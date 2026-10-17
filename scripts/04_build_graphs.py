@@ -98,7 +98,9 @@ def graph_integrity_checks(
     checks.append(CheckResult("features_finite", non_finite, "PASS" if non_finite == 0 else "FAIL"))
 
     out_of_range = 0
-    for g in graphs:
+    affected_examples: list[str] = []
+    for idx, g in enumerate(graphs):
+        graph_has_oor = False
         for name in UNIT_RANGE_FEATURES:
             if name in node_names:
                 col = g.x[:, node_names.index(name)]
@@ -106,15 +108,31 @@ def graph_integrity_checks(
                 col = g.edge_attr[:, edge_names.index(name)]
             else:
                 continue
-            if float(col.min()) < 0 or float(col.max()) > 1:
-                out_of_range += 1
-                break
+            c_min, c_max = float(col.min()), float(col.max())
+            if c_min < 0 or c_max > 1:
+                graph_has_oor = True
+                val_str = f"min={c_min:.4f}" if c_min < 0 else f"max={c_max:.4f}"
+                mid = getattr(g, "match_id", "N/A")
+                pid = getattr(g, "possession_id", "N/A")
+                if len(affected_examples) < 2:
+                    affected_examples.append(
+                        f"graph #{idx} (match={mid}, poss={pid}, {name} {val_str})"
+                    )
+        if graph_has_oor:
+            out_of_range += 1
+
+    if out_of_range == 0:
+        oor_note = ""
+    else:
+        sample_str = "; ".join(affected_examples)
+        oor_note = f"{out_of_range} đồ thị có giá trị ngoài [0, 1] do đặc thù vị trí bóng thực tế: {sample_str}"
+
     checks.append(
         CheckResult(
             "normalized_features_in_[0,1]",
             out_of_range,
             "PASS" if out_of_range == 0 else "WARNING",
-            note=f"{out_of_range} đồ thị có tọa độ/độ dài ngoài [0, 1]" if out_of_range else "",
+            note=oor_note,
         )
     )
 

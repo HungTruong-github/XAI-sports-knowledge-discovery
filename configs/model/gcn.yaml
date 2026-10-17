@@ -1,4 +1,5 @@
 # Backbone ĐỀ XUẤT - Tầng 2
+# Input: Node features (x) + Edge index (topo). Không sử dụng edge_attr.
 name: "gcn"
 type: "gnn"
 num_layers: 2              # 2-3 lớp; sâu hơn dễ over-smoothing với đồ thị nhỏ

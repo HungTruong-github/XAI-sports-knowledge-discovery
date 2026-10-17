@@ -22,6 +22,7 @@ MODELS_DIR = PROJECT_ROOT / "models"
 RESULTS_DIR = PROJECT_ROOT / "results"
 TABLES_DIR = RESULTS_DIR / "tables"
 FIGURES_DIR = RESULTS_DIR / "figures"
+METADATA_DIR = RESULTS_DIR / "metadata"
 EXPERIMENTS_DIR = PROJECT_ROOT / "experiments"
 
 
@@ -64,3 +65,8 @@ def get_tables_dir(config: dict) -> Path:
 def get_processed_dir(config: dict) -> Path:
     """Lấy thư mục processed theo run_name."""
     return ensure_dir(PROCESSED_DIR / get_run_name(config))
+
+
+def get_metadata_dir(config: dict) -> Path:
+    """Lấy thư mục metadata theo run_name."""
+    return ensure_dir(METADATA_DIR / get_run_name(config))

@@ -1,4 +1,5 @@
 # Baseline ĐỐI SÁNH - Tầng 2
+# Input: Node features (x) + Edge index (sample & aggregate). Không sử dụng edge_attr.
 # Đại diện hướng sample-and-aggregate, kiểm tra độ nhạy của kết quả
 # với cách tổng hợp thông tin lân cận.
 name: "graphsage"

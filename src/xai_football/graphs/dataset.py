@@ -76,8 +76,14 @@ class GraphBuildReport:
 def load_player_roles(events_parquet: Path) -> dict[tuple[int, int], str | None]:
     """Vai trò của mỗi cầu thủ trong mỗi trận: (match_id, player_id) -> GK/DF/MF/FW.
 
-    Lấy vị trí xuất hiện NHIỀU NHẤT của cầu thủ trong trận (một cầu thủ có thể
-    đổi vị trí giữa trận); hòa thì lấy theo tên vị trí để kết quả tất định.
+    LƯU Ý PHƯƠNG PHÁP LUẬN (Data Availability & Temporal Assumptions):
+    Hàm này gán vai trò theo vị trí xuất hiện nhiều nhất trong toàn bộ trận đấu (match-dominant role).
+    Thiết lập này phù hợp cho Bài toán 1 dưới giả định Phân tích hồi cứu (Retrospective Possession
+    Classification / Post-match Tactical Knowledge Discovery), giúp định danh ổn định vai trò chiến thuật
+    chính của cầu thủ.
+    Tuy nhiên, trong kịch bản Dự đoán thời gian thực (Real-time / Live Stream Prediction), nếu cầu thủ
+    đổi vị trí giữa trận thì thông tin cuối trận chưa khả dụng tại thời điểm diễn ra possession đầu trận.
+    Đối với kịch bản real-time không rò rỉ thông tin tương lai, sử dụng `load_player_starting_roles`.
     """
     ev = pd.read_parquet(events_parquet, columns=["match_id", "player_id", "position_name"])
     ev = ev.dropna(subset=["player_id", "position_name"])
@@ -89,6 +95,27 @@ def load_player_roles(events_parquet: Path) -> dict[tuple[int, int], str | None]
     return {
         (int(r.match_id), int(r.player_id)): role_of(r.position_name)
         for r in top.itertuples(index=False)
+    }
+
+
+def load_player_starting_roles(events_parquet: Path) -> dict[tuple[int, int], str | None]:
+    """Vai trò khởi điểm (Starting/Entry Role) của cầu thủ khi bắt đầu tham gia trận đấu.
+
+    Chỉ sử dụng sự kiện đầu tiên của cầu thủ theo thứ tự `event_index`.
+    Hoàn toàn không sử dụng bất kỳ thông tin sự kiện nào diễn ra trong tương lai của trận đấu,
+    bảo đảm an toàn 100% trước rò rỉ thời gian (temporal leakage-free).
+    """
+    ev = pd.read_parquet(
+        events_parquet, columns=["match_id", "player_id", "position_name", "event_index"]
+    )
+    ev = ev.dropna(subset=["player_id", "position_name"])
+    ev_sorted = ev.sort_values(
+        ["match_id", "player_id", "event_index"], ascending=[True, True, True]
+    )
+    first_positions = ev_sorted.drop_duplicates(["match_id", "player_id"], keep="first")
+    return {
+        (int(r.match_id), int(r.player_id)): role_of(r.position_name)
+        for r in first_positions.itertuples(index=False)
     }
 
 

@@ -182,6 +182,64 @@ def summarize_splits(
     return pd.DataFrame(rows)
 
 
+def compute_graph_split_summary(
+    splits: dict[str, list[int]],
+    graph_index_df: pd.DataFrame,
+    possessions_df: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Tạo bảng thống kê tổng hợp phân bố đồ thị trên từng tập train/val/test sau khi dựng graph.
+
+    Args:
+        splits: dict gồm {"train": [match_id, ...], "val": [...], "test": [...]}.
+        graph_index_df: DataFrame index của đồ thị (yêu cầu match_id, y).
+        possessions_df: DataFrame possession ban đầu (tùy chọn, để tính số possession bị loại).
+
+    Returns:
+        DataFrame chứa: split, n_matches, pct_matches, n_graphs, pct_graphs,
+        n_positive, n_negative, positive_rate, n_dropped_graphs, match_overlap.
+    """
+    total_graphs = len(graph_index_df)
+    total_matches = sum(len(mids) for mids in splits.values())
+
+    s_train = set(splits.get("train", []))
+    s_val = set(splits.get("val", []))
+    s_test = set(splits.get("test", []))
+    no_overlap_train = len(s_train & s_val) == 0 and len(s_train & s_test) == 0
+    no_overlap_val = len(s_val & s_train) == 0 and len(s_val & s_test) == 0
+    no_overlap_test = len(s_test & s_train) == 0 and len(s_test & s_val) == 0
+    overlap_status = {"train": no_overlap_train, "val": no_overlap_val, "test": no_overlap_test}
+
+    rows = []
+    for split_name in ("train", "val", "test"):
+        mids = set(splits.get(split_name, []))
+        sub_graphs = graph_index_df[graph_index_df["match_id"].isin(mids)]
+        n_graphs = len(sub_graphs)
+        n_pos = int((sub_graphs["y"] == 1).sum()) if n_graphs > 0 else 0
+        n_neg = int((sub_graphs["y"] == 0).sum()) if n_graphs > 0 else 0
+        pos_rate = round(n_pos / n_graphs, 4) if n_graphs > 0 else 0.0
+
+        n_dropped = None
+        if possessions_df is not None:
+            sub_poss = possessions_df[possessions_df["match_id"].isin(mids)]
+            n_dropped = len(sub_poss) - n_graphs
+
+        row = {
+            "split": split_name,
+            "n_matches": len(mids),
+            "pct_matches": round(100 * len(mids) / total_matches, 2) if total_matches else 0.0,
+            "n_graphs": n_graphs,
+            "pct_graphs": round(100 * n_graphs / total_graphs, 2) if total_graphs else 0.0,
+            "n_positive": n_pos,
+            "n_negative": n_neg,
+            "positive_rate": pos_rate,
+            "n_dropped_graphs": n_dropped,
+            "match_overlap": "NONE" if overlap_status[split_name] else "DETECTED",
+        }
+        rows.append(row)
+
+    return pd.DataFrame(rows)
+
+
 def save_match_splits(
     splits: dict[str, list[int]],
     match_stats_df: pd.DataFrame,

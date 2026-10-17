@@ -1,0 +1,38 @@
+{
+  "run_id": "20261017_091540",
+  "run_name": "official",
+  "model_name": "mpnn",
+  "model_checkpoint": "models\\official\\mpnn_best.pt",
+  "model_checkpoint_sha256": "afe94d38981644af1d00002e46a93c5ab64cd4819e7ed91cddc7db449ffdb70b",
+  "decision_0001_status": "provisional (possession-level shot classification)",
+  "explainers": [
+    "gnn_explainer"
+  ],
+  "n_graphs_explained": 5,
+  "split": "test",
+  "git": {
+    "branch": "REPRODUCIBILITY",
+    "commit_sha": "9fae6c51704f212479c3e2df29ce19d2d2e4a6dd",
+    "clean_working_tree": false,
+    "is_git_repo": true
+  },
+  "metrics_summary": [
+    {
+      "explainer": "gnn_explainer",
+      "n_graphs": 5,
+      "fidelity_plus_mean": -0.0506,
+      "fidelity_plus_std": 0.0698,
+      "fidelity_minus_mean": -0.0483,
+      "fidelity_minus_std": 0.0435,
+      "sparsity_mean": 0.39,
+      "sparsity_std": 0.2966,
+      "deletion_auc_mean": 0.1475,
+      "deletion_auc_std": 0.1257,
+      "insertion_auc_mean": 0.1541,
+      "insertion_auc_std": 0.1044,
+      "stability_mean": 0.6267,
+      "stability_std": 0.3328
+    }
+  ],
+  "timestamp": "2026-10-17T09:17:43.205816+00:00"
+}

@@ -1,4 +1,4 @@
-﻿model,type,accuracy,precision,recall,f1,auc_roc,auc_pr,brier_score
-logistic_regression,non_graph,0.7084,0.3019,0.8464,0.445,0.8221,0.3379,0.1847
-random_forest,non_graph,0.8834,0.5702,0.6329,0.5999,0.8844,0.6234,0.087
-ann,non_graph,0.8945,0.677,0.4521,0.5421,0.8831,0.6141,0.0782
+﻿model,tier,type,split,n_runs,accuracy,accuracy_std,precision,precision_std,recall,recall_std,f1,f1_std,auc_roc,auc_roc_std,auc_pr,auc_pr_std,brier_score,brier_score_std,threshold
+logistic_regression,Tier 3(a) — Non-graph Baseline,Tabular,test,5,0.7893,0.0,0.3532,0.0,0.6318,0.0,0.4531,0.0,0.8221,0.0,0.3378,0.0,0.1847,0.0,0.6591
+random_forest,Tier 3(a) — Non-graph Baseline,Tabular,test,5,0.8686,0.0046,0.5187,0.0131,0.6887,0.0083,0.5916,0.0066,0.8855,0.0006,0.6197,0.0015,0.0868,0.0002,0.4354
+ann,Tier 3(a) — Non-graph Baseline,Tabular,test,5,0.8673,0.01,0.5181,0.0303,0.6584,0.0396,0.5784,0.0087,0.8837,0.002,0.6115,0.0092,0.0788,0.0012,0.2827
