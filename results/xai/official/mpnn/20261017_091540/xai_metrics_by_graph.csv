@@ -1,0 +1,6 @@
+﻿match_id,possession_id,graph_index,explainer,pred_prob,target,num_edges,fidelity_plus,fidelity_minus,sparsity,stability,deletion_auc,insertion_auc,roar
+3753976,2,0,gnn_explainer,0.05749594047665596,0,6,-0.0356,-0.0953,0.5,0.5,0.1277,0.1519,Deferred (Requires full retraining across all graphs)
+3753976,3,1,gnn_explainer,0.015791555866599083,0,5,-0.0202,-0.0852,0.4,0.8333,0.0473,0.1262,Deferred (Requires full retraining across all graphs)
+3753976,4,2,gnn_explainer,0.26380670070648193,0,15,0.009,-0.0531,0.8,0.1333,0.3597,0.3283,Deferred (Requires full retraining across all graphs)
+3753976,5,3,gnn_explainer,0.02183006890118122,0,4,-0.0351,-0.0079,0.25,0.6667,0.0597,0.05,Deferred (Requires full retraining across all graphs)
+3753976,6,4,gnn_explainer,0.05651122331619263,0,2,-0.1711,0.0,0.0,1.0,0.1429,0.1141,Deferred (Requires full retraining across all graphs)

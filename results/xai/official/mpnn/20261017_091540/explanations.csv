@@ -1,0 +1,6 @@
+﻿match_id,possession_id,graph_index,target,pred_prob,explainer_name,num_nodes,num_edges,mean_edge_importance,max_edge_importance
+3753976,2,0,0,0.0575,GNNExplainer,7,6,0.8235,1.0
+3753976,3,1,0,0.0158,GNNExplainer,5,5,0.6073,1.0
+3753976,4,2,0,0.2638,GNNExplainer,7,15,0.5998,1.0
+3753976,5,3,0,0.0218,GNNExplainer,4,4,0.2718,1.0
+3753976,6,4,0,0.0565,GNNExplainer,3,2,0.5,1.0

@@ -44,6 +44,7 @@ class GNNTrainer:
         val_loader: DataLoader,
         test_loader: DataLoader | None = None,
         scheduler: Any = None,
+        scheduler_monitor: str | None = None,
         early_stopping_patience: int = 20,
         early_stopping_monitor: str = "val_auc_pr",
         early_stopping_mode: str = "max",
@@ -61,6 +62,7 @@ class GNNTrainer:
         self.val_loader = val_loader
         self.test_loader = test_loader
         self.scheduler = scheduler
+        self.scheduler_monitor = scheduler_monitor or early_stopping_monitor
 
         self.patience = early_stopping_patience
         self.monitor = early_stopping_monitor
@@ -179,7 +181,10 @@ class GNNTrainer:
                 # Bước điều chỉnh LR scheduler nếu có
                 if self.scheduler is not None:
                     if isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-                        self.scheduler.step(current_val_metric)
+                        sched_metric = t_val.get(
+                            self.scheduler_monitor.replace("val_", ""), current_val_metric
+                        )
+                        self.scheduler.step(sched_metric)
                     else:
                         self.scheduler.step()
 

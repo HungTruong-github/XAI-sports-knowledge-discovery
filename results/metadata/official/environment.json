@@ -13,14 +13,17 @@
     "matplotlib": "3.11.2",
     "seaborn": "0.13.2",
     "yaml": "6.0.3",
-    "nbformat": "5.11.1"
+    "nbformat": "5.11.1",
+    "shap": "0.52.0",
+    "xgboost": "3.4.1",
+    "lightgbm": "4.7.0"
   },
   "cuda_available": false,
   "cuda_device_count": 0,
   "cuda_device_name": "CPU only",
   "git": {
     "branch": "REPRODUCIBILITY",
-    "commit_sha": "dcac396cd2d16b0dd38a41958ca9c9219f3e4326",
+    "commit_sha": "9fae6c51704f212479c3e2df29ce19d2d2e4a6dd",
     "clean_working_tree": false
   },
   "config_hashes": {
