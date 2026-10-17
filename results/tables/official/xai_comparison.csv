@@ -1,0 +1,2 @@
+﻿explainer,n_graphs,fidelity_plus_mean,fidelity_plus_std,fidelity_minus_mean,fidelity_minus_std,sparsity_mean,sparsity_std,deletion_auc_mean,deletion_auc_std,insertion_auc_mean,insertion_auc_std,stability_mean,stability_std
+gnn_explainer,5,-0.0506,0.0698,-0.0483,0.0435,0.39,0.2966,0.1475,0.1257,0.1541,0.1044,0.6267,0.3328

@@ -6,10 +6,12 @@ Cách dùng:
     python scripts/06_train.py --config configs/data_pilot.yaml --epochs 10
 
 Đầu ra:
-    experiments/<run_name>/<model_name>/best_model.pt
-    experiments/<run_name>/<model_name>/training_history.csv
-    experiments/<run_name>/<model_name>/test_metrics.csv
-    models/<run_name>/<model_name>_best.pt
+    experiments/<run_name>/<model_name>/<seed>/best_model.pt
+    experiments/<run_name>/<model_name>/<seed>/validation_metrics.csv
+    experiments/<run_name>/<model_name>/<seed>/test_metrics.csv
+    experiments/<run_name>/<model_name>/<seed>/run_manifest.json
+    experiments/<run_name>/<model_name>/aggregate_summary.json (khi chạy đủ seeds)
+    models/<run_name>/<model_name>_best.pt (chỉ khi hoàn thành official multi-seed run)
 """
 
 from __future__ import annotations
@@ -18,6 +20,7 @@ import argparse
 import json
 import shutil
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -33,10 +36,12 @@ from xai_football.data.splits import load_match_splits  # noqa: E402
 from xai_football.graphs.dataset import load_graphs  # noqa: E402
 from xai_football.modeling.gnn import build_gnn_model  # noqa: E402
 from xai_football.training.losses import build_loss_fn  # noqa: E402
+from xai_football.training.optimizers import build_optimizer, build_scheduler  # noqa: E402
 from xai_football.training.trainer import GNNTrainer  # noqa: E402
 from xai_football.utils.io import load_yaml  # noqa: E402
 from xai_football.utils.logging import get_logger  # noqa: E402
 from xai_football.utils.paths import get_processed_dir  # noqa: E402
+from xai_football.utils.provenance import compute_dict_sha256, get_git_info  # noqa: E402
 from xai_football.utils.seed import seed_everything  # noqa: E402
 
 logger = get_logger("train")
@@ -56,6 +61,7 @@ def train_single_run(
     epochs: int | None = None,
     batch_size: int | None = None,
     smoke_test: bool = False,
+    git_info: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Huấn luyện một run độc lập với seed xác định và lưu đầy đủ artifact."""
     seed_everything(seed)
@@ -96,34 +102,37 @@ def train_single_run(
     )
     model = build_gnn_model(model_cfg, node_in_dim=node_in_dim, edge_in_dim=edge_in_dim)
 
-    # 4. Optimizer, Loss & Scheduler
+    # 4. Optimizer, Loss & Scheduler (dùng factory pattern có kiểm tra hợp lệ)
     opt_cfg = train_cfg.get("optimizer", {})
-    lr = float(opt_cfg.get("lr", 0.001))
-    weight_decay = float(opt_cfg.get("weight_decay", 0.0001))
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    optimizer = build_optimizer(model, opt_cfg)
 
     loss_fn = build_loss_fn(train_cfg.get("loss"), pos_weight=pos_weight, device=device)
 
     sched_cfg = train_cfg.get("scheduler", {})
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode="max",
-        factor=float(sched_cfg.get("factor", 0.5)),
-        patience=int(sched_cfg.get("patience", 10)),
-    )
+    scheduler = build_scheduler(optimizer, sched_cfg, epochs=actual_epochs)
 
     # 5. Early Stopping
     es_cfg = train_cfg.get("early_stopping", {})
     es_patience = int(es_cfg.get("patience", 20))
     es_monitor = str(es_cfg.get("monitor", "val_auc_pr"))
+    es_mode = str(es_cfg.get("mode", "min" if "loss" in es_monitor else "max"))
+    sched_monitor = str(sched_cfg.get("monitor", es_monitor))
 
     exp_dir.mkdir(parents=True, exist_ok=True)
 
-    # Lưu snapshot cấu hình
+    # Lưu snapshot cấu hình kèm provenance
     snapshot = {
         "seed": seed,
         "model_name": model_name,
         "smoke_test": smoke_test,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "git": git_info or {},
+        "config_hashes": {
+            "model_config": compute_dict_sha256(model_cfg),
+            "train_config": compute_dict_sha256(train_cfg),
+            "data_config": compute_dict_sha256(data_cfg),
+            "split_config": compute_dict_sha256(split_cfg),
+        },
         "model_config": model_cfg,
         "train_config": train_cfg,
         "data_config": data_cfg,
@@ -140,9 +149,10 @@ def train_single_run(
         val_loader=val_loader,
         test_loader=test_loader,
         scheduler=scheduler,
+        scheduler_monitor=sched_monitor,
         early_stopping_patience=es_patience,
         early_stopping_monitor=es_monitor,
-        early_stopping_mode="max",
+        early_stopping_mode=es_mode,
         threshold_strategy=str(train_cfg.get("threshold_strategy", "val_optimal")),
         device=device,
         output_dir=exp_dir,
@@ -158,26 +168,36 @@ def resolve_seeds(
     train_cfg: dict[str, Any],
     cli_seed: int | None = None,
     cli_seeds: str | None = None,
-) -> list[int]:
-    """Xác định danh sách seed cần chạy theo thứ tự ưu tiên:
-    1. Tham số dòng lệnh --seed (chế độ single-seed cho debug/quick test).
-    2. Tham số dòng lệnh --seeds (chuỗi các seed cách nhau bởi dấu phẩy).
+    return_debug: bool = False,
+) -> list[int] | tuple[list[int], bool]:
+    """Xác định danh sách seed cần chạy.
+
+    Ưu tiên:
+    1. Tham số dòng lệnh --seed (debug mode cho 1 seed lẻ).
+    2. Tham số dòng lệnh --seeds (danh sách seed cụ thể).
     3. Cấu hình train.yaml -> seeds (danh sách đầy đủ theo n_runs).
-    4. Cấu hình train.yaml -> seed (seed đơn lẻ).
+    4. Cấu hình train.yaml -> seed.
     5. Mặc định [42].
+
+    Nếu return_debug=True, trả về tuple (seeds, is_debug_run).
     """
     if cli_seed is not None:
-        return [int(cli_seed)]
-    if cli_seeds:
-        return [int(s.strip()) for s in cli_seeds.split(",") if s.strip()]
+        seeds, is_debug = [int(cli_seed)], True
+    elif cli_seeds:
+        seeds, is_debug = [int(s.strip()) for s in cli_seeds.split(",") if s.strip()], False
+    else:
+        configured_seeds = train_cfg.get("seeds")
+        n_runs = int(train_cfg.get("n_runs", len(configured_seeds) if configured_seeds else 1))
+        if configured_seeds and isinstance(configured_seeds, list):
+            seeds, is_debug = [int(s) for s in configured_seeds[:n_runs]], False
+        elif "seed" in train_cfg:
+            seeds, is_debug = [int(train_cfg["seed"])], False
+        else:
+            seeds, is_debug = [42], False
 
-    configured_seeds = train_cfg.get("seeds")
-    n_runs = int(train_cfg.get("n_runs", len(configured_seeds) if configured_seeds else 1))
-    if configured_seeds and isinstance(configured_seeds, list):
-        return [int(s) for s in configured_seeds[:n_runs]]
-    if "seed" in train_cfg:
-        return [int(train_cfg["seed"])]
-    return [42]
+    if return_debug:
+        return seeds, is_debug
+    return seeds
 
 
 def compute_metrics_aggregation(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -195,6 +215,23 @@ def compute_metrics_aggregation(rows: list[dict[str, Any]]) -> dict[str, Any]:
         summary["mean"][col] = round(float(df[col].mean()), 4)
         summary["std"][col] = round(float(df[col].std(ddof=1)), 4) if len(df) > 1 else 0.0
     return summary
+
+
+def clean_stale_aggregates(base_exp_dir: Path) -> None:
+    """Xóa các file tổng hợp cũ trước khi chạy thực nghiệm mới để tránh lẫn lộn provenance."""
+    stale_files = [
+        "val_metrics_all_seeds.csv",
+        "test_metrics_all_seeds.csv",
+        "aggregate_summary.json",
+        "run_failure_manifest.json",
+    ]
+    for fname in stale_files:
+        p = base_exp_dir / fname
+        if p.exists():
+            try:
+                p.unlink()
+            except Exception as e:
+                logger.warning("Không thể xóa file cũ %s: %s", p, e)
 
 
 def main() -> int:
@@ -232,8 +269,15 @@ def main() -> int:
     split_cfg = load_yaml(args.split_config)
 
     # 1. Xác định danh sách seed cần chạy
-    seeds = resolve_seeds(train_cfg, cli_seed=args.seed, cli_seeds=args.seeds)
-    logger.info("Cấu hình thực nghiệm: %d runs với danh sách seeds=%s", len(seeds), seeds)
+    seeds, is_debug_run = resolve_seeds(
+        train_cfg, cli_seed=args.seed, cli_seeds=args.seeds, return_debug=True
+    )
+    logger.info(
+        "Cấu hình thực nghiệm: %d runs với danh sách seeds=%s (debug_mode=%s)",
+        len(seeds),
+        seeds,
+        is_debug_run,
+    )
 
     # Device
     if args.device:
@@ -282,10 +326,13 @@ def main() -> int:
 
     model_name = (model_cfg.get("name") or "model").lower()
 
-    # Cách ly thư mục smoke test để không bao giờ ghi đè kết quả official
+    # Cách ly thư mục smoke test và debug run để không bao giờ ghi đè kết quả official
     if args.smoke_test:
         base_exp_dir = Path("experiments") / f"{run_name}_smoke" / model_name
         models_dir = Path("models") / f"{run_name}_smoke"
+    elif is_debug_run:
+        base_exp_dir = Path("experiments") / f"{run_name}_debug" / model_name
+        models_dir = Path("models") / f"{run_name}_debug"
     else:
         base_exp_dir = Path("experiments") / run_name / model_name
         models_dir = Path("models") / run_name
@@ -293,6 +340,11 @@ def main() -> int:
     base_exp_dir.mkdir(parents=True, exist_ok=True)
     models_dir.mkdir(parents=True, exist_ok=True)
 
+    # Nếu chạy experiment chính thức mới, dọn dẹp các tệp aggregate cũ để tránh stale artifacts
+    if not is_debug_run and not args.smoke_test:
+        clean_stale_aggregates(base_exp_dir)
+
+    git_info = get_git_info()
     all_val_rows: list[dict[str, Any]] = []
     all_test_rows: list[dict[str, Any]] = []
     failed_runs: list[dict[str, Any]] = []
@@ -317,26 +369,8 @@ def main() -> int:
                 epochs=args.epochs,
                 batch_size=args.batch_size,
                 smoke_test=args.smoke_test,
+                git_info=git_info,
             )
-
-            # Lưu bản sao về base_exp_dir cho run đầu tiên nếu không phải smoke test
-            if seed == seeds[0] and not args.smoke_test:
-                for fname in [
-                    "best_model.pt",
-                    "training_history.csv",
-                    "validation_metrics.csv",
-                    "test_metrics.csv",
-                    "run_manifest.json",
-                    "test_predictions.parquet",
-                    "config_snapshot.yaml",
-                ]:
-                    src_file = seed_exp_dir / fname
-                    if src_file.exists():
-                        shutil.copy(src_file, base_exp_dir / fname)
-                if (seed_exp_dir / "best_model.pt").exists():
-                    shutil.copy(
-                        seed_exp_dir / "best_model.pt", models_dir / f"{model_name}_best.pt"
-                    )
 
             if "val_metrics" in res:
                 all_val_rows.append({"seed": seed, **res["val_metrics"]})
@@ -356,38 +390,104 @@ def main() -> int:
             "CẢNH BÁO: Có %d/%d run thất bại: %s", len(failed_runs), len(seeds), failed_runs
         )
 
-    # Tổng hợp kết quả qua các run
-    if all_test_rows and not args.smoke_test:
-        val_df = pd.DataFrame(all_val_rows)
-        test_df = pd.DataFrame(all_test_rows)
+    # 1. Trường hợp TẤT CẢ các run đều thất bại
+    if not all_test_rows:
+        failure_manifest = {
+            "model_name": model_name,
+            "status": "failed",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "n_requested_seeds": len(seeds),
+            "n_successful_runs": 0,
+            "n_failed_runs": len(failed_runs),
+            "failed_runs": failed_runs,
+            "git": git_info,
+        }
+        with open(base_exp_dir / "run_failure_manifest.json", "w", encoding="utf-8") as f:
+            json.dump(failure_manifest, f, indent=2, ensure_ascii=False)
+        logger.error("TẤT CẢ %d run đều thất bại! Đã ghi log failure manifest.", len(seeds))
+        return 1
+
+    # 2. Trường hợp có ít nhất 1 run thành công
+    val_df = pd.DataFrame(all_val_rows)
+    test_df = pd.DataFrame(all_test_rows)
+
+    # Lưu tệp per-seed tổng hợp nếu không phải smoke test
+    if not args.smoke_test:
         val_df.to_csv(base_exp_dir / "val_metrics_all_seeds.csv", index=False)
         test_df.to_csv(base_exp_dir / "test_metrics_all_seeds.csv", index=False)
 
-        val_agg = compute_metrics_aggregation(all_val_rows)
-        test_agg = compute_metrics_aggregation(all_test_rows)
+    val_agg = compute_metrics_aggregation(all_val_rows)
+    test_agg = compute_metrics_aggregation(all_test_rows)
 
-        aggregate_manifest = {
-            "model_name": model_name,
-            "configured_seeds": seeds,
-            "n_successful_runs": len(all_test_rows),
-            "n_failed_runs": len(failed_runs),
-            "successful_seeds": [r["seed"] for r in all_test_rows],
-            "failed_seeds": [r["seed"] for r in failed_runs],
-            "val_metrics_summary": val_agg,
-            "test_metrics_summary": test_agg,
-        }
-        with open(base_exp_dir / "aggregate_summary.json", "w", encoding="utf-8") as f:
-            json.dump(aggregate_manifest, f, indent=2, ensure_ascii=False)
+    is_complete_official = (
+        (len(seeds) >= int(train_cfg.get("n_runs", 5)))
+        and len(failed_runs) == 0
+        and not args.smoke_test
+        and not is_debug_run
+    )
 
-        if len(seeds) > 1:
-            print("\n=== TỔNG HỢP MULTI-RUN VAL METRICS ===")
-            print(val_df.describe().to_string())
-            print("\n=== TỔNG HỢP MULTI-RUN TEST METRICS ===")
-            print(test_df.describe().to_string())
+    status_str = "completed" if len(failed_runs) == 0 else "partial"
+    aggregate_manifest = {
+        "model_name": model_name,
+        "status": status_str,
+        "is_complete_official": is_complete_official,
+        "is_debug_run": is_debug_run,
+        "smoke_test": args.smoke_test,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "git": git_info,
+        "configured_seeds": seeds,
+        "n_requested_seeds": len(seeds),
+        "n_successful_runs": len(all_test_rows),
+        "n_failed_runs": len(failed_runs),
+        "successful_seeds": [r["seed"] for r in all_test_rows],
+        "failed_seeds": [r["seed"] for r in failed_runs],
+        "val_metrics_summary": val_agg,
+        "test_metrics_summary": test_agg,
+    }
+    with open(base_exp_dir / "aggregate_summary.json", "w", encoding="utf-8") as f:
+        json.dump(aggregate_manifest, f, indent=2, ensure_ascii=False)
+
+    # Chọn checkpoint tốt nhất dựa trên tập VALIDATION (không dùng test set để chọn checkpoint!)
+    best_seed = None
+    best_val_auc_pr = -1.0
+    for r in all_val_rows:
+        val_pr = float(r.get("auc_pr", -1.0))
+        if val_pr > best_val_auc_pr:
+            best_val_auc_pr = val_pr
+            best_seed = r["seed"]
+
+    if best_seed is not None and not args.smoke_test and not is_debug_run:
+        best_seed_dir = base_exp_dir / str(best_seed)
+        for fname in [
+            "best_model.pt",
+            "training_history.csv",
+            "validation_metrics.csv",
+            "test_metrics.csv",
+            "run_manifest.json",
+            "test_predictions.parquet",
+            "config_snapshot.yaml",
+        ]:
+            src_file = best_seed_dir / fname
+            if src_file.exists():
+                shutil.copy(src_file, base_exp_dir / fname)
+        if (best_seed_dir / "best_model.pt").exists():
+            shutil.copy(best_seed_dir / "best_model.pt", models_dir / f"{model_name}_best.pt")
+        logger.info(
+            "Đã đồng bộ checkpoint tốt nhất từ seed %d (Val AUC-PR: %.4f) vào %s",
+            best_seed,
+            best_val_auc_pr,
+            models_dir,
+        )
+
+    if len(seeds) > 1:
+        print("\n=== TỔNG HỢP MULTI-RUN VAL METRICS ===")
+        print(val_df.describe().to_string())
+        print("\n=== TỔNG HỢP MULTI-RUN TEST METRICS ===")
+        print(test_df.describe().to_string())
 
     print(
-        f"\nĐã hoàn thành huấn luyện: {len(all_test_rows)} thành công, "
-        f"{len(failed_runs)} thất bại trên tổng số {len(seeds)} seed: {seeds}"
+        f"\nĐã hoàn thành huấn luyện {model_name.upper()}: {len(all_test_rows)} thành công, "
+        f"{len(failed_runs)} thất bại trên tổng số {len(seeds)} seed: {seeds} (Status: {status_str})"
     )
     return 0 if not failed_runs else 1
 
