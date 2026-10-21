@@ -27,7 +27,7 @@ from ..data.labeling import resolve_labeling
 from ..utils.io import load_json, save_json
 from ..utils.logging import get_logger
 from .build import build_graph, truncate_at_shot
-from .features import edge_feature_names, node_feature_names, role_of
+from .features import count_out_of_pitch, edge_feature_names, node_feature_names, role_of
 
 logger = get_logger(__name__)
 
@@ -64,6 +64,8 @@ class GraphBuildReport:
     nodes_unknown_role: int = 0
     nodes_total: int = 0
     edges_total: int = 0
+    # Số tọa độ (điểm đầu/cuối đường chuyền) nằm ngoài sân, đã kẹp về biên sân
+    coords_clipped: int = 0
 
     def as_row(self) -> dict[str, Any]:
         row = asdict(self)
@@ -201,6 +203,7 @@ def build_dataset(
         report.nodes_total += graph.num_nodes
         report.edges_total += graph.num_edges
         report.nodes_unknown_role += sum(1 for r in match_roles.values() if r is None)
+        report.coords_clipped += count_out_of_pitch(passes, pitch_length, pitch_width)
 
         index_rows.append(
             {

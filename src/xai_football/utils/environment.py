@@ -75,7 +75,8 @@ def collect_environment_metadata(repo_root: Path | str | None = None) -> dict[st
     config_dir = root / "configs"
     if config_dir.exists():
         for cfg_path in sorted(config_dir.glob("**/*.yaml")):
-            rel_path = str(cfg_path.relative_to(root))
+            # Dùng dấu "/" để mã băm so sánh được giữa Windows và Linux (CI)
+            rel_path = cfg_path.relative_to(root).as_posix()
             config_hashes[rel_path] = compute_file_sha256(cfg_path)
 
     metadata = {
@@ -93,6 +94,8 @@ def collect_environment_metadata(repo_root: Path | str | None = None) -> dict[st
             "clean_working_tree": git_info["clean_working_tree"],
         },
         "config_hashes": config_hashes,
+        # Bản khóa phiên bản thư viện (pip freeze) dùng cho lần chạy chính thức
+        "requirements_lock_sha256": compute_file_sha256(root / "requirements.lock.txt") or None,
     }
     return metadata
 

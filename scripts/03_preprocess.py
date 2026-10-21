@@ -200,6 +200,7 @@ def main() -> int:
     total_report = CleaningReport()
     match_ids_processed: list[int] = []
     possessions_per_match: list[int] = []
+    failed_possession_match_ids: list[int] = []
 
     for entry in entries:
         comp_id, season_id = entry["competition_id"], entry["season_id"]
@@ -218,6 +219,18 @@ def main() -> int:
                 possessions_per_match.append(len(kept))
             except Exception as exc:  # noqa: BLE001
                 logger.error("Trận %s: lỗi load/clean possession — %s", mid, exc)
+                failed_possession_match_ids.append(mid)
+
+    # Giống pha canonicalize: run chính thức không được âm thầm bỏ trận lỗi.
+    if failed_possession_match_ids:
+        msg = (
+            f"Có {len(failed_possession_match_ids)} trận lỗi load/clean possession: "
+            f"{failed_possession_match_ids}"
+        )
+        if is_official:
+            logger.error(msg)
+            return 1
+        logger.warning(msg)
 
     n_matches = len(match_ids_processed)
     logger.info(

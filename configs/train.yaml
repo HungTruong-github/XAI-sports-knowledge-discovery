@@ -24,9 +24,13 @@ scheduler:
   factor: 0.5
 
 # Xử lý mất cân bằng lớp (Bước 2.3 / 5.4)
+#   Rà soát 21/10/2026: trước đây ghi `name: null # TODO`, nhưng code
+#   (training/losses.py::build_loss_fn) vẫn chạy Weighted BCE khi name = null.
+#   Nay ghi tường minh đúng hành vi đó — KHÔNG đổi kết quả.
 loss:
-  name: null               # TODO: "weighted_bce" | "focal"
-  pos_weight: null         # TODO: tính từ tỉ lệ lớp thực tế sau Bước 2
+  name: "weighted_bce"     # "weighted_bce" | "focal"
+  pos_weight: null         # null = tự tính n_neg / n_pos trên TẬP TRAIN của từng run
+                           # (ghi lại trong run_manifest.json -> pos_weight)
   focal_gamma: 2.0         # chỉ dùng nếu loss = "focal"
 
 early_stopping:

@@ -1,0 +1,36 @@
+﻿seed,accuracy,precision,recall,f1,auc_roc,auc_pr,brier_score,threshold,loss,model,tier,type,split
+42,0.8094,0.3841,0.6296,0.4771,0.8316,0.4519,0.1712,0.65,0.8751,GCN (đề xuất),Tier 2 — GNN Backbone,,
+123,0.7878,0.3556,0.6601,0.4622,0.8288,0.4466,0.1697,0.6136,0.8794,GCN (đề xuất),Tier 2 — GNN Backbone,,
+456,0.8167,0.3926,0.5969,0.4736,0.8319,0.4584,0.1646,0.6591,0.8811,GCN (đề xuất),Tier 2 — GNN Backbone,,
+789,0.7872,0.3583,0.683,0.47,0.8309,0.4496,0.1767,0.6227,0.874,GCN (đề xuất),Tier 2 — GNN Backbone,,
+1024,0.8086,0.3836,0.6351,0.4783,0.8316,0.4563,0.162,0.6318,0.8799,GCN (đề xuất),Tier 2 — GNN Backbone,,
+42,0.8735,0.5365,0.6166,0.5737,0.8756,0.6005,0.1226,0.6955,0.8639,MPNN (đề xuất),Tier 2 — GNN Backbone,,
+123,0.8795,0.5595,0.5991,0.5786,0.8733,0.5969,0.1291,0.7318,0.8527,MPNN (đề xuất),Tier 2 — GNN Backbone,,
+456,0.8766,0.5484,0.6046,0.5751,0.874,0.597,0.1161,0.6864,0.8856,MPNN (đề xuất),Tier 2 — GNN Backbone,,
+789,0.8853,0.5903,0.5556,0.5724,0.8739,0.5969,0.14,0.8409,1.0432,MPNN (đề xuất),Tier 2 — GNN Backbone,,
+1024,0.8772,0.5495,0.6166,0.5811,0.8815,0.6065,0.1431,0.7682,0.796,MPNN (đề xuất),Tier 2 — GNN Backbone,,
+42,0.8237,0.4092,0.6231,0.494,0.8394,0.4623,0.1616,0.6318,0.8748,GATv2 (baseline),Tier 2 — GNN Baseline,,
+123,0.8355,0.4281,0.5675,0.4881,0.8392,0.4555,0.1474,0.6318,0.8844,GATv2 (baseline),Tier 2 — GNN Baseline,,
+456,0.8313,0.4223,0.6013,0.4962,0.8421,0.463,0.1473,0.6227,0.8794,GATv2 (baseline),Tier 2 — GNN Baseline,,
+789,0.8048,0.3831,0.6765,0.4892,0.841,0.4604,0.1503,0.5864,0.8736,GATv2 (baseline),Tier 2 — GNN Baseline,,
+1024,0.8255,0.4136,0.6307,0.4996,0.842,0.4689,0.1602,0.6136,0.8741,GATv2 (baseline),Tier 2 — GNN Baseline,,
+42,0.8464,0.4563,0.5861,0.5131,0.8518,0.5189,0.1476,0.6591,0.8533,GraphSAGE (baseline),Tier 2 — GNN Baseline,,
+123,0.8562,0.4817,0.5458,0.5117,0.85,0.5155,0.1402,0.6682,0.8664,GraphSAGE (baseline),Tier 2 — GNN Baseline,,
+456,0.8247,0.4139,0.6471,0.5049,0.8498,0.5154,0.1485,0.6227,0.8592,GraphSAGE (baseline),Tier 2 — GNN Baseline,,
+789,0.8507,0.4674,0.5773,0.5166,0.8506,0.513,0.1418,0.6591,0.8668,GraphSAGE (baseline),Tier 2 — GNN Baseline,,
+1024,0.8455,0.4559,0.6133,0.523,0.8496,0.5168,0.152,0.6591,0.8531,GraphSAGE (baseline),Tier 2 — GNN Baseline,,
+42,0.7893,0.3532,0.6318,0.4531,0.8221,0.3378,0.1847,0.6591,,Logistic Regression,Tier 3(a) — Non-graph Baseline,Tabular,test
+123,0.7893,0.3532,0.6318,0.4531,0.8221,0.3378,0.1847,0.6591,,Logistic Regression,Tier 3(a) — Non-graph Baseline,Tabular,test
+456,0.7893,0.3532,0.6318,0.4531,0.8221,0.3378,0.1847,0.6591,,Logistic Regression,Tier 3(a) — Non-graph Baseline,Tabular,test
+789,0.7893,0.3532,0.6318,0.4531,0.8221,0.3378,0.1847,0.6591,,Logistic Regression,Tier 3(a) — Non-graph Baseline,Tabular,test
+1024,0.7893,0.3532,0.6318,0.4531,0.8221,0.3378,0.1847,0.6591,,Logistic Regression,Tier 3(a) — Non-graph Baseline,Tabular,test
+42,0.864,0.5055,0.7026,0.588,0.8859,0.619,0.0869,0.4136,,Random Forest,Tier 3(a) — Non-graph Baseline,Tabular,test
+123,0.8608,0.4973,0.7059,0.5835,0.8855,0.6197,0.0867,0.4045,,Random Forest,Tier 3(a) — Non-graph Baseline,Tabular,test
+456,0.8738,0.5343,0.671,0.5949,0.8854,0.6196,0.0868,0.4591,,Random Forest,Tier 3(a) — Non-graph Baseline,Tabular,test
+789,0.8629,0.5027,0.7037,0.5865,0.8863,0.6226,0.0866,0.4136,,Random Forest,Tier 3(a) — Non-graph Baseline,Tabular,test
+1024,0.8704,0.5238,0.683,0.5929,0.8846,0.6182,0.087,0.4409,,Random Forest,Tier 3(a) — Non-graph Baseline,Tabular,test
+42,0.8668,0.5135,0.6841,0.5866,0.8855,0.6193,0.0783,0.2773,,ANN (MLP),Tier 3(a) — Non-graph Baseline,Tabular,test
+123,0.8808,0.5626,0.6166,0.5884,0.8833,0.6132,0.0783,0.3227,,ANN (MLP),Tier 3(a) — Non-graph Baseline,Tabular,test
+456,0.867,0.5143,0.6656,0.5802,0.8835,0.6125,0.0784,0.2864,,ANN (MLP),Tier 3(a) — Non-graph Baseline,Tabular,test
+789,0.8795,0.5565,0.6275,0.5899,0.8858,0.6183,0.0776,0.3227,,ANN (MLP),Tier 3(a) — Non-graph Baseline,Tabular,test
+1024,0.8566,0.4863,0.6765,0.5658,0.8814,0.5951,0.0809,0.2864,,ANN (MLP),Tier 3(a) — Non-graph Baseline,Tabular,test

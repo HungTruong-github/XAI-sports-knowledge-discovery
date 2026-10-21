@@ -1,9 +1,10 @@
-check,value,status,note
+﻿check,value,status,note
 nodes_with_unknown_role,0,PASS,
 edge_index_within_nodes,0,PASS,
 no_isolated_nodes,0,PASS,
 feature_dims_match_names,0,PASS,
 features_finite,0,PASS,
-"normalized_features_in_[0,1]",1,WARNING,"1 đồ thị có tọa độ ngoài [0, 1] (hợp lệ: quả phạt góc thực tế start_x=120.9 -> 1.0075)"
+"normalized_features_in_[0,1]",0,PASS,
+coords_clipped_to_pitch,1,PASS,"1 tọa độ ngoài khung 120x80 đã được kẹp về biên sân (sai số ghi nhận của StatsBomb, ví dụ phạt góc x=120.9)"
 edges_match_source_passes,0,PASS,
 no_edges_after_first_shot,0,PASS,

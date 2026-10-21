@@ -1,12 +1,12 @@
 {
   "os": "Windows-11-10.0.26200-SP0",
-  "python_version": "3.12.0",
+  "python_version": "3.13.0",
   "architecture": "AMD64",
-  "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+  "processor": "Intel64 Family 6 Model 186 Stepping 3, GenuineIntel",
   "packages": {
-    "torch": "2.14.0+cpu",
-    "torch_geometric": "2.8.0.post1",
-    "pandas": "3.0.1",
+    "torch": "2.14.1+cpu",
+    "torch_geometric": "2.8.1",
+    "pandas": "3.0.6",
     "numpy": "2.5.4",
     "scipy": "1.18.1",
     "sklearn": "1.9.1",
@@ -14,30 +14,31 @@
     "seaborn": "0.13.2",
     "yaml": "6.0.3",
     "nbformat": "5.11.1",
-    "shap": "0.52.0",
-    "xgboost": "3.4.1",
-    "lightgbm": "4.7.0"
+    "shap": "0.54.1",
+    "xgboost": "not installed",
+    "lightgbm": "not installed"
   },
   "cuda_available": false,
   "cuda_device_count": 0,
   "cuda_device_name": "CPU only",
   "git": {
-    "branch": "REPRODUCIBILITY",
-    "commit_sha": "c05a6138f040f22bbbb70003ad54ec0ecebf8cd0",
-    "clean_working_tree": true
+    "branch": "main",
+    "commit_sha": "fc18a929b82914cea6c9ff1bb54d89550597f12e",
+    "clean_working_tree": false
   },
   "config_hashes": {
-    "configs\\data.yaml": "640f250f1c7379a24b8336c66b8b53e2ad37cb7a82af598032685c2ba29582f2",
-    "configs\\data_pilot.yaml": "9f6df979afff6b8d160ac6a7620151aecbf8eba822d1796f1eabf08bd0fb0704",
-    "configs\\graph.yaml": "068a38cdda6b0f8e349eb88f93d34ae3fb5b0976787020b47109ac78212ac0ba",
-    "configs\\hybrid_centrality.yaml": "4c468f82b645a53d83fc9bf7bc04d8e9a7f6660a86092090b7b407ee6c6c14db",
-    "configs\\model\\baseline_tabular.yaml": "497f740384feb5a4b97ab16903e37b46514c08a912be29a01c9cc22a2571a1fc",
-    "configs\\model\\gatv2.yaml": "eefff6218b25c1643229b98d68df87d2a39a6460fb201e881f8d3fcd045036ad",
-    "configs\\model\\gcn.yaml": "599fe80ac58e7cd51d3748f7382ec1240ddebf5d179181a1131b3854fbe343f8",
-    "configs\\model\\graphsage.yaml": "3ab90dd99d7d2b817b0cee1c4f4e674faab768e2c0f626be360ee467a0602bc2",
-    "configs\\model\\mpnn.yaml": "5c4c62e80f94db78f3a3235d4769aa8b813a0d0b28f90e624fde2713e2c268b9",
-    "configs\\split.yaml": "2e82c44e092ac5b74a74b0fc28f1e86ff3b3ef3e5c75c161337fc00b6512c8f2",
-    "configs\\train.yaml": "0eb5e86fe1659373b0151f41b7199f814e8f6bde7488392a284e3cfd763ae4a6",
-    "configs\\xai.yaml": "76ad6a0ae671f746fe381379411f291fb4e62e06c04bb5fc5fd02289de8ed7c4"
-  }
+    "configs/data.yaml": "00fdc1bdb7d3a5fd53f74b2844482c7769cffdf7488d2a6fdb5850a73ca44057",
+    "configs/data_pilot.yaml": "9f6df979afff6b8d160ac6a7620151aecbf8eba822d1796f1eabf08bd0fb0704",
+    "configs/graph.yaml": "068a38cdda6b0f8e349eb88f93d34ae3fb5b0976787020b47109ac78212ac0ba",
+    "configs/hybrid_centrality.yaml": "4c468f82b645a53d83fc9bf7bc04d8e9a7f6660a86092090b7b407ee6c6c14db",
+    "configs/model/baseline_tabular.yaml": "497f740384feb5a4b97ab16903e37b46514c08a912be29a01c9cc22a2571a1fc",
+    "configs/model/gatv2.yaml": "eefff6218b25c1643229b98d68df87d2a39a6460fb201e881f8d3fcd045036ad",
+    "configs/model/gcn.yaml": "599fe80ac58e7cd51d3748f7382ec1240ddebf5d179181a1131b3854fbe343f8",
+    "configs/model/graphsage.yaml": "3ab90dd99d7d2b817b0cee1c4f4e674faab768e2c0f626be360ee467a0602bc2",
+    "configs/model/mpnn.yaml": "e1b8533986eaf356259dc4f8b96156d11e5ec10a49e4ed17a388a385e8509488",
+    "configs/split.yaml": "2e82c44e092ac5b74a74b0fc28f1e86ff3b3ef3e5c75c161337fc00b6512c8f2",
+    "configs/train.yaml": "a22475773b83a12ea7c414b76b418761cdfea2588518385fe9075728c6948d10",
+    "configs/xai.yaml": "76ad6a0ae671f746fe381379411f291fb4e62e06c04bb5fc5fd02289de8ed7c4"
+  },
+  "requirements_lock_sha256": "a308244f39cab34f523dfa09b10a9c0481d4d6467034a8e2d1bb04a53a0c8fab"
 }

@@ -12,7 +12,9 @@ from xai_football.graphs.dataset import build_dataset, load_player_roles
 from xai_football.graphs.features import (
     POSITION_TO_ROLE,
     ROLES,
+    clip_to_pitch,
     compute_edge_features,
+    count_out_of_pitch,
     edge_feature_names,
     node_feature_names,
     role_of,
@@ -286,11 +288,11 @@ def test_load_player_starting_roles_temporal_safety(tmp_path):
     assert starting_roles[(1, 10)] == "DF"
 
 
-def test_corner_kick_coordinate_boundary():
-    """Trong StatsBomb, quả phạt góc có thể có start_x > 120 (ví dụ 120.9) do góc sân.
+def test_corner_kick_coordinate_is_clipped_to_pitch():
+    """StatsBomb có thể ghi phạt góc start_x = 120.9 (> 120) do sai số ghi nhận.
 
-    Khi chuẩn hóa chia cho 120, giá trị này = 1.0075 > 1.0.
-    Đây là hiện tượng hợp lệ theo miền bóng đá thực tế, không phải lỗi tính toán.
+    Tọa độ được kẹp về biên sân trước khi chuẩn hóa: start_x = 1.0 (không còn 1.0075),
+    độ dài/góc tính từ tọa độ đã kẹp, và build_dataset đếm số tọa độ bị kẹp.
     """
     passes = [
         _pass("ck1", 1, 10, 11, 120.9, 2.8, 110.0, 38.0),
@@ -298,5 +300,20 @@ def test_corner_kick_coordinate_boundary():
     ]
     edge_rows = compute_edge_features(passes, GRAPH_CFG["edges"]["features"])
     ck1 = dict(zip(EDGE_NAMES, edge_rows[0], strict=True))
-    assert ck1["start_x"] == pytest.approx(120.9 / 120.0)
-    assert ck1["start_x"] > 1.0
+    assert ck1["start_x"] == pytest.approx(1.0)
+    assert ck1["length"] == pytest.approx(
+        math.hypot(110.0 - 120.0, 38.0 - 2.8) / math.hypot(120, 80)
+    )
+
+    assert clip_to_pitch(120.9, -0.5) == (120.0, 0.0)
+    assert clip_to_pitch(60.0, 40.0) == (60.0, 40.0)
+    assert count_out_of_pitch(passes) == 1
+
+    possessions = _possessions_df(
+        [{"possession_id": 1, "has_shot": False, "first_shot_index": None}]
+    )
+    pass_df = pd.DataFrame([{**p, "possession_id": 1} for p in passes])
+    graphs, _, report = build_dataset(possessions, pass_df, {}, DATA_CFG, GRAPH_CFG)
+    assert report.coords_clipped == 1
+    assert float(graphs[0].edge_attr[:, EDGE_NAMES.index("start_x")].max()) <= 1.0
+    assert float(graphs[0].x[:, NODE_NAMES.index("mean_x")].max()) <= 1.0
