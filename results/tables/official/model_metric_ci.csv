@@ -1,0 +1,22 @@
+﻿model,metric,n_seeds,value,ci95_low,ci95_high,n_boot_valid
+GCN (đề xuất),auc_pr,5,0.4526,0.4167,0.4891,10000
+MPNN (đề xuất),auc_pr,5,0.5996,0.566,0.6324,10000
+GATv2 (baseline),auc_pr,5,0.462,0.4274,0.4971,10000
+GraphSAGE (baseline),auc_pr,5,0.5159,0.4814,0.5507,10000
+Logistic Regression,auc_pr,5,0.3378,0.3134,0.3658,10000
+Random Forest,auc_pr,5,0.6198,0.5833,0.6549,10000
+ANN (MLP),auc_pr,5,0.6117,0.5776,0.6448,10000
+GCN (đề xuất),auc_roc,5,0.831,0.8168,0.8437,10000
+MPNN (đề xuất),auc_roc,5,0.8756,0.8628,0.8877,10000
+GATv2 (baseline),auc_roc,5,0.8408,0.8291,0.8516,10000
+GraphSAGE (baseline),auc_roc,5,0.8503,0.837,0.8626,10000
+Logistic Regression,auc_roc,5,0.8221,0.8076,0.8357,10000
+Random Forest,auc_roc,5,0.8855,0.8725,0.8976,10000
+ANN (MLP),auc_roc,5,0.8839,0.8723,0.8949,10000
+GCN (đề xuất),brier_score,5,0.1688,0.1628,0.1751,10000
+MPNN (đề xuất),brier_score,5,0.1302,0.1231,0.1373,10000
+GATv2 (baseline),brier_score,5,0.1534,0.1487,0.1582,10000
+GraphSAGE (baseline),brier_score,5,0.146,0.14,0.1522,10000
+Logistic Regression,brier_score,5,0.1847,0.1776,0.1918,10000
+Random Forest,brier_score,5,0.0868,0.0817,0.092,10000
+ANN (MLP),brier_score,5,0.0787,0.0739,0.0837,10000

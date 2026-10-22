@@ -122,6 +122,13 @@ def clean_possessions(
     prep = config.get("preprocessing") or {}
     pitch = config.get("pitch") or {}
 
+    if prep.get("impute_coordinates", False):
+        # Không có code suy diễn tọa độ; báo lỗi thay vì lặng lẽ bỏ qua cấu hình.
+        raise NotImplementedError(
+            "preprocessing.impute_coordinates = true chưa được cài đặt "
+            "(dự án chọn loại bỏ sự kiện thiếu tọa độ, không suy diễn)."
+        )
+
     min_passes = prep.get("min_passes_per_possession", 2)
     drop_extra_time = prep.get("drop_extra_time", True)
     drop_missing_coords = prep.get("drop_missing_coordinates", True)

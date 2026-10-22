@@ -28,6 +28,7 @@ from torch_geometric.loader import DataLoader
 
 from xai_football.evaluation.metrics import compute_binary_metrics, find_best_threshold
 from xai_football.utils.logging import get_logger
+from xai_football.utils.paths import EXPERIMENTS_DIR
 
 logger = get_logger("trainer")
 
@@ -71,7 +72,7 @@ class GNNTrainer:
         self.seed = seed
         self.model_name = model_name
 
-        self.output_dir = Path(output_dir) if output_dir else Path("experiments/run")
+        self.output_dir = Path(output_dir) if output_dir else EXPERIMENTS_DIR / "run"
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         self.best_metric = -float("inf") if self.mode == "max" else float("inf")
@@ -153,6 +154,27 @@ class GNNTrainer:
         metrics = compute_binary_metrics(targets, probs, threshold=threshold)
         metrics["loss"] = round(avg_loss, 4)
         return metrics
+
+    @staticmethod
+    def prediction_frame(
+        loader: DataLoader, targets: np.ndarray, probs: np.ndarray
+    ) -> pd.DataFrame:
+        """Bảng dự đoán kèm khóa (match_id, possession_id) của từng đồ thị.
+
+        Khóa cho phép Bước 6 ghép đúng từng mẫu giữa các mô hình (kiểm định cặp,
+        bootstrap theo trận). Chỉ hợp lệ khi loader KHÔNG xáo trộn (val/test).
+        """
+        dataset = getattr(loader, "dataset", None)
+        frame = pd.DataFrame({"y_true": targets, "y_prob": probs})
+        if dataset is not None and len(dataset) == len(frame):
+            frame.insert(0, "match_id", [int(getattr(g, "match_id", -1)) for g in dataset])
+            frame.insert(
+                1, "possession_id", [int(getattr(g, "possession_id", -1)) for g in dataset]
+            )
+            labels = np.array([int(g.y.item()) for g in dataset], dtype=int)
+            if not np.array_equal(labels, frame["y_true"].to_numpy()):
+                raise RuntimeError("Thứ tự dự đoán không khớp thứ tự đồ thị trong loader.")
+        return frame
 
     def is_improvement(self, current_val: float) -> bool:
         if self.mode == "max":
@@ -263,6 +285,9 @@ class GNNTrainer:
         }
         val_row.update(val_metrics)
         pd.DataFrame([val_row]).to_csv(self.output_dir / "validation_metrics.csv", index=False)
+        self.prediction_frame(self.val_loader, val_targets, val_probs).to_parquet(
+            self.output_dir / "val_predictions.parquet", index=False
+        )
         logger.info("Validation metrics (best checkpoint, th=%.4f): %s", best_thresh, val_metrics)
 
         # 4. Đánh giá trên Test bằng đúng threshold đã chốt từ validation
@@ -282,14 +307,26 @@ class GNNTrainer:
             pd.DataFrame([test_row]).to_csv(self.output_dir / "test_metrics.csv", index=False)
             logger.info("Test metrics (best checkpoint, th=%.4f): %s", best_thresh, test_metrics)
 
-            # Lưu prediction scores để vẽ ROC/PR curves trong notebook
-            pred_df = pd.DataFrame({"y_true": test_targets, "y_prob": test_probs})
+            # Lưu prediction scores (kèm khóa possession) cho ROC/PR và kiểm định ở Bước 6
+            pred_df = self.prediction_frame(self.test_loader, test_targets, test_probs)
             pred_df.to_parquet(self.output_dir / "test_predictions.parquet", index=False)
 
         # 5. Lưu run manifest
+        pos_weight = getattr(self.loss_fn, "pos_weight", None)
         manifest = {
             "model_name": self.model_name,
             "seed": self.seed,
+            "loss_fn": type(self.loss_fn).__name__,
+            "pos_weight": (
+                round(float(pos_weight.flatten()[0]), 6) if pos_weight is not None else None
+            ),
+            "n_parameters": int(sum(p.numel() for p in self.model.parameters())),
+            "n_train_graphs": len(getattr(self.train_loader, "dataset", [])),
+            "n_val_graphs": len(getattr(self.val_loader, "dataset", [])),
+            "n_test_graphs": (
+                len(getattr(self.test_loader, "dataset", [])) if self.test_loader else 0
+            ),
+            "epochs_run": len(self.history),
             "best_epoch": self.best_epoch,
             "best_val_metric": self.best_metric,
             "threshold_strategy": self.threshold_strategy,

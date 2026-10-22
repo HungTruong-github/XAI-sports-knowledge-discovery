@@ -29,6 +29,7 @@ import pandas as pd  # noqa: E402
 from xai_football.data.splits import (  # noqa: E402
     compute_graph_split_summary,
     compute_match_stats,
+    label_column_for,
     make_stratified_match_split,
     save_match_splits,
     summarize_splits,
@@ -40,6 +41,7 @@ from xai_football.utils.logging import get_logger  # noqa: E402
 from xai_football.utils.paths import (  # noqa: E402
     get_interim_dir,
     get_processed_dir,
+    get_split_dir,
     get_tables_dir,
 )
 
@@ -76,8 +78,10 @@ def main() -> int:
     possessions_df = pd.read_parquet(possessions_path)
     logger.info("Đọc %d possession từ %s", len(possessions_df), possessions_path)
 
-    # 1. Tính thống kê từng trận
-    match_stats_df = compute_match_stats(possessions_df)
+    # 1. Tính thống kê từng trận (phân tầng theo đúng nhãn trong configs/data.yaml)
+    label_col = label_column_for(data_cfg)
+    match_stats_df = compute_match_stats(possessions_df, label_col=label_col)
+    logger.info("Phân tầng theo cột nhãn: %s", label_col)
     n_matches = len(match_stats_df)
     logger.info("Tính thống kê cho %d trận đấu", n_matches)
 
@@ -102,9 +106,8 @@ def main() -> int:
     checks = validate_splits(splits, match_stats_df["match_id"].tolist(), match_stats_df)
     checks_df = run_all_checks(checks)
 
-    # 5. Lưu kết quả ra thư mục splits
-    base_split_dir = Path(split_cfg.get("output_dir", "data/splits"))
-    out_split_dir = base_split_dir if run_name == "official" else base_split_dir / run_name
+    # 5. Lưu kết quả ra thư mục splits (đường dẫn tính từ gốc repo)
+    out_split_dir = get_split_dir(split_cfg, run_name)
     save_match_splits(splits, match_stats_df, out_split_dir)
 
     # Lưu bảng tổng kết vào results/tables/<run_name>/

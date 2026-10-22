@@ -128,3 +128,38 @@ def test_compute_graph_split_summary(sample_possessions_df):
     assert "match_overlap" in summary.columns
     assert (summary["match_overlap"] == "NONE").all()
     assert summary["n_dropped_graphs"].sum() == 5
+
+
+def test_label_column_follows_labeling_target():
+    """Phân tầng ở Bước 4 phải dùng đúng nhãn mô hình sẽ học (shot hoặc goal)."""
+    from xai_football.data.splits import label_column_for
+
+    assert label_column_for({"labeling": {"target": "shot"}}) == "has_shot"
+    assert label_column_for({"labeling": {"target": "goal"}}) == "has_goal"
+    with pytest.raises(ValueError):
+        label_column_for({"labeling": {"target": None}})
+
+
+def test_compute_match_stats_uses_requested_label_column():
+    df = pd.DataFrame(
+        {
+            "match_id": [1, 1, 1, 1],
+            "possession_id": [1, 2, 3, 4],
+            "has_shot": [True, True, False, False],
+            "has_goal": [True, False, False, False],
+        }
+    )
+    shot = compute_match_stats(df, label_col="has_shot")
+    goal = compute_match_stats(df, label_col="has_goal")
+    assert int(shot["n_positive"].iloc[0]) == 2
+    assert int(goal["n_positive"].iloc[0]) == 1
+    with pytest.raises(ValueError, match="missing_col"):
+        compute_match_stats(df, label_col="missing_col")
+
+
+def test_split_dir_is_resolved_from_project_root():
+    """Đường dẫn split không phụ thuộc thư mục làm việc hiện tại."""
+    from xai_football.utils.paths import PROJECT_ROOT, get_split_dir
+
+    assert get_split_dir({"output_dir": "data/splits"}, "official") == PROJECT_ROOT / "data/splits"
+    assert get_split_dir({}, "pilot") == PROJECT_ROOT / "data/splits" / "pilot"

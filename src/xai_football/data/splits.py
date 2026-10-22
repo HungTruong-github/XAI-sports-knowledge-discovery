@@ -22,11 +22,24 @@ from xai_football.utils.logging import get_logger
 logger = get_logger("splits")
 
 
-def compute_match_stats(possessions_df: pd.DataFrame) -> pd.DataFrame:
+def label_column_for(data_cfg: dict) -> str:
+    """Cột nhãn trong possessions.parquet ứng với labeling.target của configs/data.yaml.
+
+    Bảo đảm phân tầng ở Bước 4 dùng đúng nhãn mà mô hình sẽ học (shot hoặc goal).
+    """
+    target = (data_cfg.get("labeling") or {}).get("target")
+    if target not in ("shot", "goal"):
+        raise ValueError(f"labeling.target không hợp lệ hoặc chưa điền: {target!r}")
+    return "has_goal" if target == "goal" else "has_shot"
+
+
+def compute_match_stats(possessions_df: pd.DataFrame, label_col: str | None = None) -> pd.DataFrame:
     """Tính thống kê cấp độ trận đấu: số possession, số nhãn dương và tỉ lệ nhãn dương.
 
     Args:
-        possessions_df: DataFrame possession (yêu cầu các cột match_id, has_shot hoặc label).
+        possessions_df: DataFrame possession (yêu cầu các cột match_id và cột nhãn).
+        label_col: Cột nhãn dùng để phân tầng. None = tự chọn 'has_shot' (hoặc 'label').
+            Pipeline chính thức truyền giá trị từ `label_column_for(data_cfg)`.
 
     Returns:
         DataFrame chứa: match_id, n_possessions, n_positive, positive_label_rate.
@@ -34,9 +47,10 @@ def compute_match_stats(possessions_df: pd.DataFrame) -> pd.DataFrame:
     if "match_id" not in possessions_df.columns:
         raise ValueError("DataFrame thiếu cột 'match_id'")
 
-    label_col = "has_shot" if "has_shot" in possessions_df.columns else "label"
+    if label_col is None:
+        label_col = "has_shot" if "has_shot" in possessions_df.columns else "label"
     if label_col not in possessions_df.columns:
-        raise ValueError("DataFrame thiếu cột nhãn ('has_shot' hoặc 'label')")
+        raise ValueError(f"DataFrame thiếu cột nhãn '{label_col}'")
 
     grouped = possessions_df.groupby("match_id", as_index=False).agg(
         n_possessions=(

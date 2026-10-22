@@ -5,6 +5,8 @@ type: "gnn"
 num_layers: 3
 hidden_dim: 64
 dropout: 0.3
-edge_dim: null             # TODO: bằng số chiều edge_attr sau Bước 3
+edge_dim: null             # null = tự lấy từ dữ liệu (edge_attr.shape[1] = 12, xem
+                           # data/processed/<run>/feature_names.json); scripts/06_train.py
+                           # truyền giá trị thật vào build_gnn_model(edge_in_dim=...)
 readout: "mean"
 head_hidden_dim: 32
