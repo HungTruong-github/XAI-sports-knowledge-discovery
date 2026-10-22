@@ -1,0 +1,6 @@
+{
+  "source_path": "models/official/gatv2_best.pt",
+  "size_bytes": 161461,
+  "sha256": "32ae6e050efa51de1f915520abcf4f243b835608666741baa4e84fa7a8ba376b",
+  "reason": "Exceeds max size limit or heavy binary format, registered by reference"
+}

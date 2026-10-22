@@ -1,0 +1,6 @@
+﻿check,value,status,note
+no_leakage_train_val,0.0,PASS,
+no_leakage_train_test,0.0,PASS,
+no_leakage_val_test,0.0,PASS,
+splits_cover_all_matches,0.0,PASS,
+stratification_rate_balance,0.0027,PASS,Độ lệch tỉ lệ nhãn dương lớn nhất giữa các tập: 0.0027

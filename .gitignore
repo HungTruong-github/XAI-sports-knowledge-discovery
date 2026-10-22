@@ -62,10 +62,11 @@ data/external/**
 *.joblib
 *.npy
 *.npz
-# ...trừ các file nhỏ nằm trong results/ dùng cho báo cáo và data/splits/
+# ...trừ các file nhỏ nằm trong results/ dùng cho báo cáo, data/splits/ và outputs/
 !results/**/*.csv
 !data/splits/**/*.csv
 !data/splits/*.csv
+!outputs/**/*.csv
 
 # ============================================================
 # ĐẦU RA THỰC NGHIỆM
@@ -85,8 +86,26 @@ mlruns/
 mlartifacts/
 wandb/
 lightning_logs/
-outputs/
 .hydra/
+
+# --- outputs/ : bộ minh chứng có tổ chức phục vụ kiểm toán và bài báo ---
+# Cho phép commit: README, manifest JSON, report MD, log TXT/LOG, PNG/SVG, bảng CSV nhỏ.
+# Chặn tuyệt đối các file nhị phân nặng, checkpoint, graph .pt và dữ liệu thô.
+outputs/**/raw/**
+outputs/**/*.pt
+outputs/**/*.pth
+outputs/**/*.ckpt
+outputs/**/*.parquet
+outputs/**/*.feather
+outputs/**/*.h5
+outputs/**/*.hdf5
+outputs/**/*.pkl
+outputs/**/*.joblib
+outputs/**/*.npy
+outputs/**/*.npz
+outputs/**/*.mp4
+outputs/**/*.avi
+outputs/**/*.tmp*
 
 # ============================================================
 # results/ : bảng + hình CUỐI CÙNG đưa vào khóa luận -> CÓ commit

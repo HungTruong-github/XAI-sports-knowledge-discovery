@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "official_evaluation_20261021_184358",
+  "step_id": "step_01",
+  "step_name": "Data Audit & Collection",
+  "status": "VERIFIED",
+  "started_at": "2026-10-22T18:20:10.422506+00:00",
+  "finished_at": "2026-10-22T18:20:10.422506+00:00",
+  "command_or_entrypoint": "scripts/00_audit_data.py --config configs/data.yaml",
+  "exit_code": 0,
+  "git": {
+    "branch": "Clean",
+    "commit_sha": "7d9e0f8fa249249605752834a485726247affc0e",
+    "clean_working_tree": false
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python_version": "3.12.0",
+    "architecture": "AMD64",
+    "packages": {
+      "torch": "2.14.0+cpu",
+      "torch_geometric": "2.8.0.post1",
+      "pandas": "3.0.1",
+      "numpy": "2.5.4",
+      "scikit-learn": "not installed"
+    }
+  },
+  "configs": {},
+  "inputs": [
+    {
+      "path": "data/raw/2/27",
+      "n_files": 760,
+      "total_size_mb": 1305.95,
+      "description": "StatsBomb raw event and lineup JSONs for Premier League 2015/16"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "dataset_inventory.csv",
+      "path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/files/dataset_inventory.csv",
+      "source_path": "results/tables/official/dataset_inventory.csv",
+      "size_bytes": 200,
+      "sha256": "b198b15b469e4af7032faaaf20539ddc2368999ee267b5424e2516c8c3531f34",
+      "file_type": "table",
+      "generator": "00_audit_data.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "collection_report.csv",
+      "path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/files/collection_report.csv",
+      "source_path": "results/tables/official/collection_report.csv",
+      "size_bytes": 221,
+      "sha256": "3a43475101f2b356b48a1be4fd23d11f4466928acc03a647588bb908befcb9fd",
+      "file_type": "table",
+      "generator": "00_audit_data.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "raw_dataset_inventory.csv",
+      "path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/files/raw_dataset_inventory.csv",
+      "source_path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/files/raw_dataset_inventory.csv",
+      "size_bytes": 23214,
+      "sha256": "f3a2778d107f7d0779117205a33856102a5c7601f0e5cf68b821db50f92fd886",
+      "file_type": "table",
+      "generator": "audit_raw",
+      "is_by_reference": false
+    },
+    {
+      "name": "01_collection_status.png",
+      "path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/figures/01_collection_status.png",
+      "source_path": "results/figures/official/01_collection_status.png",
+      "size_bytes": 95358,
+      "sha256": "49aed0d533ae18155a18b4d8424878a846c54df6412bcd37c10f99ad1fb315b1",
+      "file_type": "figure",
+      "generator": "notebooks/01",
+      "is_by_reference": false
+    },
+    {
+      "name": "01_collection_status.svg",
+      "path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/figures/01_collection_status.svg",
+      "source_path": "results/figures/official/01_collection_status.svg",
+      "size_bytes": 54782,
+      "sha256": "ea3eb5a298e734d5f7fea924a77ad8228961c3cff954b6ff9e087f8d8d6d67dc",
+      "file_type": "figure",
+      "generator": "notebooks/01",
+      "is_by_reference": false
+    },
+    {
+      "name": "01_match_filesize_dist.png",
+      "path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/figures/01_match_filesize_dist.png",
+      "source_path": "results/figures/official/01_match_filesize_dist.png",
+      "size_bytes": 121587,
+      "sha256": "bed74686c98f9ab22e6eb4b95ea4fd70384d9b51ec0755605433c114ca55b43f",
+      "file_type": "figure",
+      "generator": "notebooks/01",
+      "is_by_reference": false
+    },
+    {
+      "name": "01_match_filesize_dist.svg",
+      "path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/figures/01_match_filesize_dist.svg",
+      "source_path": "results/figures/official/01_match_filesize_dist.svg",
+      "size_bytes": 56990,
+      "sha256": "1fc7335e425ca7df27e83a429445924bbd82c6c8331a66b1a96266be4c732522",
+      "file_type": "figure",
+      "generator": "notebooks/01",
+      "is_by_reference": false
+    },
+    {
+      "name": "collection_report.md",
+      "path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/reports/collection_report.md",
+      "source_path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/reports/collection_report.md",
+      "size_bytes": 376,
+      "sha256": "65b23638cb138e093201de25f06cbd2c19c9f847637856ac21b2da70cdde7f3f",
+      "file_type": "report",
+      "generator": "report",
+      "is_by_reference": false
+    },
+    {
+      "name": "step_01_collection.log",
+      "path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/logs/step_01_collection.log",
+      "source_path": "outputs/step_01_data_audit_and_collection/runs/official_evaluation_20261021_184358/logs/step_01_collection.log",
+      "size_bytes": 657,
+      "sha256": "f6b7b10b1a885ac4e1c3ca3c26943673660ac3f3b57a07e384ca55fd7b8af85a",
+      "file_type": "log",
+      "generator": "step_01",
+      "is_by_reference": false
+    }
+  ],
+  "quality_checks": [
+    {
+      "name": "match_count_complete",
+      "status": "PASS",
+      "details": "Found 380/380 matches"
+    },
+    {
+      "name": "lineup_files_complete",
+      "status": "PASS",
+      "details": "Found 380/380 lineup files"
+    },
+    {
+      "name": "raw_data_accessible",
+      "status": "PASS",
+      "details": "Raw directory: D:\\Project\\XAI-sports-knowledge-discovery\\data\\raw\\2\\27"
+    }
+  ],
+  "dependencies": [],
+  "official_eligible": true,
+  "official_eligibility_reason": "All 380 Premier League matches fully collected"
+}

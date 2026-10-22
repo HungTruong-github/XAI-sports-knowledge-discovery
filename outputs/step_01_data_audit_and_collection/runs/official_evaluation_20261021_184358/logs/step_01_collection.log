@@ -1,0 +1,7 @@
+[2026-10-22T18:20:09.676367+00:00] Đã đăng ký bảng: dataset_inventory.csv
+[2026-10-22T18:20:09.687970+00:00] Đã đăng ký bảng: collection_report.csv
+[2026-10-22T18:20:09.700666+00:00] Tìm thấy 760 tệp JSON trong D:\Project\XAI-sports-knowledge-discovery\data\raw\2\27
+[2026-10-22T18:20:10.327301+00:00] Đã đăng ký biểu đồ: 01_collection_status.png
+[2026-10-22T18:20:10.343463+00:00] Đã đăng ký biểu đồ: 01_collection_status.svg
+[2026-10-22T18:20:10.358385+00:00] Đã đăng ký biểu đồ: 01_match_filesize_dist.png
+[2026-10-22T18:20:10.374173+00:00] Đã đăng ký biểu đồ: 01_match_filesize_dist.svg

@@ -1,0 +1,463 @@
+{
+  "generated_by": "scripts/07_evaluate.py",
+  "generated_at": "2026-10-21T18:43:58.898231+00:00",
+  "git": {
+    "branch": "main",
+    "commit_sha": "fc18a929b82914cea6c9ff1bb54d89550597f12e",
+    "clean_working_tree": false,
+    "is_git_repo": true
+  },
+  "dataset": {
+    "name": "Premier League 2015/2016 (StatsBomb Open Data)",
+    "competitions": [
+      {
+        "name": "Premier League",
+        "season": "2015/2016",
+        "competition_id": 2,
+        "season_id": 27
+      }
+    ],
+    "expected_matches": 380,
+    "n_matches": 380,
+    "clean_possessions": 45365,
+    "labeling": {
+      "mode": "possession_level",
+      "target": "shot",
+      "shot_window_seconds": null
+    },
+    "labeling_status": "TẠM THỜI — Decision 0001 chưa chốt"
+  },
+  "splits": {
+    "strategy": "match_level_stratified",
+    "train_matches": 266,
+    "train_graphs": 31644,
+    "val_matches": 57,
+    "val_graphs": 6757,
+    "test_matches": 57,
+    "test_graphs": 6646
+  },
+  "train_config_path": "configs/train.yaml",
+  "train_config_sha256": "a22475773b83a12ea7c414b76b418761cdfea2588518385fe9075728c6948d10",
+  "models_with_config_changed_after_training": [],
+  "expected_runs_per_model": 5,
+  "models": {
+    "gcn": {
+      "display_name": "GCN (đề xuất)",
+      "tier": "Tier 2 — GNN Backbone",
+      "type": "Graph",
+      "complete": true,
+      "seeds": [
+        42,
+        123,
+        456,
+        789,
+        1024
+      ],
+      "config_path": "configs/model/gcn.yaml",
+      "config_sha256": "599fe80ac58e7cd51d3748f7382ec1240ddebf5d179181a1131b3854fbe343f8",
+      "training_config_dict_sha256": [
+        "4cc6f0855c1f8e0b38a9bbcf7c32fdf1cac53a10ecc54dda0d3f2e1efde5d76d"
+      ],
+      "current_config_matches_training": true,
+      "experiment_dir": "experiments/official/gcn",
+      "best_seed_by_val_auc_pr": 789,
+      "checkpoint_path": "models/official/gcn_best.pt",
+      "checkpoint_sha256": "9b386acd9526cd5a726e41fc58ac0e4ef3f3cf627d6fc198eadbeae410c41ec7",
+      "test_mean_std": {
+        "accuracy": [
+          0.8019,
+          0.0136
+        ],
+        "precision": [
+          0.3748,
+          0.0167
+        ],
+        "recall": [
+          0.6409,
+          0.0326
+        ],
+        "f1": [
+          0.4722,
+          0.0065
+        ],
+        "auc_roc": [
+          0.831,
+          0.0013
+        ],
+        "auc_pr": [
+          0.4526,
+          0.0048
+        ],
+        "brier_score": [
+          0.1688,
+          0.0058
+        ]
+      },
+      "val_auc_pr_mean_std": [
+        0.4168,
+        0.0027
+      ]
+    },
+    "mpnn": {
+      "display_name": "MPNN (đề xuất)",
+      "tier": "Tier 2 — GNN Backbone",
+      "type": "Graph",
+      "complete": true,
+      "seeds": [
+        42,
+        123,
+        456,
+        789,
+        1024
+      ],
+      "config_path": "configs/model/mpnn.yaml",
+      "config_sha256": "e1b8533986eaf356259dc4f8b96156d11e5ec10a49e4ed17a388a385e8509488",
+      "training_config_dict_sha256": [
+        "ef9cbd3fa9e82d47ef64b6a37b0ae91e5000f205f35ea470a372afddb70ec8e1"
+      ],
+      "current_config_matches_training": true,
+      "experiment_dir": "experiments/official/mpnn",
+      "best_seed_by_val_auc_pr": 789,
+      "checkpoint_path": "models/official/mpnn_best.pt",
+      "checkpoint_sha256": "a22c807a01ab015aa89e6a2810cf73d385089456774755a4917688fc5d2c64e4",
+      "test_mean_std": {
+        "accuracy": [
+          0.8784,
+          0.0044
+        ],
+        "precision": [
+          0.5568,
+          0.0204
+        ],
+        "recall": [
+          0.5985,
+          0.0252
+        ],
+        "f1": [
+          0.5762,
+          0.0036
+        ],
+        "auc_roc": [
+          0.8757,
+          0.0034
+        ],
+        "auc_pr": [
+          0.5996,
+          0.0042
+        ],
+        "brier_score": [
+          0.1302,
+          0.0114
+        ]
+      },
+      "val_auc_pr_mean_std": [
+        0.5847,
+        0.0015
+      ]
+    },
+    "gatv2": {
+      "display_name": "GATv2 (baseline)",
+      "tier": "Tier 2 — GNN Baseline",
+      "type": "Graph",
+      "complete": true,
+      "seeds": [
+        42,
+        123,
+        456,
+        789,
+        1024
+      ],
+      "config_path": "configs/model/gatv2.yaml",
+      "config_sha256": "eefff6218b25c1643229b98d68df87d2a39a6460fb201e881f8d3fcd045036ad",
+      "training_config_dict_sha256": [
+        "4bc074347c04b210e84cb49d36c36641a4caa171815f759c94aed79d38d262ed"
+      ],
+      "current_config_matches_training": true,
+      "experiment_dir": "experiments/official/gatv2",
+      "best_seed_by_val_auc_pr": 1024,
+      "checkpoint_path": "models/official/gatv2_best.pt",
+      "checkpoint_sha256": "e3016dd454814327186be860d23983a9e36c53569b0fbe322655595ec505ca14",
+      "test_mean_std": {
+        "accuracy": [
+          0.8242,
+          0.0118
+        ],
+        "precision": [
+          0.4113,
+          0.0174
+        ],
+        "recall": [
+          0.6198,
+          0.0401
+        ],
+        "f1": [
+          0.4934,
+          0.0048
+        ],
+        "auc_roc": [
+          0.8407,
+          0.0014
+        ],
+        "auc_pr": [
+          0.462,
+          0.0048
+        ],
+        "brier_score": [
+          0.1534,
+          0.007
+        ]
+      },
+      "val_auc_pr_mean_std": [
+        0.4373,
+        0.0058
+      ]
+    },
+    "graphsage": {
+      "display_name": "GraphSAGE (baseline)",
+      "tier": "Tier 2 — GNN Baseline",
+      "type": "Graph",
+      "complete": true,
+      "seeds": [
+        42,
+        123,
+        456,
+        789,
+        1024
+      ],
+      "config_path": "configs/model/graphsage.yaml",
+      "config_sha256": "3ab90dd99d7d2b817b0cee1c4f4e674faab768e2c0f626be360ee467a0602bc2",
+      "training_config_dict_sha256": [
+        "ae3b3950420a2b8cb31e8a9896f886b0ed0292247c5b03dc383964212a3e673d"
+      ],
+      "current_config_matches_training": true,
+      "experiment_dir": "experiments/official/graphsage",
+      "best_seed_by_val_auc_pr": 1024,
+      "checkpoint_path": "models/official/graphsage_best.pt",
+      "checkpoint_sha256": "f3274a07be5f74a9f702ea1c838e380bd085419e3f15fea090dae19c7afc4d3c",
+      "test_mean_std": {
+        "accuracy": [
+          0.8447,
+          0.012
+        ],
+        "precision": [
+          0.455,
+          0.0253
+        ],
+        "recall": [
+          0.5939,
+          0.0383
+        ],
+        "f1": [
+          0.5139,
+          0.0066
+        ],
+        "auc_roc": [
+          0.8504,
+          0.0009
+        ],
+        "auc_pr": [
+          0.5159,
+          0.0022
+        ],
+        "brier_score": [
+          0.146,
+          0.0049
+        ]
+      },
+      "val_auc_pr_mean_std": [
+        0.4903,
+        0.0037
+      ]
+    },
+    "logistic_regression": {
+      "display_name": "Logistic Regression",
+      "tier": "Tier 3(a) — Non-graph Baseline",
+      "type": "Tabular",
+      "complete": true,
+      "seeds": [
+        42,
+        123,
+        456,
+        789,
+        1024
+      ],
+      "config_path": "configs/model/baseline_tabular.yaml",
+      "config_sha256": "497f740384feb5a4b97ab16903e37b46514c08a912be29a01c9cc22a2571a1fc",
+      "training_config_dict_sha256": [
+        "e4a331310742e3583700590d8cf6e3305c1591ff51b07de9c3c1406d1441cef1"
+      ],
+      "current_config_matches_training": true,
+      "experiment_dir": "experiments/official/baselines",
+      "best_seed_by_val_auc_pr": null,
+      "checkpoint_path": null,
+      "checkpoint_sha256": null,
+      "test_mean_std": {
+        "accuracy": [
+          0.7893,
+          0.0
+        ],
+        "precision": [
+          0.3532,
+          0.0
+        ],
+        "recall": [
+          0.6318,
+          0.0
+        ],
+        "f1": [
+          0.4531,
+          0.0
+        ],
+        "auc_roc": [
+          0.8221,
+          0.0
+        ],
+        "auc_pr": [
+          0.3378,
+          0.0
+        ],
+        "brier_score": [
+          0.1847,
+          0.0
+        ]
+      },
+      "val_auc_pr_mean_std": [
+        0.3517,
+        0.0
+      ]
+    },
+    "random_forest": {
+      "display_name": "Random Forest",
+      "tier": "Tier 3(a) — Non-graph Baseline",
+      "type": "Tabular",
+      "complete": true,
+      "seeds": [
+        42,
+        123,
+        456,
+        789,
+        1024
+      ],
+      "config_path": "configs/model/baseline_tabular.yaml",
+      "config_sha256": "497f740384feb5a4b97ab16903e37b46514c08a912be29a01c9cc22a2571a1fc",
+      "training_config_dict_sha256": [
+        "e4a331310742e3583700590d8cf6e3305c1591ff51b07de9c3c1406d1441cef1"
+      ],
+      "current_config_matches_training": true,
+      "experiment_dir": "experiments/official/baselines",
+      "best_seed_by_val_auc_pr": null,
+      "checkpoint_path": null,
+      "checkpoint_sha256": null,
+      "test_mean_std": {
+        "accuracy": [
+          0.8664,
+          0.0055
+        ],
+        "precision": [
+          0.5127,
+          0.0156
+        ],
+        "recall": [
+          0.6932,
+          0.0155
+        ],
+        "f1": [
+          0.5892,
+          0.0047
+        ],
+        "auc_roc": [
+          0.8855,
+          0.0006
+        ],
+        "auc_pr": [
+          0.6198,
+          0.0017
+        ],
+        "brier_score": [
+          0.0868,
+          0.0002
+        ]
+      },
+      "val_auc_pr_mean_std": [
+        0.6079,
+        0.0019
+      ]
+    },
+    "ann": {
+      "display_name": "ANN (MLP)",
+      "tier": "Tier 3(a) — Non-graph Baseline",
+      "type": "Tabular",
+      "complete": true,
+      "seeds": [
+        42,
+        123,
+        456,
+        789,
+        1024
+      ],
+      "config_path": "configs/model/baseline_tabular.yaml",
+      "config_sha256": "497f740384feb5a4b97ab16903e37b46514c08a912be29a01c9cc22a2571a1fc",
+      "training_config_dict_sha256": [
+        "e4a331310742e3583700590d8cf6e3305c1591ff51b07de9c3c1406d1441cef1"
+      ],
+      "current_config_matches_training": true,
+      "experiment_dir": "experiments/official/baselines",
+      "best_seed_by_val_auc_pr": null,
+      "checkpoint_path": null,
+      "checkpoint_sha256": null,
+      "test_mean_std": {
+        "accuracy": [
+          0.8701,
+          0.0101
+        ],
+        "precision": [
+          0.5266,
+          0.0322
+        ],
+        "recall": [
+          0.6541,
+          0.0302
+        ],
+        "f1": [
+          0.5822,
+          0.0099
+        ],
+        "auc_roc": [
+          0.8839,
+          0.0018
+        ],
+        "auc_pr": [
+          0.6117,
+          0.0097
+        ],
+        "brier_score": [
+          0.0787,
+          0.0013
+        ]
+      },
+      "val_auc_pr_mean_std": [
+        0.6087,
+        0.0072
+      ]
+    }
+  },
+  "excluded_models": {},
+  "significance": {
+    "status": "completed",
+    "method": "paired cluster bootstrap theo trận trên tập test; độ đo = trung bình qua seed; KTC 95% theo phân vị; p-value hai phía; hiệu chỉnh Holm theo từng độ đo",
+    "n_boot": 10000,
+    "boot_seed": 42,
+    "n_test_graphs": 6646,
+    "n_test_matches": 57,
+    "models": [
+      "GCN (đề xuất)",
+      "MPNN (đề xuất)",
+      "GATv2 (baseline)",
+      "GraphSAGE (baseline)",
+      "Logistic Regression",
+      "Random Forest",
+      "ANN (MLP)"
+    ],
+    "models_without_predictions": []
+  }
+}

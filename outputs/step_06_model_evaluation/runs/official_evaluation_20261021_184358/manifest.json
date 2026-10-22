@@ -1,0 +1,212 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "official_evaluation_20261021_184358",
+  "step_id": "step_06",
+  "step_name": "Model Evaluation & Comparison",
+  "status": "HISTORICAL_OFFICIAL",
+  "started_at": "2026-10-22T18:20:13.402825+00:00",
+  "finished_at": "2026-10-22T18:20:13.402825+00:00",
+  "command_or_entrypoint": "scripts/07_evaluate.py --config configs/data.yaml",
+  "exit_code": 0,
+  "git": {
+    "branch": "Clean",
+    "commit_sha": "7d9e0f8fa249249605752834a485726247affc0e",
+    "clean_working_tree": false
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python_version": "3.12.0",
+    "architecture": "AMD64",
+    "packages": {
+      "torch": "2.14.0+cpu",
+      "torch_geometric": "2.8.0.post1",
+      "pandas": "3.0.1",
+      "numpy": "2.5.4",
+      "scikit-learn": "not installed"
+    }
+  },
+  "configs": {},
+  "inputs": [],
+  "outputs": [
+    {
+      "name": "model_comparison.csv",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/files/model_comparison.csv",
+      "source_path": "results/tables/official/model_comparison.csv",
+      "size_bytes": 1666,
+      "sha256": "51cc65dc3e7a44b0a5542001236183bc3fc560c067ca8d5117a601df6bd6ca6a",
+      "file_type": "table",
+      "generator": "07_evaluate.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "val_model_comparison.csv",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/files/val_model_comparison.csv",
+      "source_path": "results/tables/official/val_model_comparison.csv",
+      "size_bytes": 1473,
+      "sha256": "48913ba69ec470073eed08308a9c18dc1492d53a58e47698c5858b805f7efd3c",
+      "file_type": "table",
+      "generator": "07_evaluate.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "baseline_comparison.csv",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/files/baseline_comparison.csv",
+      "source_path": "results/tables/official/baseline_comparison.csv",
+      "size_bytes": 658,
+      "sha256": "8aff93e0303e05dcbc51f23dc61f1d74047ecc43ac3b43460da6626ddf55df1c",
+      "file_type": "table",
+      "generator": "07_evaluate.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "val_baseline_comparison.csv",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/files/val_baseline_comparison.csv",
+      "source_path": "results/tables/official/val_baseline_comparison.csv",
+      "size_bytes": 675,
+      "sha256": "7eb0803c0dfd1af75239b1b0493fcd4d98b42e4cff0e3ff57e99743493f82ff2",
+      "file_type": "table",
+      "generator": "07_evaluate.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "model_metric_ci.csv",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/files/model_metric_ci.csv",
+      "source_path": "results/tables/official/model_metric_ci.csv",
+      "size_bytes": 1215,
+      "sha256": "b2bd46f3c070c004bd665a6123b5b2063269055bdd27fb90839f16151a5ac009",
+      "file_type": "table",
+      "generator": "07_evaluate.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "significance_tests.csv",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/files/significance_tests.csv",
+      "source_path": "results/tables/official/significance_tests.csv",
+      "size_bytes": 7219,
+      "sha256": "cbce7957dbae765ce818b77f591a67823292cb1cd2fbfe487f3363ab07d99548",
+      "file_type": "table",
+      "generator": "07_evaluate.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "experiment_manifest.json",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/files/experiment_manifest.json",
+      "source_path": "results/metadata/official/experiment_manifest.json",
+      "size_bytes": 11221,
+      "sha256": "b54e40af9db95cbdc7445a08f02d5fe558b74d95ce98ca61314ae64a49f4c15d",
+      "file_type": "metadata",
+      "generator": "07_evaluate.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "evaluation_manifest.json",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/files/evaluation_manifest.json",
+      "source_path": "results/metadata/official/evaluation_manifest.json",
+      "size_bytes": 26945,
+      "sha256": "e220c5a3ce18af9e2620177e0779fb742f8190913fc0ee7567bca7553d2093da",
+      "file_type": "metadata",
+      "generator": "07_evaluate.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "06_model_auc_comparison.png",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/figures/06_model_auc_comparison.png",
+      "source_path": "results/figures/official/06_model_auc_comparison.png",
+      "size_bytes": 235884,
+      "sha256": "9b9e2da177d7b6b46ef7bdc56858ba29feefb1e555e7d71d8ff73587dbbc5c47",
+      "file_type": "figure",
+      "generator": "notebooks/06",
+      "is_by_reference": false
+    },
+    {
+      "name": "06_model_auc_comparison.svg",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/figures/06_model_auc_comparison.svg",
+      "source_path": "results/figures/official/06_model_auc_comparison.svg",
+      "size_bytes": 103215,
+      "sha256": "7b33396b613ca5a9d8d50e5ae53abfa0653241fccdb278154acdb5e251357922",
+      "file_type": "figure",
+      "generator": "notebooks/06",
+      "is_by_reference": false
+    },
+    {
+      "name": "06_pr_roc_curves.png",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/figures/06_pr_roc_curves.png",
+      "source_path": "results/figures/official/06_pr_roc_curves.png",
+      "size_bytes": 598845,
+      "sha256": "67b786a2865cc6e10e324b88daea28272403f543aa3db7e3b3db866d6ad36328",
+      "file_type": "figure",
+      "generator": "notebooks/06",
+      "is_by_reference": false
+    },
+    {
+      "name": "06_pr_roc_curves.svg",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/figures/06_pr_roc_curves.svg",
+      "source_path": "results/figures/official/06_pr_roc_curves.svg",
+      "size_bytes": 445210,
+      "sha256": "b2e7cc54b736e6d2660c5a284da86ffc1db72cff9cab1789ece338ec7791261d",
+      "file_type": "figure",
+      "generator": "notebooks/06",
+      "is_by_reference": false
+    },
+    {
+      "name": "06_brier_score_comparison.png",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/figures/06_brier_score_comparison.png",
+      "source_path": "results/figures/official/06_brier_score_comparison.png",
+      "size_bytes": 120910,
+      "sha256": "3ef2f783769c683d5afa86e9d8760b6f17c8dc84cf40f04b414e6e1d2cc72d71",
+      "file_type": "figure",
+      "generator": "notebooks/06",
+      "is_by_reference": false
+    },
+    {
+      "name": "06_brier_score_comparison.svg",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/figures/06_brier_score_comparison.svg",
+      "source_path": "results/figures/official/06_brier_score_comparison.svg",
+      "size_bytes": 69299,
+      "sha256": "657cbf47d1a354842fb0cfa85270524a9c3414a9aeaf32c247c7155c4342db36",
+      "file_type": "figure",
+      "generator": "notebooks/06",
+      "is_by_reference": false
+    },
+    {
+      "name": "evaluation_report.md",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/reports/evaluation_report.md",
+      "source_path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/reports/evaluation_report.md",
+      "size_bytes": 1102,
+      "sha256": "197a12b8c820cd004e8f8b60f62632d0ca0d37ecdbc9e701cfbba0038dfa90f2",
+      "file_type": "report",
+      "generator": "report",
+      "is_by_reference": false
+    },
+    {
+      "name": "step_06_evaluation.log",
+      "path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/logs/step_06_evaluation.log",
+      "source_path": "outputs/step_06_model_evaluation/runs/official_evaluation_20261021_184358/logs/step_06_evaluation.log",
+      "size_bytes": 1301,
+      "sha256": "29530fba6d12bea4e65f11a1ae510f5995b8441041e91017765cfaae6dc9f6fa",
+      "file_type": "log",
+      "generator": "step_06",
+      "is_by_reference": false
+    }
+  ],
+  "quality_checks": [
+    {
+      "name": "test_set_size_verified",
+      "status": "PASS",
+      "details": "Evaluated on full test set (6,646 graphs across 57 matches)"
+    },
+    {
+      "name": "bootstrap_significance_computed",
+      "status": "PASS",
+      "details": "10,000 paired cluster bootstrap samples by match with Holm correction"
+    },
+    {
+      "name": "conservative_paper_claims",
+      "status": "PASS",
+      "details": "MPNN best among GNNs; difference vs RF/ANN not statistically significant"
+    }
+  ],
+  "dependencies": [],
+  "official_eligible": true,
+  "official_eligibility_reason": "Full 3-tier benchmark and significance tests completed"
+}

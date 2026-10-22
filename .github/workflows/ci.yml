@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [main, REPRODUCIBILITY]
+    branches: [main, REPRODUCIBILITY, Clean]
   pull_request:
-    branches: [main, REPRODUCIBILITY]
+    branches: [main, REPRODUCIBILITY, Clean]
 
 jobs:
   test-and-lint:

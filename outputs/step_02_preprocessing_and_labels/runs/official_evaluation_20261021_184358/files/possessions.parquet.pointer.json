@@ -1,0 +1,6 @@
+{
+  "source_path": "data/interim/official/possessions.parquet",
+  "size_bytes": 292726,
+  "sha256": "3ce77622dcadf8be1387beb616c742386096dabb7736428a20ed42b7905198dc",
+  "reason": "Exceeds max size limit or heavy binary format, registered by reference"
+}

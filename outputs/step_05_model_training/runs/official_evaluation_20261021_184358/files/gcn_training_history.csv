@@ -1,0 +1,2 @@
+epoch,train_loss,train_auc_pr,train_auc_roc,val_loss,val_auc_pr,val_auc_roc,val_f1,lr
+1,1.1714,0.126,0.3459,1.1231,0.159,0.4643,0.0,0.001

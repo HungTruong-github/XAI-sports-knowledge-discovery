@@ -1,0 +1,182 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "official_evaluation_20261021_184358",
+  "step_id": "step_04",
+  "step_name": "Match-Level Split",
+  "status": "VERIFIED",
+  "started_at": "2026-10-22T18:20:12.181776+00:00",
+  "finished_at": "2026-10-22T18:20:12.181776+00:00",
+  "command_or_entrypoint": "scripts/05_make_splits.py --config configs/data.yaml",
+  "exit_code": 0,
+  "git": {
+    "branch": "Clean",
+    "commit_sha": "7d9e0f8fa249249605752834a485726247affc0e",
+    "clean_working_tree": false
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python_version": "3.12.0",
+    "architecture": "AMD64",
+    "packages": {
+      "torch": "2.14.0+cpu",
+      "torch_geometric": "2.8.0.post1",
+      "pandas": "3.0.1",
+      "numpy": "2.5.4",
+      "scikit-learn": "not installed"
+    }
+  },
+  "configs": {},
+  "inputs": [],
+  "outputs": [
+    {
+      "name": "train_matches.csv",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/files/train_matches.csv",
+      "source_path": "data/splits/train_matches.csv",
+      "size_bytes": 2404,
+      "sha256": "6774bd48cedb8ad039062acd87d1a73c7a5327127d9ce4d2e137a0110a333ca9",
+      "file_type": "split_manifest",
+      "generator": "05_make_splits.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "val_matches.csv",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/files/val_matches.csv",
+      "source_path": "data/splits/val_matches.csv",
+      "size_bytes": 523,
+      "sha256": "9d6f3abe2433c80171eb57903227b41ac024f33dcff0f61d610c819c5735d4b0",
+      "file_type": "split_manifest",
+      "generator": "05_make_splits.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "test_matches.csv",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/files/test_matches.csv",
+      "source_path": "data/splits/test_matches.csv",
+      "size_bytes": 523,
+      "sha256": "73ffbb44c188a0e4bf910200307266b5832b6787647fe1fc3fdc4fe2abd8a79a",
+      "file_type": "split_manifest",
+      "generator": "05_make_splits.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "match_splits.csv",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/files/match_splits.csv",
+      "source_path": "data/splits/match_splits.csv",
+      "size_bytes": 10810,
+      "sha256": "19cc07a1bc5135489b666bcda6e911243e95bdef99474740a8fd63f2a147e844",
+      "file_type": "split_manifest",
+      "generator": "05_make_splits.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "split_summary.csv",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/files/split_summary.csv",
+      "source_path": "data/splits/split_summary.csv",
+      "size_bytes": 201,
+      "sha256": "e93ec833c37ca04ce36695c6b3c08ae496d9d2f0fa3261bdbb1d16c74b0ef5b1",
+      "file_type": "split_manifest",
+      "generator": "05_make_splits.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "graph_split_summary.csv",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/files/graph_split_summary.csv",
+      "source_path": "data/splits/graph_split_summary.csv",
+      "size_bytes": 266,
+      "sha256": "b9ed9c1ba801a26d9a9a7b94e968ed052efa59cb1ee94e69de3bdb89ecd8d8cd",
+      "file_type": "split_manifest",
+      "generator": "05_make_splits.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "split_checks.csv",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/files/split_checks.csv",
+      "source_path": "results/tables/official/split_checks.csv",
+      "size_bytes": 277,
+      "sha256": "5a689281220b0ab0628de1e75c44dfc5dd5dddcf671e72d9718e109420a9ba2a",
+      "file_type": "table",
+      "generator": "05_make_splits.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "04_split_distribution.png",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/figures/04_split_distribution.png",
+      "source_path": "results/figures/official/04_split_distribution.png",
+      "size_bytes": 143851,
+      "sha256": "babdf20c83e38af10a846f8cd3d87416190ea1b294e6ba4dd20a0b7844bd9008",
+      "file_type": "figure",
+      "generator": "notebooks/04",
+      "is_by_reference": false
+    },
+    {
+      "name": "04_split_distribution.svg",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/figures/04_split_distribution.svg",
+      "source_path": "results/figures/official/04_split_distribution.svg",
+      "size_bytes": 61853,
+      "sha256": "50690810cbbd0aa5f031efb18e0b0c01a4d7ec4f72930c34bffcbdacd0d1eff9",
+      "file_type": "figure",
+      "generator": "notebooks/04",
+      "is_by_reference": false
+    },
+    {
+      "name": "04_split_balance.png",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/figures/04_split_balance.png",
+      "source_path": "results/figures/official/04_split_balance.png",
+      "size_bytes": 80711,
+      "sha256": "c7ebca25a66577007de12a10f42d4181c1510418e2d11ceb159cd33716b6c169",
+      "file_type": "figure",
+      "generator": "notebooks/04",
+      "is_by_reference": false
+    },
+    {
+      "name": "04_split_balance.svg",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/figures/04_split_balance.svg",
+      "source_path": "results/figures/official/04_split_balance.svg",
+      "size_bytes": 52474,
+      "sha256": "073a4ca8b3701359a700b5c160d602de0e9abee73cb7d6304aa7a4dd7d6c4571",
+      "file_type": "figure",
+      "generator": "notebooks/04",
+      "is_by_reference": false
+    },
+    {
+      "name": "split_report.md",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/reports/split_report.md",
+      "source_path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/reports/split_report.md",
+      "size_bytes": 667,
+      "sha256": "466d169b0e5bf7ede726b353854a8b5a31737b8069d7334727eb068638b9e93e",
+      "file_type": "report",
+      "generator": "report",
+      "is_by_reference": false
+    },
+    {
+      "name": "step_04_split.log",
+      "path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/logs/step_04_split.log",
+      "source_path": "outputs/step_04_match_level_split/runs/official_evaluation_20261021_184358/logs/step_04_split.log",
+      "size_bytes": 852,
+      "sha256": "beb9d6776b5e013918ee202fb380d3d089a78e4403b65f78425aef333fee417c",
+      "file_type": "log",
+      "generator": "step_04",
+      "is_by_reference": false
+    }
+  ],
+  "quality_checks": [
+    {
+      "name": "match_disjoint_split",
+      "status": "PASS",
+      "details": "0 overlap between Train (266), Val (57), Test (57)"
+    },
+    {
+      "name": "total_matches_covered",
+      "status": "PASS",
+      "details": "266 Train + 57 Val + 57 Test = 380 Matches (100% coverage)"
+    },
+    {
+      "name": "no_temporal_leakage",
+      "status": "PASS",
+      "details": "Stratified by match; no event cross-contamination"
+    }
+  ],
+  "dependencies": [],
+  "official_eligible": true,
+  "official_eligibility_reason": "Match splits strictly disjoint with zero leakage"
+}

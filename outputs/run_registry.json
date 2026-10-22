@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "updated_at": "2026-10-22T18:26:17.736780+00:00",
+  "runs": {
+    "official_evaluation_20261021_184358": {
+      "run_id": "official_evaluation_20261021_184358",
+      "run_type": "historical_official",
+      "description": "B\u1ed9 minh ch\u1ee9ng ch\u00ednh th\u1ee9c l\u1ecbch s\u1eed c\u1ee7a Pipeline 0\u20136 t\u1eeb commit fc18a929 tr\u00ean main",
+      "last_updated": "2026-10-22T18:20:13.639228+00:00",
+      "git": {
+        "branch": "Clean",
+        "commit_sha": "fc18a929b82914cea6c9ff1bb54d89550597f12e",
+        "clean_working_tree": false
+      },
+      "step_statuses": {
+        "step_00": "HISTORICAL_OFFICIAL",
+        "step_01": "VERIFIED",
+        "step_02": "VERIFIED",
+        "step_03": "VERIFIED",
+        "step_04": "VERIFIED",
+        "step_05": "HISTORICAL_OFFICIAL",
+        "step_06": "HISTORICAL_OFFICIAL"
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "source_path": "data/processed/official/graphs.pt",
+  "size_bytes": 98670817,
+  "sha256": "9b39461440e38ecce35df36eeeffbc1b9b490ff03030bea37f6a464fed443b4b",
+  "reason": "Exceeds max size limit or heavy binary format, registered by reference"
+}

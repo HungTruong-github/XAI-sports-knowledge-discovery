@@ -1,0 +1,2 @@
+model,seed,split,best_epoch,accuracy,precision,recall,f1,auc_roc,auc_pr,brier_score,threshold,loss
+gcn,42,validation,1,0.28,0.1818,1.0,0.3077,0.4643,0.159,0.2257,0.4591,1.1231
