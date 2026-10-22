@@ -364,3 +364,74 @@ class GNNTrainer:
         ckpt_path = self.output_dir / filename
         checkpoint = torch.load(ckpt_path, map_location=self.device)
         self.model.load_state_dict(checkpoint["model_state_dict"])
+
+
+def resolve_seeds(
+    train_cfg: dict[str, Any] | None,
+    cli_seed: int | None = None,
+    cli_seeds: str | None = None,
+    return_debug: bool = False,
+) -> list[int] | tuple[list[int], bool]:
+    """Xác định danh sách seed cần chạy theo thứ tự ưu tiên cấu hình.
+
+    Ưu tiên:
+    1. Tham số dòng lệnh --seed (debug mode cho 1 seed lẻ).
+    2. Tham số dòng lệnh --seeds (danh sách seed cụ thể).
+    3. Cấu hình train.yaml -> seeds (danh sách đầy đủ theo n_runs).
+    4. Cấu hình train.yaml -> seed.
+    5. Mặc định [42].
+
+    Nếu return_debug=True, trả về tuple (seeds, is_debug_run).
+    """
+    cfg = train_cfg or {}
+    if cli_seed is not None:
+        seeds, is_debug = [int(cli_seed)], True
+    elif cli_seeds:
+        seeds, is_debug = [int(s.strip()) for s in cli_seeds.split(",") if s.strip()], False
+    else:
+        configured_seeds = cfg.get("seeds")
+        n_runs = int(cfg.get("n_runs", len(configured_seeds) if configured_seeds else 1))
+        if configured_seeds and isinstance(configured_seeds, list):
+            seeds, is_debug = [int(s) for s in configured_seeds[:n_runs]], False
+        elif "seed" in cfg:
+            seeds, is_debug = [int(cfg["seed"])], False
+        else:
+            seeds, is_debug = [42], False
+
+    if return_debug:
+        return seeds, is_debug
+    return seeds
+
+
+def compute_metrics_aggregation(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Tính toán thống kê mean và std một cách tất định từ danh sách kết quả các runs."""
+    if not rows:
+        return {}
+    df = pd.DataFrame(rows)
+    numeric_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c != "seed"]
+    summary: dict[str, Any] = {
+        "n_runs": len(rows),
+        "mean": {},
+        "std": {},
+    }
+    for col in numeric_cols:
+        summary["mean"][col] = round(float(df[col].mean()), 4)
+        summary["std"][col] = round(float(df[col].std(ddof=1)), 4) if len(df) > 1 else 0.0
+    return summary
+
+
+def clean_stale_aggregates(base_exp_dir: Path) -> None:
+    """Xóa các file tổng hợp cũ trước khi chạy thực nghiệm mới để tránh lẫn lộn provenance."""
+    stale_files = [
+        "val_metrics_all_seeds.csv",
+        "test_metrics_all_seeds.csv",
+        "aggregate_summary.json",
+        "run_failure_manifest.json",
+    ]
+    for fname in stale_files:
+        p = Path(base_exp_dir) / fname
+        if p.exists():
+            try:
+                p.unlink()
+            except Exception as e:
+                logger.warning("Không thể xóa file cũ %s: %s", p, e)

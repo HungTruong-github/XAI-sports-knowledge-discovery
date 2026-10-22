@@ -7,14 +7,21 @@ from pathlib import Path
 
 import pandas as pd
 
-# Load module scripts/06_train.py động vì tên file bắt đầu bằng số
+from xai_football.training import (
+    clean_stale_aggregates,
+    compute_metrics_aggregation,
+    resolve_seeds,
+)
+
+# Đồng thời kiểm tra tính tương thích: scripts/06_train.py vẫn re-export đầy đủ
 _script_path = Path(__file__).resolve().parents[2] / "scripts" / "06_train.py"
 _spec = importlib.util.spec_from_file_location("script_06_train", _script_path)
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 
-compute_metrics_aggregation = _mod.compute_metrics_aggregation
-resolve_seeds = _mod.resolve_seeds
+assert hasattr(_mod, "compute_metrics_aggregation")
+assert hasattr(_mod, "resolve_seeds")
+assert hasattr(_mod, "clean_stale_aggregates")
 
 
 def test_resolve_seeds_cli_single():
@@ -51,6 +58,54 @@ def test_resolve_seeds_empty_fallback():
     assert seeds == [42]
 
 
+def test_resolve_seeds_hierarchy_debug_flag():
+    """Kiểm tra cờ return_debug phân định rõ ràng giữa run debug và run chính thức."""
+    # 1. cli_seed debug ưu tiên cao nhất -> is_debug=True
+    seeds, is_debug = resolve_seeds(
+        {"seeds": [42, 123], "n_runs": 2}, cli_seed=999, return_debug=True
+    )
+    assert seeds == [999]
+    assert is_debug is True
+
+    # 2. cli_seeds -> is_debug=False
+    seeds, is_debug = resolve_seeds({"seeds": [42]}, cli_seeds="10, 20, 30", return_debug=True)
+    assert seeds == [10, 20, 30]
+    assert is_debug is False
+
+    # 3. train_cfg seeds list cắt theo n_runs
+    seeds, is_debug = resolve_seeds({"seeds": [1, 2, 3, 4, 5], "n_runs": 3}, return_debug=True)
+    assert seeds == [1, 2, 3]
+    assert is_debug is False
+
+    # 4. train_cfg seed đơn
+    seeds, is_debug = resolve_seeds({"seed": 77}, return_debug=True)
+    assert seeds == [77]
+    assert is_debug is False
+
+    # 5. Mặc định
+    seeds, is_debug = resolve_seeds({}, return_debug=True)
+    assert seeds == [42]
+    assert is_debug is False
+
+
+def test_clean_stale_aggregates(tmp_path: Path):
+    """Bảo đảm dọn sạch artifact tổng hợp cũ trước khi chạy mới."""
+    stale_files = [
+        "val_metrics_all_seeds.csv",
+        "test_metrics_all_seeds.csv",
+        "aggregate_summary.json",
+        "run_failure_manifest.json",
+    ]
+    for fname in stale_files:
+        (tmp_path / fname).write_text("dummy old data", encoding="utf-8")
+        assert (tmp_path / fname).exists()
+
+    clean_stale_aggregates(tmp_path)
+
+    for fname in stale_files:
+        assert not (tmp_path / fname).exists(), f"{fname} chưa được dọn dẹp sạch!"
+
+
 def test_compute_metrics_aggregation_deterministic():
     """Tổng hợp mean và sample standard deviation (ddof=1) chính xác và tất định."""
     rows = [
@@ -75,6 +130,11 @@ def test_compute_metrics_aggregation_single_run():
     assert agg["mean"]["accuracy"] == 0.85
     assert agg["std"]["accuracy"] == 0.0
     assert agg["std"]["auc_pr"] == 0.0
+
+
+def test_compute_metrics_aggregation_empty():
+    """Danh sách rỗng trả về dict rỗng an toàn."""
+    assert compute_metrics_aggregation([]) == {}
 
 
 def test_failed_runs_reporting_manifest(tmp_path: Path):

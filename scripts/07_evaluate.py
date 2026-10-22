@@ -46,7 +46,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 from xai_football.evaluation.significance import align_predictions, compare_models  # noqa: E402
-from xai_football.utils.io import load_yaml  # noqa: E402
+from xai_football.utils.io import load_yaml, save_atomic_csv, save_atomic_json  # noqa: E402
 from xai_football.utils.logging import get_logger  # noqa: E402
 from xai_football.utils.paths import (  # noqa: E402
     CONFIGS_DIR,
@@ -132,6 +132,10 @@ def load_gnn_results(
     reasons = []
     if not agg.get("is_complete_official", False):
         reasons.append("aggregate_summary.is_complete_official = false")
+    if agg.get("is_debug_run", False):
+        reasons.append("aggregate_summary.is_debug_run = true")
+    if agg.get("smoke_test", False):
+        reasons.append("aggregate_summary.smoke_test = true")
     if int(agg.get("n_failed_runs", 0)) > 0:
         reasons.append(f"{agg.get('n_failed_runs')} seed lỗi")
     if len(seeds) < expected_runs:
@@ -167,6 +171,10 @@ def load_baseline_results(run_name: str, expected_runs: int) -> tuple[dict[str, 
     reasons = []
     if not agg.get("is_complete_official", False):
         reasons.append("aggregate_summary.is_complete_official = false")
+    if agg.get("is_debug_run", False):
+        reasons.append("aggregate_summary.is_debug_run = true")
+    if agg.get("smoke_test", False):
+        reasons.append("aggregate_summary.smoke_test = true")
     if len(seeds) < expected_runs:
         reasons.append(f"chỉ có {len(seeds)}/{expected_runs} seed")
 
@@ -339,31 +347,44 @@ def main() -> int:
     comparison_df["best_seed_by_val"] = comparison_df["best_seed_by_val"].astype("Int64")
     val_comparison_df = pd.DataFrame(val_rows)[order_cols]
 
-    tables_dir.mkdir(parents=True, exist_ok=True)
-    comparison_df.to_csv(tables_dir / "model_comparison.csv", index=False, encoding="utf-8-sig")
-    val_comparison_df.to_csv(
-        tables_dir / "val_model_comparison.csv", index=False, encoding="utf-8-sig"
-    )
-
-    # Bản sao kết quả chính thức chỉ được ghi khi MỌI mô hình đủ seed — chạy --allow-partial
-    # không được ghi đè lên kết quả chính thức đã có.
     all_complete = not excluded and all(v["complete"] for v in included.values())
+    is_partial_run = args.allow_partial or not all_complete
+
+    tables_dir.mkdir(parents=True, exist_ok=True)
+    if is_partial_run and run_name == "official":
+        out_test = tables_dir / "partial_model_comparison.csv"
+        out_val = tables_dir / "val_partial_model_comparison.csv"
+        logger.warning(
+            "Run chưa đầy đủ hoặc chạy với --allow-partial: "
+            "Ghi kết quả vào %s và %s. TUYỆT ĐỐI KHÔNG ghi đè bảng canonical official model_comparison.csv.",
+            out_test.name,
+            out_val.name,
+        )
+    else:
+        out_test = tables_dir / "model_comparison.csv"
+        out_val = tables_dir / "val_model_comparison.csv"
+
+    save_atomic_csv(comparison_df, out_test)
+    save_atomic_csv(val_comparison_df, out_val)
+
+    # Bản sao kết quả chính thức chỉ được ghi khi MỌI mô hình đủ seed và KHÔNG PHẢI partial
     repro_dir = RESULTS_DIR / "reproducibility"
     repro_dir.mkdir(parents=True, exist_ok=True)
-    if not all_complete:
-        logger.warning("Run chưa đầy đủ: KHÔNG ghi đè results/reproducibility/.")
-    if all_complete:
-        pd.concat(per_seed_test, ignore_index=True).to_csv(
-            repro_dir / "all_models_test_metrics_all_seeds.csv", index=False, encoding="utf-8-sig"
+    if is_partial_run:
+        logger.warning("Run chưa đầy đủ hoặc allow_partial: KHÔNG ghi đè results/reproducibility/.")
+    elif all_complete and run_name == "official":
+        save_atomic_csv(
+            pd.concat(per_seed_test, ignore_index=True),
+            repro_dir / "all_models_test_metrics_all_seeds.csv",
         )
-        pd.concat(per_seed_val, ignore_index=True).to_csv(
-            repro_dir / "all_models_val_metrics_all_seeds.csv", index=False, encoding="utf-8-sig"
+        save_atomic_csv(
+            pd.concat(per_seed_val, ignore_index=True),
+            repro_dir / "all_models_val_metrics_all_seeds.csv",
         )
-    if all_complete and base is not None:
-        base["test_df"].to_csv(repro_dir / "baselines_test_metrics_all_seeds.csv", index=False)
-        base["val_df"].to_csv(repro_dir / "baselines_val_metrics_all_seeds.csv", index=False)
-        with open(repro_dir / "baselines_aggregate_summary.json", "w", encoding="utf-8") as f:
-            json.dump(base["aggregate"], f, indent=2, ensure_ascii=False)
+        if base is not None:
+            save_atomic_csv(base["test_df"], repro_dir / "baselines_test_metrics_all_seeds.csv")
+            save_atomic_csv(base["val_df"], repro_dir / "baselines_val_metrics_all_seeds.csv")
+            save_atomic_json(base["aggregate"], repro_dir / "baselines_aggregate_summary.json")
 
     # ---------------------------------------------------------------
     # 4. Kiểm định ý nghĩa thống kê (paired cluster bootstrap theo trận)
@@ -416,8 +437,8 @@ def main() -> int:
             n_boot=args.n_boot,
             seed=args.boot_seed,
         )
-        ci_df.to_csv(tables_dir / "model_metric_ci.csv", index=False, encoding="utf-8-sig")
-        pairs_df.to_csv(tables_dir / "significance_tests.csv", index=False, encoding="utf-8-sig")
+        save_atomic_csv(ci_df, tables_dir / "model_metric_ci.csv")
+        save_atomic_csv(pairs_df, tables_dir / "significance_tests.csv")
         significance_info = {
             "status": "completed",
             "method": (
@@ -553,10 +574,8 @@ def main() -> int:
     }
 
     meta_dir.mkdir(parents=True, exist_ok=True)
-    with open(meta_dir / "experiment_manifest.json", "w", encoding="utf-8") as f:
-        json.dump(experiment_manifest, f, indent=2, ensure_ascii=False, default=str)
-    with open(meta_dir / "evaluation_manifest.json", "w", encoding="utf-8") as f:
-        json.dump(eval_manifest, f, indent=2, ensure_ascii=False, default=str)
+    save_atomic_json(experiment_manifest, meta_dir / "experiment_manifest.json")
+    save_atomic_json(eval_manifest, meta_dir / "evaluation_manifest.json")
 
     show = ["model", "n_runs", "auc_pr", "auc_pr_std", "auc_roc", "auc_roc_std", "brier_score"]
     print(f"\n=== BẢNG ĐỐI SÁNH TRÊN TẬP TEST ({run_name.upper()}, mean ± std qua seed) ===")

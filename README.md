@@ -5,7 +5,7 @@
 Hướng nghiên cứu cụ thể: *Mạng chuyền bóng và phân tích chiến thuật bóng đá bằng Graph Neural Network (GNN) kết hợp XAI.*
 
 Repository: `https://github.com/HungTruong-github/XAI-sports-knowledge-discovery`  
-Branch hiện tại: `REPRODUCIBILITY`
+Branch hiện tại: `Clean`
 
 ---
 
@@ -32,8 +32,8 @@ Branch hiện tại: `REPRODUCIBILITY`
 │   ├── graph.yaml            Bước 3:   định nghĩa đồ thị possession
 │   ├── split.yaml            Bước 4:   chia train/val/test theo trận
 │   ├── train.yaml            Bước 5:   cấu hình huấn luyện dùng chung
-│   ├── xai.yaml              Bước 7-8: cấu hình explainer (chưa triển khai)
-│   ├── hybrid_centrality.yaml Bước 9:  công thức Hybrid Centrality (chưa chốt)
+│   ├── xai.yaml              Bước 7-8: cấu hình explainer (GNNExplainer, PGExplainer)
+│   ├── hybrid_centrality.yaml Bước 9:  công thức Hybrid Centrality
 │   └── model/                Kiến trúc từng backbone GNN và baselines
 │
 ├── data/                 # Dữ liệu (KHÔNG commit, trừ splits/)
@@ -46,22 +46,24 @@ Branch hiện tại: `REPRODUCIBILITY`
 │   ├── data/                 Bước 1-2, 4 (thu thập, làm sạch, split)
 │   ├── graphs/               Bước 3 (dựng đồ thị PyG, trích xuất feature)
 │   ├── modeling/             Bước 5 (GNN backbones + baseline feature extractor)
-│   ├── training/             Bước 5 (trainer, loss functions, early stopping)
-│   ├── evaluation/           Bước 6 (metrics, threshold optimization)
-│   ├── xai/                  Bước 7-8 (chưa triển khai)
-│   ├── centrality/           Bước 9-10 (chưa triển khai)
-│   └── utils/                logging, paths, seed, serialization
+│   ├── training/             Bước 5 (trainer, loss, multi-seed aggregation, atomic I/O)
+│   ├── evaluation/           Bước 6 (metrics, threshold, significance tests)
+│   ├── xai/                  Bước 7-8 (GNNExplainer, PGExplainer, SHAP, XAI metrics)
+│   ├── centrality/           Bước 9-10 (giao diện Hybrid Centrality)
+│   └── utils/                logging, paths, seed, serialization, provenance
 │
 ├── scripts/              # Entry points chạy từng bước pipeline từ CLI
+├── tools/                # Tiện ích bổ trợ tài liệu (md2docx.py)
 ├── notebooks/            # 7 Jupyter Notebooks phân tích, kiểm toán & tái lập
-├── tests/                # Unit tests (chống rò rỉ dữ liệu, kiểm tra schema)
+├── tests/                # 20 unit & regression test suites
 ├── experiments/          # Log thô từng lần chạy (bị gitignore)
 ├── models/               # Trọng số mô hình đã huấn luyện (bị gitignore)
 ├── results/              # Bảng số liệu, metadata và biểu đồ phục vụ báo cáo
-│   ├── figures/official/     Biểu đồ định dạng PNG + SVG do notebook sinh ra
-│   ├── metadata/official/    Môi trường, config hashes, commit metadata
-│   └── tables/official/      Bảng kết quả đối sánh và kiểm tra chất lượng
-└── docs/                 # Tài liệu quy trình, báo cáo và Decision Records
+│   ├── figures/official/     Biểu đồ định dạng PNG + SVG
+│   ├── metadata/             RUN_REGISTRY.json & metadata official
+│   ├── tables/official/      Bảng kết quả đối sánh và kiểm tra chất lượng
+│   └── xai/                  Artifact và mask giải thích XAI
+└── docs/                 # Tài liệu quy trình, báo cáo tái lập và Decision Records
 ```
 
 ---
@@ -76,10 +78,10 @@ Branch hiện tại: `REPRODUCIBILITY`
 [4] Phân chia train/val/test theo TRẬN ĐẤU         ──> scripts/05     ──> notebooks/04
 [5] Huấn luyện mô hình GNN (Bài toán 1)           ──> scripts/06     ──> notebooks/05
 [6] Đánh giá mô hình & Baseline 3 tầng            ──> scripts/07     ──> notebooks/06
-[7] Áp dụng XAI (Bài toán 2)                      ──> [Chưa triển khai]
-[8] Đánh giá chất lượng giải thích XAI            ──> [Chưa triển khai]
-[9] Tính Hybrid Centrality                        ──> [Chưa triển khai]
-[10] Kiểm chứng chuyên môn & Trực quan hóa        ──> [Chưa triển khai]
+[7] Áp dụng XAI (Bài toán 2)                      ──> scripts/08
+[8] Đánh giá chất lượng giải thích XAI            ──> scripts/09
+[9] Tính Hybrid Centrality                        ──> [Interface hoàn tất, chờ quyết định công thức]
+[10] Kiểm chứng chuyên môn & Trực quan hóa        ──> [Đang triển khai]
 ```
 
 ### Trạng thái chi tiết từng bước
@@ -88,15 +90,15 @@ Branch hiện tại: `REPRODUCIBILITY`
 
 | Bước | Tên bước | Trạng thái | Nguồn sự thật & Ghi chú |
 |---|---|---|---|
-| **0** | Environment Audit | **Đã hoàn thành** | `results/metadata/official/environment.json`, `requirements.lock.txt` (phiên bản thư viện đã khóa), `notebooks/00` |
+| **0** | Environment Audit | **Đã hoàn thành** | `results/metadata/official/environment.json`, `requirements.lock.txt`, `notebooks/00` |
 | **1** | Thu thập dữ liệu | **Đã hoàn thành** | Đủ 380/380 trận Premier League 2015/16 (`data/raw/2/27/`) |
 | **2** | Tiền xử lý & Gán nhãn | **Đã hoàn thành** | 45.365 clean possessions, 261.205 đường chuyền. Bằng chứng định lượng 380 trận: possession-level shot 14,26% vs goal 1,46% |
 | **3** | Xây dựng đồ thị | **Đã hoàn thành** | 45.047 đồ thị PyG, cắt trước cú sút đầu tiên (`truncate_at_first_shot: true`). 9/9 kiểm tra PASS; 1 tọa độ ngoài sân (phạt góc $x=120.9$) được kẹp về biên sân (`coords_clipped`) |
-| **4** | Phân chia tập dữ liệu | **Đã hoàn thành** | Chia theo TRẬN ĐẤU (266 Train, 57 Val, 57 Test), không rò rỉ dữ liệu. Có 2 bảng tóm tắt: `split_summary.csv` (possession) và `graph_split_summary.csv` (post-graph) |
+| **4** | Phân chia tập dữ liệu | **Đã hoàn thành** | Chia theo TRẬN ĐẤU (266 Train, 57 Val, 57 Test), không rò rỉ dữ liệu. Có 2 bảng tóm tắt: `split_summary.csv` và `graph_split_summary.csv` |
 | **5** | Huấn luyện GNN | **Đã hoàn thành** | 4 GNN × 5 seed (42, 123, 456, 789, 1024) + 3 baseline × 5 seed. Checkpoint `models/official/<model>_best.pt` = seed có Val AUC-PR cao nhất |
-| **6** | Đánh giá & Đối sánh | **Đã hoàn thành** | Test, mean ± std qua 5 seed: MPNN AUC-PR 0.5996 ± 0.0042 (tốt nhất nhóm GNN, có ý nghĩa thống kê); RF 0.6198 ± 0.0017, ANN 0.6117 ± 0.0097 — chênh lệch AUC-PR MPNN vs RF/ANN **không có ý nghĩa** (bootstrap theo trận, Holm); AUC-ROC RF/ANN nhỉnh hơn ~0,01 ở mức biên ý nghĩa (p Holm ≈ 0,05). Xem `results/tables/official/significance_tests.csv` |
-| **7–8**| XAI cho đồ thị | *Chưa triển khai* | Dừng lại chờ xác nhận phương án giải thích |
-| **9–10**| Hybrid Centrality & UI | *Chưa triển khai* | Công thức Hybrid Centrality và phạm vi open-play vẫn đang chờ quyết định |
+| **6** | Đánh giá & Đối sánh | **Đã hoàn thành** | Test set, 5 seed: MPNN AUC-PR 0.5996 ± 0.0042 (tốt nhất nhóm GNN, có ý nghĩa thống kê); RF 0.6198 ± 0.0017, ANN 0.6117 ± 0.0097. Xem `results/tables/official/significance_tests.csv` |
+| **7–8**| XAI cho đồ thị | **Code hoàn tất; Chờ chạy toàn bộ Test set** | Module `xai_football.xai`, scripts `08_run_xai.py` và `09_evaluate_xai.py` đã triển khai và có test đầy đủ. Run lịch sử `20261017_091540` (5 đồ thị) được lưu trữ làm bằng chứng đối soát (`HISTORICAL_PROVISIONAL`) |
+| **9–10**| Hybrid Centrality & UI | *Interface hoàn thành* | Interface trong `xai_football.centrality` đã triển khai. Quyết định công thức trọng số và kiểm chứng chuyên môn đang chờ hoàn tất thực nghiệm |
 
 ---
 
@@ -157,8 +159,14 @@ python scripts/06_train.py --model-config configs/model/mpnn.yaml --seeds 42,123
 # (d) Huấn luyện baseline phi đồ thị (Logistic Regression, Random Forest, ANN):
 python scripts/06_train_baselines.py --config configs/data.yaml
 
-# Bước 6: Đánh giá mô hình và tổng hợp kết quả (hỗ trợ cả single-seed và multi-seed)
+# Bước 6: Đánh giá mô hình và đối sánh (tự động phân luồng: partial -> partial_model_comparison.csv)
 python scripts/07_evaluate.py --config configs/data.yaml
+
+# Bước 7: Chạy giải thích XAI (ví dụ trên mô hình tốt nhất MPNN)
+python scripts/08_run_xai.py --model-config configs/model/mpnn.yaml --method gnnexplainer --split test
+
+# Bước 8: Tổng hợp và đánh giá chất lượng XAI (BẮT BUỘC chỉ định run_id hoặc xai-dir)
+python scripts/09_evaluate_xai.py --run-id 20261017_091540 --allow-historical
 ```
 
 ### 5.3. Khảo sát bằng Jupyter Notebooks

@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-10-23T00:09:00+00:00",
+  "current_workspace": {
+    "branch": "Clean",
+    "commit_sha": "3c9466501bf6f95513feef4382c5daac50a3217f",
+    "description": "Branch Clean chuyên trách dọn dẹp mã nguồn, loại bỏ dead files và bảo vệ tính toàn vẹn của số liệu thực nghiệm."
+  },
+  "runs": [
+    {
+      "run_id": "official_evaluation_20261021_184358",
+      "run_name": "official",
+      "run_type": "historical_official",
+      "status": "complete",
+      "is_current_branch_official": false,
+      "provenance_notes": "Kết quả đánh giá chính thức Bước 6 được sinh tại commit fc18a929 trên branch main. Đủ 5 seed trên 380 trận Premier League 2015/16. Được bảo toàn nguyên vẹn làm minh chứng lịch sử đã kiểm chứng.",
+      "git": {
+        "branch": "main",
+        "commit_sha": "fc18a929b82914cea6c9ff1bb54d89550597f12e",
+        "clean_working_tree": false
+      },
+      "dataset": {
+        "name": "Premier League 2015/2016 (StatsBomb Open Data)",
+        "competition_id": 2,
+        "season_id": 27,
+        "n_matches": 380,
+        "clean_possessions": 45365,
+        "graphs_total": 45047,
+        "split_matches": {"train": 266, "val": 57, "test": 57},
+        "split_graphs": {"train": 31644, "val": 6757, "test": 6646}
+      },
+      "models_evaluated": [
+        "GCN (đề xuất)",
+        "MPNN (đề xuất)",
+        "GATv2 (baseline)",
+        "GraphSAGE (baseline)",
+        "Logistic Regression",
+        "Random Forest",
+        "ANN (MLP)"
+      ],
+      "seeds": [42, 123, 456, 789, 1024],
+      "primary_metric": "auc_pr",
+      "source_manifests": [
+        "results/metadata/official/experiment_manifest.json",
+        "results/metadata/official/evaluation_manifest.json"
+      ],
+      "output_tables": [
+        "results/tables/official/model_comparison.csv",
+        "results/tables/official/val_model_comparison.csv",
+        "results/tables/official/model_metric_ci.csv",
+        "results/tables/official/significance_tests.csv"
+      ]
+    },
+    {
+      "run_id": "pilot_dataset_run",
+      "run_name": "pilot",
+      "run_type": "pilot",
+      "status": "complete",
+      "is_current_branch_official": false,
+      "provenance_notes": "Tập dữ liệu pilot 5 trận dùng để debug/smoke test pipeline và kiểm tra nhanh. Tuyệt đối không dùng làm số liệu chính thức.",
+      "config_path": "configs/data_pilot.yaml",
+      "dataset": {
+        "name": "Premier League 2015/2016 Pilot Subset",
+        "n_matches": 5
+      },
+      "output_tables": [
+        "results/tables/pilot/baseline_comparison.csv",
+        "results/tables/pilot/collection_report.csv",
+        "results/tables/pilot/cleaning_report.csv",
+        "results/tables/pilot/data_pipeline_summary.csv",
+        "results/tables/pilot/graph_build_report.csv"
+      ]
+    },
+    {
+      "run_id": "20261017_091540",
+      "run_name": "official",
+      "run_type": "historical_provisional",
+      "status": "historical_provisional",
+      "is_current_branch_official": false,
+      "provenance_notes": "Run XAI lịch sử thực thi trên branch REPRODUCIBILITY (commit 9fae6c51). Chỉ giải thích trên 5 đồ thị mẫu của tập Test để kiểm tra prototype kỹ thuật. KHÔNG phản ánh đánh giá toàn diện trên toàn bộ 6.646 đồ thị tập Test. Đã được cách ly và xuất ra xai_comparison_historical_20261017_091540.csv.",
+      "git": {
+        "branch": "REPRODUCIBILITY",
+        "commit_sha": "9fae6c51704f212479c3e2df29ce19d2d2e4a6dd",
+        "clean_working_tree": false
+      },
+      "model_name": "mpnn",
+      "model_checkpoint": "models/official/mpnn_best.pt",
+      "model_checkpoint_sha256": "afe94d38981644af1d00002e46a93c5ab64cd4819e7ed91cddc7db449ffdb70b",
+      "n_graphs_explained": 5,
+      "split": "test",
+      "explainers": ["gnn_explainer"],
+      "artifacts_dir": "results/xai/official/mpnn/20261017_091540",
+      "source_manifest": "results/xai/official/mpnn/20261017_091540/xai_run_manifest.json",
+      "historical_table": "results/tables/official/xai_comparison_historical_20261017_091540.csv"
+    }
+  ]
+}

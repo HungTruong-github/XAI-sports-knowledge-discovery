@@ -36,6 +36,7 @@ from xai_football.modeling.baselines import (  # noqa: E402
     graphs_to_tabular_dataset,
     train_and_eval_tabular_baselines,
 )
+from xai_football.training import resolve_seeds  # noqa: E402
 from xai_football.utils.io import load_yaml  # noqa: E402
 from xai_football.utils.logging import get_logger  # noqa: E402
 from xai_football.utils.paths import (  # noqa: E402
@@ -57,16 +58,7 @@ def resolve_baseline_seeds(
     cli_seeds: str | None = None,
 ) -> tuple[list[int], bool]:
     """Xác định danh sách seed cho baseline theo thứ tự ưu tiên."""
-    if cli_seed is not None and cli_seeds is None:
-        return [int(cli_seed)], True
-    if cli_seeds:
-        return [int(s.strip()) for s in cli_seeds.split(",") if s.strip()], False
-    if train_cfg:
-        configured_seeds = train_cfg.get("seeds")
-        n_runs = int(train_cfg.get("n_runs", len(configured_seeds) if configured_seeds else 1))
-        if configured_seeds and isinstance(configured_seeds, list):
-            return [int(s) for s in configured_seeds[:n_runs]], False
-    return [42], False
+    return resolve_seeds(train_cfg, cli_seed=cli_seed, cli_seeds=cli_seeds, return_debug=True)
 
 
 def main() -> int:
