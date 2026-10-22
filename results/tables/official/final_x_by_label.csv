@@ -1,0 +1,3 @@
+﻿split,label,n,final_x_mean_m,final_x_median_m,share_final_in_penalty_box
+train,0,27316,70.8,73.7,0.0463
+train,1,4328,98.6,101.2,0.4462

@@ -116,6 +116,30 @@ def _pass_seconds(p: dict[str, Any]) -> float:
     return float(p["minute"]) * 60 + float(p["second"])
 
 
+def clip_to_pitch(
+    x: float, y: float, pitch_length: float = 120.0, pitch_width: float = 80.0
+) -> tuple[float, float]:
+    """Kẹp tọa độ về trong khung sân [0, length] x [0, width].
+
+    StatsBomb thỉnh thoảng ghi tọa độ nhỉnh hơn biên sân (ví dụ phạt góc x = 120.9)
+    do sai số ghi nhận. Kẹp lại để đặc trưng chuẩn hóa luôn nằm trong [0, 1];
+    số giá trị bị kẹp được đếm trong GraphBuildReport.coords_clipped.
+    """
+    return min(max(x, 0.0), pitch_length), min(max(y, 0.0), pitch_width)
+
+
+def count_out_of_pitch(
+    passes: Sequence[dict[str, Any]], pitch_length: float = 120.0, pitch_width: float = 80.0
+) -> int:
+    """Số tọa độ (điểm đầu/cuối của đường chuyền) nằm ngoài khung sân."""
+    n = 0
+    for p in passes:
+        for kx, ky in (("start_x", "start_y"), ("end_x", "end_y")):
+            if clip_to_pitch(p[kx], p[ky], pitch_length, pitch_width) != (p[kx], p[ky]):
+                n += 1
+    return n
+
+
 def compute_node_features(
     player_ids: Sequence[int],
     passes: Sequence[dict[str, Any]],
@@ -133,8 +157,12 @@ def compute_node_features(
     n_made: dict[int, int] = dict.fromkeys(player_ids, 0)
     n_received: dict[int, int] = dict.fromkeys(player_ids, 0)
     for p in passes:
-        touches[p["passer_id"]].append((p["start_x"], p["start_y"]))
-        touches[p["recipient_id"]].append((p["end_x"], p["end_y"]))
+        touches[p["passer_id"]].append(
+            clip_to_pitch(p["start_x"], p["start_y"], pitch_length, pitch_width)
+        )
+        touches[p["recipient_id"]].append(
+            clip_to_pitch(p["end_x"], p["end_y"], pitch_length, pitch_width)
+        )
         n_made[p["passer_id"]] += 1
         n_received[p["recipient_id"]] += 1
 
@@ -172,15 +200,17 @@ def compute_edge_features(
 
     rows: list[list[float]] = []
     for i, p in enumerate(passes):
-        dx = p["end_x"] - p["start_x"]
-        dy = p["end_y"] - p["start_y"]
+        sx, sy = clip_to_pitch(p["start_x"], p["start_y"], pitch_length, pitch_width)
+        ex, ey = clip_to_pitch(p["end_x"], p["end_y"], pitch_length, pitch_width)
+        dx = ex - sx
+        dy = ey - sy
         row: list[float] = []
         if _enabled(features_cfg, "start_end_xy"):
             row += [
-                p["start_x"] / pitch_length,
-                p["start_y"] / pitch_width,
-                p["end_x"] / pitch_length,
-                p["end_y"] / pitch_width,
+                sx / pitch_length,
+                sy / pitch_width,
+                ex / pitch_length,
+                ey / pitch_width,
             ]
         if _enabled(features_cfg, "distance"):
             row += [math.hypot(dx, dy) / diagonal]

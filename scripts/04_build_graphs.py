@@ -125,14 +125,29 @@ def graph_integrity_checks(
         oor_note = ""
     else:
         sample_str = "; ".join(affected_examples)
-        oor_note = f"{out_of_range} đồ thị có giá trị ngoài [0, 1] do đặc thù vị trí bóng thực tế: {sample_str}"
+        oor_note = f"{out_of_range} đồ thị có giá trị ngoài [0, 1]: {sample_str}"
 
+    # Tọa độ đã được kẹp về trong sân khi tính đặc trưng (features.clip_to_pitch),
+    # nên giá trị ngoài [0, 1] lúc này chỉ có thể do lỗi code -> FAIL.
     checks.append(
         CheckResult(
             "normalized_features_in_[0,1]",
             out_of_range,
-            "PASS" if out_of_range == 0 else "WARNING",
+            "PASS" if out_of_range == 0 else "FAIL",
             note=oor_note,
+        )
+    )
+    checks.append(
+        CheckResult(
+            "coords_clipped_to_pitch",
+            report.coords_clipped,
+            "PASS",
+            note=(
+                f"{report.coords_clipped} tọa độ ngoài khung 120x80 đã được kẹp về biên sân "
+                "(sai số ghi nhận của StatsBomb, ví dụ phạt góc x=120.9)"
+                if report.coords_clipped
+                else ""
+            ),
         )
     )
 

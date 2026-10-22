@@ -84,15 +84,17 @@ Branch hiện tại: `REPRODUCIBILITY`
 
 ### Trạng thái chi tiết từng bước
 
+> Rà soát & chạy lại Bước 0–6 ngày 21/10/2026: xem đối chiếu trước/sau tại [`docs/reproducibility/STEP_0_6_TRUOC_SAU.md`](docs/reproducibility/STEP_0_6_TRUOC_SAU.md).
+
 | Bước | Tên bước | Trạng thái | Nguồn sự thật & Ghi chú |
 |---|---|---|---|
-| **0** | Environment Audit | **Đã hoàn thành** | `results/metadata/official/environment.json`, `notebooks/00` |
+| **0** | Environment Audit | **Đã hoàn thành** | `results/metadata/official/environment.json`, `requirements.lock.txt` (phiên bản thư viện đã khóa), `notebooks/00` |
 | **1** | Thu thập dữ liệu | **Đã hoàn thành** | Đủ 380/380 trận Premier League 2015/16 (`data/raw/2/27/`) |
 | **2** | Tiền xử lý & Gán nhãn | **Đã hoàn thành** | 45.365 clean possessions, 261.205 đường chuyền. Bằng chứng định lượng 380 trận: possession-level shot 14,26% vs goal 1,46% |
-| **3** | Xây dựng đồ thị | **Đã hoàn thành** | 45.047 đồ thị PyG, cắt trước cú sút đầu tiên (`truncate_at_first_shot: true`). **Cảnh báo**: 1 WARNING ở `normalized_features_in_[0,1]` do quả phạt góc tại $x=120.9$ (hợp lệ theo miền bóng đá) |
+| **3** | Xây dựng đồ thị | **Đã hoàn thành** | 45.047 đồ thị PyG, cắt trước cú sút đầu tiên (`truncate_at_first_shot: true`). 9/9 kiểm tra PASS; 1 tọa độ ngoài sân (phạt góc $x=120.9$) được kẹp về biên sân (`coords_clipped`) |
 | **4** | Phân chia tập dữ liệu | **Đã hoàn thành** | Chia theo TRẬN ĐẤU (266 Train, 57 Val, 57 Test), không rò rỉ dữ liệu. Có 2 bảng tóm tắt: `split_summary.csv` (possession) và `graph_split_summary.csv` (post-graph) |
-| **5** | Huấn luyện GNN | **Đã triển khai code** | Hỗ trợ cấu hình multi-seed, smoke test, lưu snapshot config và tách validation/test. Đã hoàn thành 1 run chính thức (seed 42) cho GCN, MPNN, GATv2, GraphSAGE |
-| **6** | Đánh giá & Đối sánh | **Đã hoàn thành** | MPNN dẫn đầu nhóm GNN (AUC-PR 0.5747, AUC-ROC 0.8732). Baselines phi đồ thị (RF AUC-PR 0.6234, ANN AUC-PR 0.6141) đang cao hơn do tận dụng đặc trưng toàn cục |
+| **5** | Huấn luyện GNN | **Đã hoàn thành** | 4 GNN × 5 seed (42, 123, 456, 789, 1024) + 3 baseline × 5 seed. Checkpoint `models/official/<model>_best.pt` = seed có Val AUC-PR cao nhất |
+| **6** | Đánh giá & Đối sánh | **Đã hoàn thành** | Test, mean ± std qua 5 seed: MPNN AUC-PR 0.5996 ± 0.0042 (tốt nhất nhóm GNN, có ý nghĩa thống kê); RF 0.6198 ± 0.0017, ANN 0.6117 ± 0.0097 — chênh lệch AUC-PR MPNN vs RF/ANN **không có ý nghĩa** (bootstrap theo trận, Holm); AUC-ROC RF/ANN nhỉnh hơn ~0,01 ở mức biên ý nghĩa (p Holm ≈ 0,05). Xem `results/tables/official/significance_tests.csv` |
 | **7–8**| XAI cho đồ thị | *Chưa triển khai* | Dừng lại chờ xác nhận phương án giải thích |
 | **9–10**| Hybrid Centrality & UI | *Chưa triển khai* | Công thức Hybrid Centrality và phạm vi open-play vẫn đang chờ quyết định |
 

@@ -4,19 +4,31 @@ Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 6 (Chiến lược đối s�
     - Tầng 2: So sánh backbone GNN (GCN, MPNN vs GATv2, GraphSAGE)
     - Tầng 3a: Đối sánh baseline phi đồ thị (Logistic Regression, Random Forest, ANN)
 
-Tính năng kiểm chứng và Provenance:
-    - Xác minh tính hợp lệ của run (chỉ đọc kết quả từ run thành công, từ chối file rác cũ).
-    - Lưu giữ cả mean và standard deviation khi chạy nhiều seeds.
-    - Đồng bộ tự động giữa baseline_comparison.csv và model_comparison.csv.
-    - Xuất tệp manifest đánh giá tổng hợp: results/metadata/<run_name>/evaluation_manifest.json.
+Nguyên tắc:
+    - Chỉ nhận run ĐẦY ĐỦ (đủ số seed trong configs/train.yaml, không seed nào lỗi).
+      Thiếu/lỗi -> dừng với mã lỗi 1, KHÔNG ghi bảng chính thức. Muốn xem tạm kết
+      quả chưa đủ seed thì dùng --allow-partial (bảng có cột `complete` = False).
+    - Bảng chính: mean ± std qua các seed trên tập TEST; ngưỡng phân loại của từng
+      seed đã được chọn trên tập VALIDATION (không dùng test để chọn gì cả).
+    - Kiểm định ý nghĩa thống kê: paired cluster bootstrap theo TRẬN trên tập test
+      (src/xai_football/evaluation/significance.py), hiệu chỉnh Holm.
+    - Manifest được SINH TỪ CODE (không viết tay): experiment_manifest.json,
+      evaluation_manifest.json.
 
 Cách dùng:
     python scripts/07_evaluate.py --config configs/data.yaml
-    python scripts/07_evaluate.py --config configs/data_pilot.yaml
+    python scripts/07_evaluate.py --config configs/data.yaml --n-boot 2000
+    python scripts/07_evaluate.py --config configs/data.yaml --allow-partial
 
 Đầu ra:
-    results/tables/<run_name>/model_comparison.csv
-    results/metadata/<run_name>/evaluation_manifest.json
+    results/tables/<run>/model_comparison.csv         test: mean/std qua seed
+    results/tables/<run>/val_model_comparison.csv     validation: mean/std qua seed
+    results/tables/<run>/model_metric_ci.csv          KTC 95% (bootstrap theo trận)
+    results/tables/<run>/significance_tests.csv       so sánh từng cặp mô hình
+    results/reproducibility/all_models_{test,val}_metrics_all_seeds.csv
+    results/reproducibility/baselines_*                 bản sao kết quả baseline
+    results/metadata/<run>/experiment_manifest.json
+    results/metadata/<run>/evaluation_manifest.json
 """
 
 from __future__ import annotations
@@ -30,60 +42,148 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
+from xai_football.evaluation.significance import align_predictions, compare_models  # noqa: E402
 from xai_football.utils.io import load_yaml  # noqa: E402
 from xai_football.utils.logging import get_logger  # noqa: E402
-from xai_football.utils.paths import get_metadata_dir, get_tables_dir  # noqa: E402
-from xai_football.utils.provenance import compute_file_sha256, get_git_info  # noqa: E402
+from xai_football.utils.paths import (  # noqa: E402
+    CONFIGS_DIR,
+    PROJECT_ROOT,
+    RESULTS_DIR,
+    get_experiments_dir,
+    get_metadata_dir,
+    get_models_dir,
+    get_tables_dir,
+    resolve_project_path,
+)
+from xai_football.utils.provenance import (  # noqa: E402
+    compute_dict_sha256,
+    compute_file_sha256,
+    get_git_info,
+)
 
 logger = get_logger("evaluate")
 
+METRICS = ["accuracy", "precision", "recall", "f1", "auc_roc", "auc_pr", "brier_score"]
 
-def verify_gnn_run(model_dir: Path) -> tuple[pd.DataFrame | None, dict[str, Any]]:
-    """Xác minh provenance và tải kết quả test metrics của mô hình GNN."""
-    manifest_path = model_dir / "aggregate_summary.json"
-    single_manifest_path = model_dir / "run_manifest.json"
-    all_seeds_file = model_dir / "test_metrics_all_seeds.csv"
-    single_metrics_file = model_dir / "test_metrics.csv"
-    fail_manifest_path = model_dir / "run_failure_manifest.json"
+# (tên hiển thị, khóa thư mục, tầng)
+GNN_MODELS = [
+    ("GCN (đề xuất)", "gcn", "Tier 2 — GNN Backbone"),
+    ("MPNN (đề xuất)", "mpnn", "Tier 2 — GNN Backbone"),
+    ("GATv2 (baseline)", "gatv2", "Tier 2 — GNN Baseline"),
+    ("GraphSAGE (baseline)", "graphsage", "Tier 2 — GNN Baseline"),
+]
+# (tên hiển thị, khóa trong CSV baseline, cột xác suất trong *_predictions.parquet)
+BASELINE_MODELS = [
+    ("Logistic Regression", "logistic_regression", "lr_prob"),
+    ("Random Forest", "random_forest", "rf_prob"),
+    ("ANN (MLP)", "ann", "ann_prob"),
+]
+BASELINE_TIER = "Tier 3(a) — Non-graph Baseline"
 
-    # 1. Nếu có tệp báo lỗi thất bại toàn diện, từ chối đọc bất kỳ file metric cũ nào
-    if fail_manifest_path.exists():
-        logger.warning(
-            "Phát hiện %s: Toàn bộ run gần nhất đã thất bại! Bỏ qua kết quả cũ.", fail_manifest_path
-        )
-        return None, {"status": "failed", "error": "all runs failed"}
 
-    # 2. Kiểm tra aggregate summary từ multi-seed run
-    if manifest_path.exists() and all_seeds_file.exists():
-        try:
-            with open(manifest_path, encoding="utf-8") as f:
-                agg_info = json.load(f)
-            df = pd.read_csv(all_seeds_file)
-            if not df.empty:
-                return df, agg_info
-        except Exception as e:
-            logger.warning("Lỗi đọc aggregate summary tại %s: %s", manifest_path, e)
+def _rel(path: Path) -> str:
+    """Đường dẫn tương đối tính từ gốc repo, dùng '/' để ghi vào manifest."""
+    try:
+        return path.resolve().relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
 
-    # 3. Kiểm tra single run manifest nếu chỉ chạy 1 seed
-    if single_manifest_path.exists() and single_metrics_file.exists():
-        try:
-            with open(single_manifest_path, encoding="utf-8") as f:
-                s_info = json.load(f)
-            df = pd.read_csv(single_metrics_file)
-            if not df.empty:
-                return df, s_info
-        except Exception as e:
-            logger.warning("Lỗi đọc single manifest tại %s: %s", single_manifest_path, e)
 
-    # 4. Fallback tìm file đơn lẻ nếu có
-    if single_metrics_file.exists():
-        df = pd.read_csv(single_metrics_file)
-        if not df.empty:
-            return df, {"status": "single_run_unverified"}
+def _read_json(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
 
-    return None, {"status": "not_found"}
+
+def summarize_seeds(df: pd.DataFrame) -> dict[str, Any]:
+    """mean và std (ddof=1) của từng độ đo qua các seed; std = 0 nếu chỉ 1 seed."""
+    out: dict[str, Any] = {"n_runs": len(df)}
+    for col in METRICS:
+        vals = df[col].astype(float)
+        out[col] = round(float(vals.mean()), 4)
+        out[f"{col}_std"] = round(float(vals.std(ddof=1)), 4) if len(vals) > 1 else 0.0
+    if "threshold" in df:
+        out["threshold_mean"] = round(float(df["threshold"].astype(float).mean()), 4)
+    return out
+
+
+def load_gnn_results(
+    run_name: str, key: str, expected_runs: int
+) -> tuple[dict[str, Any] | None, str]:
+    """Đọc kết quả multi-seed của một GNN. Trả (kết quả, lý do nếu không đầy đủ)."""
+    model_dir = get_experiments_dir(run_name) / key
+    if (model_dir / "run_failure_manifest.json").exists():
+        return None, "toàn bộ run gần nhất thất bại (run_failure_manifest.json)"
+
+    agg = _read_json(model_dir / "aggregate_summary.json")
+    test_csv = model_dir / "test_metrics_all_seeds.csv"
+    val_csv = model_dir / "val_metrics_all_seeds.csv"
+    if agg is None or not test_csv.exists() or not val_csv.exists():
+        return None, f"chưa có kết quả multi-seed trong {_rel(model_dir)}"
+
+    test_df = pd.read_csv(test_csv)
+    val_df = pd.read_csv(val_csv)
+    seeds = [int(s) for s in agg.get("successful_seeds", [])]
+
+    reasons = []
+    if not agg.get("is_complete_official", False):
+        reasons.append("aggregate_summary.is_complete_official = false")
+    if int(agg.get("n_failed_runs", 0)) > 0:
+        reasons.append(f"{agg.get('n_failed_runs')} seed lỗi")
+    if len(seeds) < expected_runs:
+        reasons.append(f"chỉ có {len(seeds)}/{expected_runs} seed")
+
+    preds = {}
+    for seed in seeds:
+        p = model_dir / str(seed) / "test_predictions.parquet"
+        if p.exists():
+            preds[seed] = pd.read_parquet(p)
+
+    return {
+        "dir": model_dir,
+        "aggregate": agg,
+        "test_df": test_df,
+        "val_df": val_df,
+        "seeds": seeds,
+        "best_seed": agg.get("best_seed_by_val_auc_pr"),
+        "predictions": preds,
+    }, "; ".join(reasons)
+
+
+def load_baseline_results(run_name: str, expected_runs: int) -> tuple[dict[str, Any] | None, str]:
+    """Đọc kết quả multi-seed của 3 baseline phi đồ thị."""
+    base_dir = get_experiments_dir(run_name) / "baselines"
+    agg = _read_json(base_dir / "aggregate_summary.json")
+    test_csv = base_dir / "test_metrics_all_seeds.csv"
+    val_csv = base_dir / "val_metrics_all_seeds.csv"
+    if agg is None or not test_csv.exists() or not val_csv.exists():
+        return None, f"chưa có kết quả baseline trong {_rel(base_dir)}"
+
+    seeds = [int(s) for s in agg.get("configured_seeds", [])]
+    reasons = []
+    if not agg.get("is_complete_official", False):
+        reasons.append("aggregate_summary.is_complete_official = false")
+    if len(seeds) < expected_runs:
+        reasons.append(f"chỉ có {len(seeds)}/{expected_runs} seed")
+
+    preds = {}
+    for seed in seeds:
+        p = base_dir / str(seed) / "test_predictions.parquet"
+        if p.exists():
+            preds[seed] = pd.read_parquet(p)
+
+    return {
+        "dir": base_dir,
+        "aggregate": agg,
+        "test_df": pd.read_csv(test_csv),
+        "val_df": pd.read_csv(val_csv),
+        "seeds": seeds,
+        "predictions": preds,
+    }, "; ".join(reasons)
 
 
 def main() -> int:
@@ -95,177 +195,390 @@ def main() -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="configs/data.yaml")
+    parser.add_argument("--train-config", default="configs/train.yaml")
     parser.add_argument(
         "--allow-partial",
         action="store_true",
-        help="Cho phép đưa cả các run partial/incomplete vào bảng đối sánh",
+        help="Cho phép đưa run chưa đủ seed vào bảng (cột complete = False)",
     )
+    parser.add_argument(
+        "--n-boot",
+        type=int,
+        default=10000,
+        help="Số vòng bootstrap (10.000: sai số Monte Carlo của p ~ ±0,002)",
+    )
+    parser.add_argument("--boot-seed", type=int, default=42, help="Seed của bootstrap")
     args = parser.parse_args()
 
     data_cfg = load_yaml(args.config)
+    train_cfg = load_yaml(args.train_config)
     run_name = data_cfg.get("run_name", "official")
+    expected_runs = int(train_cfg.get("n_runs", 5))
     tables_dir = get_tables_dir(data_cfg)
     meta_dir = get_metadata_dir(data_cfg)
 
-    rows = []
-    eval_manifest: dict[str, Any] = {
-        "evaluation_timestamp": datetime.now(timezone.utc).isoformat(),
-        "run_name": run_name,
-        "git": get_git_info(),
-        "gnn_models": {},
-        "baseline_models": {},
-    }
+    included: dict[str, dict[str, Any]] = {}
+    excluded: dict[str, str] = {}
+    test_rows, val_rows = [], []
+    per_seed_test, per_seed_val = [], []
 
-    # 1. Thu thập kết quả từ các mô hình GNN (Tầng 2)
-    gnn_models = [
-        ("GCN (đề xuất)", "gcn", "Tier 2 — GNN Backbone"),
-        ("MPNN (đề xuất)", "mpnn", "Tier 2 — GNN Backbone"),
-        ("GATv2 (baseline)", "gatv2", "Tier 2 — GNN Baseline"),
-        ("GraphSAGE (baseline)", "graphsage", "Tier 2 — GNN Baseline"),
-    ]
-
-    for display_name, m_key, tier in gnn_models:
-        model_dir = Path("experiments") / run_name / m_key
-        df_metrics, meta_info = verify_gnn_run(model_dir)
-
-        ckpt_path = Path("models") / run_name / f"{m_key}_best.pt"
-        if not ckpt_path.exists():
-            ckpt_path = model_dir / "best_model.pt"
-
-        ckpt_sha = compute_file_sha256(ckpt_path) if ckpt_path.exists() else None
-
-        eval_manifest["gnn_models"][m_key] = {
-            "display_name": display_name,
-            "status": meta_info.get("status", "unknown"),
-            "checkpoint_path": str(ckpt_path) if ckpt_path.exists() else None,
-            "checkpoint_sha256": ckpt_sha,
-            "metadata": meta_info,
+    # ---------------------------------------------------------------
+    # 1. Thu thập kết quả GNN (Tầng 2)
+    # ---------------------------------------------------------------
+    for display, key, tier in GNN_MODELS:
+        res, reason = load_gnn_results(run_name, key, expected_runs)
+        if res is None or (reason and not args.allow_partial):
+            excluded[display] = reason or "không đọc được kết quả"
+            logger.error("LOẠI %s: %s", display, excluded[display])
+            continue
+        complete = not reason
+        test_sum = summarize_seeds(res["test_df"])
+        val_sum = summarize_seeds(res["val_df"])
+        common = {
+            "model": display,
+            "tier": tier,
+            "type": "Graph",
+            "complete": complete,
+            "seeds": ",".join(str(s) for s in res["seeds"]),
+        }
+        test_rows.append(
+            {
+                **common,
+                **test_sum,
+                "loss": round(float(res["test_df"]["loss"].mean()), 4),
+                "val_auc_pr": val_sum["auc_pr"],
+                "val_auc_pr_std": val_sum["auc_pr_std"],
+                "best_seed_by_val": res["best_seed"],
+            }
+        )
+        val_rows.append({**common, **val_sum})
+        per_seed_test.append(res["test_df"].assign(model=display, tier=tier))
+        per_seed_val.append(res["val_df"].assign(model=display, tier=tier))
+        included[display] = {
+            "key": key,
+            "kind": "gnn",
+            "complete": complete,
+            "partial_reason": reason or None,
+            **res,
         }
 
-        if df_metrics is not None and not df_metrics.empty:
-            n_runs = len(df_metrics)
-            mean_series = df_metrics.select_dtypes(include=["number"]).mean()
-            std_series = (
-                df_metrics.select_dtypes(include=["number"]).std(ddof=1) if n_runs > 1 else None
-            )
-
-            row = {
-                "model": display_name,
-                "tier": tier,
-                "type": "Graph",
-                "n_runs": n_runs,
-                "accuracy": round(float(mean_series.get("accuracy", 0.0)), 4),
-                "accuracy_std": (
-                    round(float(std_series.get("accuracy", 0.0)), 4)
-                    if std_series is not None
-                    else 0.0
-                ),
-                "precision": round(float(mean_series.get("precision", 0.0)), 4),
-                "precision_std": (
-                    round(float(std_series.get("precision", 0.0)), 4)
-                    if std_series is not None
-                    else 0.0
-                ),
-                "recall": round(float(mean_series.get("recall", 0.0)), 4),
-                "recall_std": (
-                    round(float(std_series.get("recall", 0.0)), 4)
-                    if std_series is not None
-                    else 0.0
-                ),
-                "f1": round(float(mean_series.get("f1", 0.0)), 4),
-                "f1_std": (
-                    round(float(std_series.get("f1", 0.0)), 4) if std_series is not None else 0.0
-                ),
-                "auc_roc": round(float(mean_series.get("auc_roc", 0.0)), 4),
-                "auc_roc_std": (
-                    round(float(std_series.get("auc_roc", 0.0)), 4)
-                    if std_series is not None
-                    else 0.0
-                ),
-                "auc_pr": round(float(mean_series.get("auc_pr", 0.0)), 4),
-                "auc_pr_std": (
-                    round(float(std_series.get("auc_pr", 0.0)), 4)
-                    if std_series is not None
-                    else 0.0
-                ),
-                "brier_score": round(float(mean_series.get("brier_score", 0.0)), 4),
-                "brier_score_std": (
-                    round(float(std_series.get("brier_score", 0.0)), 4)
-                    if std_series is not None
-                    else 0.0
-                ),
-                "loss": (
-                    round(float(mean_series.get("loss", 0.0)), 4) if "loss" in mean_series else None
-                ),
-            }
-            rows.append(row)
-
-    # 2. Thu thập kết quả từ baseline phi đồ thị (Tầng 3a)
-    baseline_file = tables_dir / "baseline_comparison.csv"
-    baseline_agg_manifest = Path("experiments") / run_name / "baselines" / "aggregate_summary.json"
-
-    if baseline_agg_manifest.exists():
-        try:
-            with open(baseline_agg_manifest, encoding="utf-8") as f:
-                base_manifest_data = json.load(f)
-            eval_manifest["baseline_models"] = base_manifest_data
-        except Exception:
-            pass
-
-    if baseline_file.exists():
-        base_df = pd.read_csv(baseline_file)
-        for _, b_row in base_df.iterrows():
-            m_name = str(b_row.get("model", "baseline"))
-            display_name = {
-                "logistic_regression": "Logistic Regression",
-                "random_forest": "Random Forest",
-                "ann": "ANN (MLP)",
-            }.get(m_name, m_name)
-            row = {
-                "model": display_name,
-                "tier": "Tier 3(a) — Non-graph Baseline",
+    # ---------------------------------------------------------------
+    # 2. Thu thập kết quả baseline phi đồ thị (Tầng 3a)
+    # ---------------------------------------------------------------
+    base, base_reason = load_baseline_results(run_name, expected_runs)
+    if base is None or (base_reason and not args.allow_partial):
+        for display, _, _ in BASELINE_MODELS:
+            excluded[display] = base_reason or "không đọc được kết quả baseline"
+        logger.error("LOẠI baseline phi đồ thị: %s", base_reason)
+    else:
+        for display, key, prob_col in BASELINE_MODELS:
+            t_df = base["test_df"][base["test_df"]["model"] == key]
+            v_df = base["val_df"][base["val_df"]["model"] == key]
+            if t_df.empty or v_df.empty:
+                excluded[display] = f"không có dòng '{key}' trong kết quả baseline"
+                continue
+            complete = not base_reason
+            val_sum = summarize_seeds(v_df)
+            common = {
+                "model": display,
+                "tier": BASELINE_TIER,
                 "type": "Tabular",
-                "n_runs": int(b_row.get("n_runs", 1)),
-                "accuracy": round(float(b_row.get("accuracy", 0.0)), 4),
-                "accuracy_std": round(float(b_row.get("accuracy_std", 0.0)), 4),
-                "precision": round(float(b_row.get("precision", 0.0)), 4),
-                "precision_std": round(float(b_row.get("precision_std", 0.0)), 4),
-                "recall": round(float(b_row.get("recall", 0.0)), 4),
-                "recall_std": round(float(b_row.get("recall_std", 0.0)), 4),
-                "f1": round(float(b_row.get("f1", 0.0)), 4),
-                "f1_std": round(float(b_row.get("f1_std", 0.0)), 4),
-                "auc_roc": round(float(b_row.get("auc_roc", 0.0)), 4),
-                "auc_roc_std": round(float(b_row.get("auc_roc_std", 0.0)), 4),
-                "auc_pr": round(float(b_row.get("auc_pr", 0.0)), 4),
-                "auc_pr_std": round(float(b_row.get("auc_pr_std", 0.0)), 4),
-                "brier_score": round(float(b_row.get("brier_score", 0.0)), 4),
-                "brier_score_std": round(float(b_row.get("brier_score_std", 0.0)), 4),
-                "loss": None,
+                "complete": complete,
+                "seeds": ",".join(str(s) for s in base["seeds"]),
             }
-            rows.append(row)
+            test_rows.append(
+                {
+                    **common,
+                    **summarize_seeds(t_df),
+                    "loss": None,
+                    "val_auc_pr": val_sum["auc_pr"],
+                    "val_auc_pr_std": val_sum["auc_pr_std"],
+                    "best_seed_by_val": None,
+                }
+            )
+            val_rows.append({**common, **val_sum})
+            per_seed_test.append(t_df.assign(model=display, tier=BASELINE_TIER))
+            per_seed_val.append(v_df.assign(model=display, tier=BASELINE_TIER))
+            included[display] = {
+                "key": key,
+                "kind": "baseline",
+                "prob_col": prob_col,
+                "complete": complete,
+                "partial_reason": base_reason or None,
+                "seeds": base["seeds"],
+                "predictions": base["predictions"],
+                "dir": base["dir"],
+                "aggregate": base["aggregate"],
+            }
 
-    if not rows:
-        logger.warning(
-            "Chưa có kết quả mô hình nào hợp lệ trong experiments/%s hoặc %s.",
-            run_name,
-            baseline_file,
+    if excluded and not args.allow_partial:
+        logger.error(
+            "Có %d mô hình thiếu/không đầy đủ: %s. KHÔNG ghi bảng chính thức. "
+            "Hãy chạy đủ seed, hoặc dùng --allow-partial để xem tạm.",
+            len(excluded),
+            excluded,
         )
-        return 0
+        return 1
+    if not test_rows:
+        logger.error("Không có kết quả mô hình nào hợp lệ.")
+        return 1
 
-    comparison_df = pd.DataFrame(rows)
+    # ---------------------------------------------------------------
+    # 3. Bảng đối sánh (mean ± std qua seed)
+    # ---------------------------------------------------------------
+    order_cols = (
+        ["model", "tier", "type", "n_runs", "complete", "seeds"]
+        + [c for m in METRICS for c in (m, f"{m}_std")]
+        + ["threshold_mean"]
+    )
+    comparison_df = pd.DataFrame(test_rows)
+    comparison_df = comparison_df[
+        order_cols + ["loss", "val_auc_pr", "val_auc_pr_std", "best_seed_by_val"]
+    ]
+    # Seed là số nguyên; baseline không có seed được chọn -> để trống (không thành 789.0)
+    comparison_df["best_seed_by_val"] = comparison_df["best_seed_by_val"].astype("Int64")
+    val_comparison_df = pd.DataFrame(val_rows)[order_cols]
+
     tables_dir.mkdir(parents=True, exist_ok=True)
-    out_path = tables_dir / "model_comparison.csv"
-    comparison_df.to_csv(out_path, index=False, encoding="utf-8-sig")
+    comparison_df.to_csv(tables_dir / "model_comparison.csv", index=False, encoding="utf-8-sig")
+    val_comparison_df.to_csv(
+        tables_dir / "val_model_comparison.csv", index=False, encoding="utf-8-sig"
+    )
+
+    # Bản sao kết quả chính thức chỉ được ghi khi MỌI mô hình đủ seed — chạy --allow-partial
+    # không được ghi đè lên kết quả chính thức đã có.
+    all_complete = not excluded and all(v["complete"] for v in included.values())
+    repro_dir = RESULTS_DIR / "reproducibility"
+    repro_dir.mkdir(parents=True, exist_ok=True)
+    if not all_complete:
+        logger.warning("Run chưa đầy đủ: KHÔNG ghi đè results/reproducibility/.")
+    if all_complete:
+        pd.concat(per_seed_test, ignore_index=True).to_csv(
+            repro_dir / "all_models_test_metrics_all_seeds.csv", index=False, encoding="utf-8-sig"
+        )
+        pd.concat(per_seed_val, ignore_index=True).to_csv(
+            repro_dir / "all_models_val_metrics_all_seeds.csv", index=False, encoding="utf-8-sig"
+        )
+    if all_complete and base is not None:
+        base["test_df"].to_csv(repro_dir / "baselines_test_metrics_all_seeds.csv", index=False)
+        base["val_df"].to_csv(repro_dir / "baselines_val_metrics_all_seeds.csv", index=False)
+        with open(repro_dir / "baselines_aggregate_summary.json", "w", encoding="utf-8") as f:
+            json.dump(base["aggregate"], f, indent=2, ensure_ascii=False)
+
+    # ---------------------------------------------------------------
+    # 4. Kiểm định ý nghĩa thống kê (paired cluster bootstrap theo trận)
+    # ---------------------------------------------------------------
+    # Xóa bảng kiểm định cũ trước — nếu lần này bị bỏ qua thì không để lại số liệu lỗi thời
+    for stale in ("model_metric_ci.csv", "significance_tests.csv"):
+        (tables_dir / stale).unlink(missing_ok=True)
+    significance_info: dict[str, Any] = {"status": "skipped"}
+    model_probs: dict[str, list[np.ndarray]] = {}
+    reference: pd.DataFrame | None = None
+    missing_preds = []
+    for display, info in included.items():
+        preds = info["predictions"]
+        if len(preds) != len(info["seeds"]):
+            missing_preds.append(display)
+            continue
+        prob_col = info.get("prob_col", "y_prob")
+        for seed in info["seeds"]:
+            frame = preds[seed]
+            if not {"match_id", "possession_id"}.issubset(frame.columns):
+                missing_preds.append(display)
+                break
+            if reference is None:
+                reference = frame[["match_id", "possession_id", "y_true"]].reset_index(drop=True)
+            model_probs.setdefault(display, []).append(
+                align_predictions(reference, frame, prob_col)
+            )
+        else:
+            continue
+        model_probs.pop(display, None)
+
+    if missing_preds:
+        logger.warning(
+            "Thiếu file dự đoán có khóa (match_id, possession_id) cho: %s — bỏ qua kiểm định "
+            "cho các mô hình này.",
+            missing_preds,
+        )
+
+    if reference is not None and len(model_probs) >= 2:
+        logger.info(
+            "Kiểm định bootstrap: %d mô hình, %d vòng, %d trận test",
+            len(model_probs),
+            args.n_boot,
+            reference["match_id"].nunique(),
+        )
+        ci_df, pairs_df = compare_models(
+            reference["y_true"].to_numpy(int),
+            reference["match_id"].to_numpy(),
+            model_probs,
+            n_boot=args.n_boot,
+            seed=args.boot_seed,
+        )
+        ci_df.to_csv(tables_dir / "model_metric_ci.csv", index=False, encoding="utf-8-sig")
+        pairs_df.to_csv(tables_dir / "significance_tests.csv", index=False, encoding="utf-8-sig")
+        significance_info = {
+            "status": "completed",
+            "method": (
+                "paired cluster bootstrap theo trận trên tập test; độ đo = trung bình qua seed; "
+                "KTC 95% theo phân vị; p-value hai phía; hiệu chỉnh Holm theo từng độ đo"
+            ),
+            "n_boot": args.n_boot,
+            "boot_seed": args.boot_seed,
+            "n_test_graphs": int(len(reference)),
+            "n_test_matches": int(reference["match_id"].nunique()),
+            "models": list(model_probs),
+            "models_without_predictions": missing_preds,
+        }
+
+    # ---------------------------------------------------------------
+    # 5. Manifest sinh từ code
+    # ---------------------------------------------------------------
+    git_info = get_git_info()
+    pipeline_csv = tables_dir / "data_pipeline_summary.csv"
+    graph_split_csv = tables_dir / "graph_split_summary.csv"
+    pipeline = (
+        {
+            k: (v.item() if isinstance(v, np.generic) else v)
+            for k, v in pd.read_csv(pipeline_csv).iloc[0].to_dict().items()
+        }
+        if pipeline_csv.exists()
+        else {}
+    )
+    graph_split = (
+        pd.read_csv(graph_split_csv).set_index("split") if graph_split_csv.exists() else None
+    )
+
+    def _split_val(split: str, col: str) -> int | None:
+        if graph_split is None or split not in graph_split.index:
+            return None
+        return int(graph_split.loc[split, col])
+
+    models_manifest: dict[str, Any] = {}
+    config_mismatch: list[str] = []
+    for row in test_rows:
+        info = included[row["model"]]
+        key = info["key"]
+        if info["kind"] == "gnn":
+            cfg_path = CONFIGS_DIR / "model" / f"{key}.yaml"
+            ckpt = get_models_dir(run_name) / f"{key}_best.pt"
+            # Mã băm cấu hình LÚC HUẤN LUYỆN (config_snapshot.yaml của từng seed)
+            training_hashes = []
+            for seed in info["seeds"]:
+                snap_path = info["dir"] / str(seed) / "config_snapshot.yaml"
+                snap = load_yaml(snap_path) if snap_path.exists() else {}
+                training_hashes.append(snap.get("config_hashes", {}).get("model_config"))
+        else:
+            cfg_path = CONFIGS_DIR / "model" / "baseline_tabular.yaml"
+            ckpt = None
+            training_hashes = [info["aggregate"].get("config_hash")]
+        current_hash = compute_dict_sha256(load_yaml(cfg_path))
+        matches_training = all(h == current_hash for h in training_hashes)
+        if not matches_training:
+            config_mismatch.append(row["model"])
+        models_manifest[key] = {
+            "display_name": row["model"],
+            "tier": row["tier"],
+            "type": row["type"],
+            "complete": row["complete"],
+            "seeds": info["seeds"],
+            "config_path": _rel(cfg_path),
+            "config_sha256": compute_file_sha256(cfg_path),
+            # sha256 nội dung cấu hình (dict) LÚC HUẤN LUYỆN và có khớp cấu hình hiện tại không
+            "training_config_dict_sha256": sorted({str(h) for h in training_hashes}),
+            "current_config_matches_training": matches_training,
+            "experiment_dir": _rel(info["dir"]),
+            "best_seed_by_val_auc_pr": row.get("best_seed_by_val"),
+            "checkpoint_path": _rel(ckpt) if ckpt is not None and ckpt.exists() else None,
+            "checkpoint_sha256": (
+                compute_file_sha256(ckpt) if ckpt is not None and ckpt.exists() else None
+            ),
+            "test_mean_std": {m: [row[m], row[f"{m}_std"]] for m in METRICS},
+            "val_auc_pr_mean_std": [row["val_auc_pr"], row["val_auc_pr_std"]],
+        }
+
+    experiment_manifest = {
+        "generated_by": "scripts/07_evaluate.py",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "git": git_info,
+        "dataset": {
+            "name": "Premier League 2015/2016 (StatsBomb Open Data)",
+            "competitions": data_cfg.get("competitions"),
+            "expected_matches": data_cfg.get("expected_matches"),
+            "n_matches": pipeline.get("n_matches"),
+            "clean_possessions": pipeline.get("n_clean_possessions"),
+            "labeling": data_cfg.get("labeling"),
+            "labeling_status": "TẠM THỜI — Decision 0001 chưa chốt",
+        },
+        "splits": {
+            "strategy": "match_level_stratified",
+            **{
+                f"{s}_{c}": _split_val(s, col)
+                for s in ("train", "val", "test")
+                for c, col in (("matches", "n_matches"), ("graphs", "n_graphs"))
+            },
+        },
+        "train_config_path": _rel(resolve_project_path(args.train_config)),
+        "train_config_sha256": compute_file_sha256(resolve_project_path(args.train_config)),
+        "models_with_config_changed_after_training": config_mismatch,
+        "expected_runs_per_model": expected_runs,
+        "models": models_manifest,
+        "excluded_models": excluded,
+        "significance": significance_info,
+    }
+    eval_manifest = {
+        "evaluation_timestamp": datetime.now(timezone.utc).isoformat(),
+        "run_name": run_name,
+        "git": git_info,
+        "allow_partial": args.allow_partial,
+        "included_models": {
+            k: {
+                "complete": v["complete"],
+                "partial_reason": v["partial_reason"],
+                "seeds": v["seeds"],
+                "aggregate_summary": v["aggregate"],
+            }
+            for k, v in included.items()
+        },
+        "excluded_models": excluded,
+        "significance": significance_info,
+        "notes": [
+            "Ngưỡng phân loại (accuracy/precision/recall/F1) chọn trên validation, tối đa F1.",
+            "Cột loss của GNN là Weighted BCE (pos_weight từ train) — không so sánh được với "
+            "baseline dạng bảng.",
+            "GNN huấn luyện với pos_weight nên xác suất bị đẩy lên; Brier score phản ánh cả "
+            "điều này (không hiệu chỉnh xác suất sau huấn luyện).",
+        ],
+    }
 
     meta_dir.mkdir(parents=True, exist_ok=True)
+    with open(meta_dir / "experiment_manifest.json", "w", encoding="utf-8") as f:
+        json.dump(experiment_manifest, f, indent=2, ensure_ascii=False, default=str)
     with open(meta_dir / "evaluation_manifest.json", "w", encoding="utf-8") as f:
-        json.dump(eval_manifest, f, indent=2, ensure_ascii=False)
+        json.dump(eval_manifest, f, indent=2, ensure_ascii=False, default=str)
 
-    print(f"\n=== BẢNG ĐỐI SÁNH HIỆU NĂNG MÔ HÌNH TRÊN TẬP TEST ({run_name.upper()}) ===")
-    print(comparison_df.to_string(index=False))
-    print(f"\nĐã lưu bảng đối sánh vào: {out_path}")
-    print(f"Đã lưu evaluation manifest vào: {meta_dir / 'evaluation_manifest.json'}")
-
+    show = ["model", "n_runs", "auc_pr", "auc_pr_std", "auc_roc", "auc_roc_std", "brier_score"]
+    print(f"\n=== BẢNG ĐỐI SÁNH TRÊN TẬP TEST ({run_name.upper()}, mean ± std qua seed) ===")
+    print(comparison_df[show].to_string(index=False))
+    if significance_info["status"] == "completed":
+        auc_pr_pairs = pairs_df[pairs_df["metric"] == "auc_pr"]
+        print("\n=== KIỂM ĐỊNH AUC-PR (bootstrap theo trận, Holm) ===")
+        print(
+            auc_pr_pairs[
+                ["model_a", "model_b", "diff_a_minus_b", "ci95_low", "ci95_high", "p_value_holm"]
+            ].to_string(index=False)
+        )
+    print(f"\nĐã lưu bảng vào: {tables_dir}")
+    print(f"Đã lưu manifest vào: {meta_dir}")
+    if config_mismatch:
+        logger.warning(
+            "Cấu hình hiện tại KHÁC cấu hình lúc huấn luyện của: %s (xem experiment_manifest.json)",
+            config_mismatch,
+        )
+    if significance_info["status"] != "completed" and not args.allow_partial:
+        logger.error("Không chạy được kiểm định thống kê — run chính thức chưa hoàn tất.")
+        return 1
     return 0
 
 

@@ -70,3 +70,28 @@ def get_processed_dir(config: dict) -> Path:
 def get_metadata_dir(config: dict) -> Path:
     """Lấy thư mục metadata theo run_name."""
     return ensure_dir(METADATA_DIR / get_run_name(config))
+
+
+def resolve_project_path(path: str | Path) -> Path:
+    """Đường dẫn tương đối trong config được hiểu là tính từ gốc repo.
+
+    Tránh lỗi đọc/ghi sai chỗ khi chạy script từ một thư mục khác gốc repo.
+    """
+    p = Path(path)
+    return p if p.is_absolute() else PROJECT_ROOT / p
+
+
+def get_split_dir(split_cfg: dict, run_name: str) -> Path:
+    """Thư mục danh sách trận của từng tập: data/splits (official) hoặc data/splits/<run_name>."""
+    base = resolve_project_path(split_cfg.get("output_dir") or "data/splits")
+    return base if run_name == "official" else base / run_name
+
+
+def get_experiments_dir(run_name: str, suffix: str = "") -> Path:
+    """experiments/<run_name><suffix> — suffix ví dụ '_smoke', '_debug'."""
+    return EXPERIMENTS_DIR / f"{run_name}{suffix}"
+
+
+def get_models_dir(run_name: str, suffix: str = "") -> Path:
+    """models/<run_name><suffix> — nơi lưu checkpoint tốt nhất của từng mô hình."""
+    return MODELS_DIR / f"{run_name}{suffix}"

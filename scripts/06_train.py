@@ -40,7 +40,12 @@ from xai_football.training.optimizers import build_optimizer, build_scheduler  #
 from xai_football.training.trainer import GNNTrainer  # noqa: E402
 from xai_football.utils.io import load_yaml  # noqa: E402
 from xai_football.utils.logging import get_logger  # noqa: E402
-from xai_football.utils.paths import get_processed_dir  # noqa: E402
+from xai_football.utils.paths import (  # noqa: E402
+    get_experiments_dir,
+    get_models_dir,
+    get_processed_dir,
+    get_split_dir,
+)
 from xai_football.utils.provenance import compute_dict_sha256, get_git_info  # noqa: E402
 from xai_football.utils.seed import seed_everything  # noqa: E402
 
@@ -95,11 +100,9 @@ def train_single_run(
     # 3. Model
     sample_g = train_graphs[0]
     node_in_dim = sample_g.x.shape[1]
-    edge_in_dim = (
-        sample_g.edge_attr.shape[1]
-        if hasattr(sample_g, "edge_attr") and sample_g.edge_attr is not None
-        else 12
-    )
+    if getattr(sample_g, "edge_attr", None) is None:
+        raise ValueError("Đồ thị không có edge_attr — hãy chạy lại scripts/04_build_graphs.py.")
+    edge_in_dim = sample_g.edge_attr.shape[1]
     model = build_gnn_model(model_cfg, node_in_dim=node_in_dim, edge_in_dim=edge_in_dim)
 
     # 4. Optimizer, Loss & Scheduler (dùng factory pattern có kiểm tra hợp lệ)
@@ -125,6 +128,11 @@ def train_single_run(
         "seed": seed,
         "model_name": model_name,
         "smoke_test": smoke_test,
+        "pos_weight_from_train": round(float(pos_weight), 6),
+        "n_train_pos": n_pos,
+        "n_train_neg": n_neg,
+        "node_in_dim": int(node_in_dim),
+        "edge_in_dim": int(edge_in_dim),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "git": git_info or {},
         "config_hashes": {
@@ -300,9 +308,8 @@ def main() -> int:
     graphs, index_df, feature_names = load_graphs(processed_dir)
     logger.info("Đã tải %d đồ thị từ %s", len(graphs), processed_dir)
 
-    # Đọc match splits
-    base_split_dir = Path(split_cfg.get("output_dir", "data/splits"))
-    split_dir = base_split_dir if run_name == "official" else base_split_dir / run_name
+    # Đọc match splits (đường dẫn tính từ gốc repo)
+    split_dir = get_split_dir(split_cfg, run_name)
     if not (split_dir / "train_matches.csv").exists():
         logger.error("Chưa có split trong %s. Hãy chạy scripts/05_make_splits.py trước.", split_dir)
         return 1
@@ -328,14 +335,13 @@ def main() -> int:
 
     # Cách ly thư mục smoke test và debug run để không bao giờ ghi đè kết quả official
     if args.smoke_test:
-        base_exp_dir = Path("experiments") / f"{run_name}_smoke" / model_name
-        models_dir = Path("models") / f"{run_name}_smoke"
+        suffix = "_smoke"
     elif is_debug_run:
-        base_exp_dir = Path("experiments") / f"{run_name}_debug" / model_name
-        models_dir = Path("models") / f"{run_name}_debug"
+        suffix = "_debug"
     else:
-        base_exp_dir = Path("experiments") / run_name / model_name
-        models_dir = Path("models") / run_name
+        suffix = ""
+    base_exp_dir = get_experiments_dir(run_name, suffix) / model_name
+    models_dir = get_models_dir(run_name, suffix)
 
     base_exp_dir.mkdir(parents=True, exist_ok=True)
     models_dir.mkdir(parents=True, exist_ok=True)
@@ -419,12 +425,24 @@ def main() -> int:
     val_agg = compute_metrics_aggregation(all_val_rows)
     test_agg = compute_metrics_aggregation(all_test_rows)
 
+    # Đủ seed = chứa ĐÚNG danh sách seed cấu hình trong train.yaml (không chỉ đủ số lượng)
+    configured = set(resolve_seeds(train_cfg))
     is_complete_official = (
         (len(seeds) >= int(train_cfg.get("n_runs", 5)))
+        and configured.issubset(seeds)
         and len(failed_runs) == 0
         and not args.smoke_test
         and not is_debug_run
     )
+
+    # Chọn checkpoint tốt nhất dựa trên tập VALIDATION (không dùng test set để chọn checkpoint!)
+    best_seed = None
+    best_val_auc_pr = -1.0
+    for r in all_val_rows:
+        val_pr = float(r.get("auc_pr", -1.0))
+        if val_pr > best_val_auc_pr:
+            best_val_auc_pr = val_pr
+            best_seed = r["seed"]
 
     status_str = "completed" if len(failed_runs) == 0 else "partial"
     aggregate_manifest = {
@@ -441,20 +459,14 @@ def main() -> int:
         "n_failed_runs": len(failed_runs),
         "successful_seeds": [r["seed"] for r in all_test_rows],
         "failed_seeds": [r["seed"] for r in failed_runs],
+        # Seed có Val AUC-PR cao nhất — checkpoint của seed này được chép sang models/<run>/
+        "best_seed_by_val_auc_pr": best_seed,
+        "best_val_auc_pr": round(best_val_auc_pr, 4) if best_seed is not None else None,
         "val_metrics_summary": val_agg,
         "test_metrics_summary": test_agg,
     }
     with open(base_exp_dir / "aggregate_summary.json", "w", encoding="utf-8") as f:
         json.dump(aggregate_manifest, f, indent=2, ensure_ascii=False)
-
-    # Chọn checkpoint tốt nhất dựa trên tập VALIDATION (không dùng test set để chọn checkpoint!)
-    best_seed = None
-    best_val_auc_pr = -1.0
-    for r in all_val_rows:
-        val_pr = float(r.get("auc_pr", -1.0))
-        if val_pr > best_val_auc_pr:
-            best_val_auc_pr = val_pr
-            best_seed = r["seed"]
 
     if best_seed is not None and not args.smoke_test and not is_debug_run:
         best_seed_dir = base_exp_dir / str(best_seed)
@@ -465,6 +477,7 @@ def main() -> int:
             "test_metrics.csv",
             "run_manifest.json",
             "test_predictions.parquet",
+            "val_predictions.parquet",
             "config_snapshot.yaml",
         ]:
             src_file = best_seed_dir / fname

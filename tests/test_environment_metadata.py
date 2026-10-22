@@ -28,3 +28,12 @@ def test_compute_dict_sha256():
     # Tính tất định độc lập với thứ tự key
     assert compute_dict_sha256(d1) == compute_dict_sha256(d2)
     assert len(compute_dict_sha256(d1)) == 64
+
+
+def test_config_hash_keys_use_posix_separator():
+    """Khóa config_hashes phải dùng "/" để so sánh được giữa Windows và Linux."""
+    meta = collect_environment_metadata()
+    assert meta["config_hashes"], "Không tìm thấy file cấu hình nào trong configs/"
+    for key in meta["config_hashes"]:
+        assert "\\" not in key, f"Khóa dùng dấu gạch ngược: {key}"
+    assert "requirements_lock_sha256" in meta

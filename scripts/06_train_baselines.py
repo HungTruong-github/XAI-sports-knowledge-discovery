@@ -38,7 +38,13 @@ from xai_football.modeling.baselines import (  # noqa: E402
 )
 from xai_football.utils.io import load_yaml  # noqa: E402
 from xai_football.utils.logging import get_logger  # noqa: E402
-from xai_football.utils.paths import get_processed_dir, get_tables_dir  # noqa: E402
+from xai_football.utils.paths import (  # noqa: E402
+    get_experiments_dir,
+    get_processed_dir,
+    get_split_dir,
+    get_tables_dir,
+    resolve_project_path,
+)
 from xai_football.utils.provenance import compute_dict_sha256, get_git_info  # noqa: E402
 from xai_football.utils.seed import seed_everything  # noqa: E402
 
@@ -90,7 +96,8 @@ def main() -> int:
     data_cfg = load_yaml(args.config)
     baseline_cfg = load_yaml(args.model_config)
     split_cfg = load_yaml(args.split_config)
-    train_cfg = load_yaml(args.train_config) if Path(args.train_config).exists() else None
+    train_cfg_path = resolve_project_path(args.train_config)
+    train_cfg = load_yaml(train_cfg_path) if train_cfg_path.exists() else None
 
     seeds, is_debug_run = resolve_baseline_seeds(
         train_cfg, cli_seed=args.seed, cli_seeds=args.seeds
@@ -101,10 +108,7 @@ def main() -> int:
     processed_dir = get_processed_dir(data_cfg)
     tables_dir = get_tables_dir(data_cfg)
 
-    if is_debug_run:
-        exp_dir = Path("experiments") / f"{run_name}_debug" / "baselines"
-    else:
-        exp_dir = Path("experiments") / run_name / "baselines"
+    exp_dir = get_experiments_dir(run_name, "_debug" if is_debug_run else "") / "baselines"
     exp_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. Tải đồ thị
@@ -112,9 +116,7 @@ def main() -> int:
     logger.info("Đã tải %d đồ thị", len(graphs))
 
     # 2. Tải split
-    base_split_dir = Path(split_cfg.get("output_dir", "data/splits"))
-    split_dir = base_split_dir if run_name == "official" else base_split_dir / run_name
-    splits = load_match_splits(split_dir)
+    splits = load_match_splits(get_split_dir(split_cfg, run_name))
 
     train_mids = set(splits["train"])
     val_mids = set(splits["val"])
@@ -132,6 +134,19 @@ def main() -> int:
     X_train, y_train = X_all[tr_mask], y_all[tr_mask]
     X_val, y_val = X_all[va_mask], y_all[va_mask]
     X_test, y_test = X_all[te_mask], y_all[te_mask]
+
+    # Khóa possession của từng hàng test/val — để Bước 6 ghép đúng mẫu với dự đoán GNN
+    def _keys(mask: list[bool]) -> pd.DataFrame:
+        sel = [g for g, keep in zip(graphs, mask, strict=True) if keep]
+        return pd.DataFrame(
+            {
+                "match_id": [int(g.match_id) for g in sel],
+                "possession_id": [int(g.possession_id) for g in sel],
+            }
+        )
+
+    test_keys = _keys(te_mask)
+    val_keys = _keys(va_mask)
 
     logger.info("Dữ liệu bảng: Train=%d, Val=%d, Test=%d", len(X_train), len(X_val), len(X_test))
 
@@ -205,17 +220,26 @@ def main() -> int:
         with open(seed_dir / "run_manifest.json", "w", encoding="utf-8") as f:
             json.dump(manifest_seed, f, indent=2, ensure_ascii=False)
 
-        # Lưu predictions của seed đầu tiên
+        # Lưu predictions của MỌI seed (kèm khóa possession) — đầu vào kiểm định ở Bước 6
+        for split_name, keys, y_true, probs in (
+            ("test", test_keys, y_test, results["test_probs"]),
+            ("val", val_keys, y_val, results["val_probs"]),
+        ):
+            pred_df = keys.copy()
+            pred_df["y_true"] = y_true
+            pred_df["lr_prob"] = probs["logistic_regression"]
+            pred_df["rf_prob"] = probs["random_forest"]
+            pred_df["ann_prob"] = probs["ann"]
+            pred_df.to_parquet(seed_dir / f"{split_name}_predictions.parquet", index=False)
+
+        # Giữ tệp gốc ở thư mục baselines/ (seed đầu tiên) để notebook cũ vẫn đọc được
         if seed == seeds[0]:
-            pred_df = pd.DataFrame(
-                {
-                    "y_test": y_test,
-                    "lr_prob": results["test_probs"]["logistic_regression"],
-                    "rf_prob": results["test_probs"]["random_forest"],
-                    "ann_prob": results["test_probs"]["ann"],
-                }
-            )
-            pred_df.to_parquet(exp_dir / "test_predictions.parquet", index=False)
+            legacy = test_keys.copy()
+            legacy["y_test"] = y_test
+            legacy["lr_prob"] = results["test_probs"]["logistic_regression"]
+            legacy["rf_prob"] = results["test_probs"]["random_forest"]
+            legacy["ann_prob"] = results["test_probs"]["ann"]
+            legacy.to_parquet(exp_dir / "test_predictions.parquet", index=False)
 
     total_elapsed = time.time() - start_total_time
 
@@ -284,7 +308,13 @@ def main() -> int:
     aggregate_manifest = {
         "model_type": "tabular_baselines",
         "status": "completed",
-        "is_complete_official": (len(seeds) >= 5 and not is_debug_run),
+        # Đủ seed = ĐÚNG danh sách seed cấu hình trong train.yaml (không chỉ đủ số lượng)
+        "is_complete_official": (
+            not is_debug_run
+            and train_cfg is not None
+            and set(seeds) >= set(resolve_baseline_seeds(train_cfg)[0])
+            and len(seeds) >= int(train_cfg.get("n_runs", 5))
+        ),
         "configured_seeds": seeds,
         "n_runs": len(seeds),
         "features": list(X_all.columns),

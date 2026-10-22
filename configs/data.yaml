@@ -30,7 +30,11 @@ paths:
   interim: "data/interim"
   processed: "data/processed"
 
-# Chỉ giữ các loại event cần cho possession graph (mục 1.3)
+# Các loại event liên quan tới possession graph (mục 1.3).
+# LƯU Ý (rà soát 21/10/2026): danh sách này CHỈ MANG TÍNH MÔ TẢ, code không đọc.
+#   - events.parquet giữ MỌI loại event (cần để suy ra vai trò cầu thủ ở Bước 3).
+#   - Trích possession chỉ dùng "Pass" (thành công) và "Shot" — xem
+#     src/xai_football/data/possession.py::extract_possessions.
 event_types_keep:
   - "Pass"
   - "Shot"
@@ -44,6 +48,7 @@ preprocessing:
   drop_extra_time: true          # loại hiệp phụ / luân lưu
   drop_missing_coordinates: true
   impute_coordinates: false      # KHONG suy diễn tọa độ - tránh đưa nhiễu vào đồ thị
+                                 # (chưa cài đặt: đặt true sẽ báo lỗi, không chạy âm thầm)
 
 pitch:
   length: 120                    # hệ quy chiếu chuẩn StatsBomb
