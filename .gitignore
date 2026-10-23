@@ -44,6 +44,7 @@ data/processed/**
 data/external/**
 !data/**/.gitkeep
 !data/**/README.md
+!data/processed/**/feature_names.json
 
 # Danh sách match_id của từng tập PHẢI được commit (yêu cầu tái lập
 # kết quả — mục 4 trong docs/Quy_trinh_XAI_Football.md)
