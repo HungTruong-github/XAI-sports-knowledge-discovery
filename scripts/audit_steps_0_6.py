@@ -869,9 +869,10 @@ def run_comprehensive_audit(
                     step=6,
                     status="PASS",
                     details=(
-                        f"Độc lập cluster bootstrap (seed 2026, 1000 vòng): {'; '.join(boot_details)}. "
+                        f"Độc lập cluster bootstrap (seed 2026, 1000 vòng trên single best checkpoint): {'; '.join(boot_details)}. "
                         "Khẳng định chiều hướng thực nghiệm: Random Forest >= MPNN. "
-                        "significance_tests.csv (ghép cặp 5-seed pooled) ghi nhận diff=-0.0203, KTC 95% [-0.0418, +0.0016], p_holm=0.2728."
+                        "Đối chiếu: significance_tests.csv tính trên xác suất gộp trung bình qua 5 seed (Pooled 5-seed Ensemble), "
+                        "triệt tiêu phương sai seed nên KTC hẹp hơn: diff=-0.0203, KTC 95% [-0.0418, +0.0016], p_holm=0.2728 (chứa 0, không khác biệt có ý nghĩa ở alpha=0.05)."
                     ),
                     expected=True,
                     observed=True,

@@ -1,8 +1,8 @@
 {
   "repository": "HungTruong-github/XAI-sports-knowledge-discovery",
   "branch": "Clean",
-  "commit_sha": "825a73d504787b0cf0b19f7c69b104ff99f5b7d1",
-  "audit_timestamp": "2026-10-23T11:36:20.738431+00:00",
+  "commit_sha": "e6bbbc1ea26f14cea180d0206c4f9fc2b8079828",
+  "audit_timestamp": "2026-10-23T13:14:40.758894+00:00",
   "environment": {
     "os": "Windows-11-10.0.26200-SP0",
     "python_version": "3.12.0",
@@ -26,7 +26,7 @@
     "cuda_device_name": "CPU only",
     "git": {
       "branch": "Clean",
-      "commit_sha": "825a73d504787b0cf0b19f7c69b104ff99f5b7d1",
+      "commit_sha": "e6bbbc1ea26f14cea180d0206c4f9fc2b8079828",
       "clean_working_tree": false,
       "is_git_repo": true
     },
@@ -171,7 +171,7 @@
         "requirements.lock.txt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:34:36.873488+00:00"
+      "timestamp": "2026-10-23T13:13:09.578832+00:00"
     },
     {
       "name": "config_hashes_posix_compatible",
@@ -184,18 +184,18 @@
         "configs"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:34:36.874585+00:00"
+      "timestamp": "2026-10-23T13:13:09.579576+00:00"
     },
     {
       "name": "git_provenance_recorded",
       "step": 0,
       "status": "PASS",
-      "details": "Branch: Clean | Commit: 825a73d5",
+      "details": "Branch: Clean | Commit: e6bbbc1e",
       "expected": true,
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:34:36.874585+00:00"
+      "timestamp": "2026-10-23T13:13:09.579576+00:00"
     },
     {
       "name": "git_clean_working_tree_verified",
@@ -206,7 +206,7 @@
       "observed": false,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:34:36.874585+00:00"
+      "timestamp": "2026-10-23T13:13:09.579576+00:00"
     },
     {
       "name": "collection_summary_tables_exist",
@@ -220,7 +220,7 @@
         "results/tables/official/dataset_inventory.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:34:36.877162+00:00"
+      "timestamp": "2026-10-23T13:13:09.581597+00:00"
     },
     {
       "name": "raw_match_and_lineup_counts_verified",
@@ -233,7 +233,7 @@
         "data/raw/2/27"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:34:36.900457+00:00"
+      "timestamp": "2026-10-23T13:13:09.653934+00:00"
     },
     {
       "name": "raw_event_count_matches_report",
@@ -246,7 +246,7 @@
         "results/tables/official/collection_report.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:18.840046+00:00"
+      "timestamp": "2026-10-23T13:13:47.972253+00:00"
     },
     {
       "name": "preprocessing_summary_tables_exist",
@@ -260,7 +260,7 @@
         "results/tables/official/sanity_checks.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:18.843532+00:00"
+      "timestamp": "2026-10-23T13:13:47.973254+00:00"
     },
     {
       "name": "sanity_checks_all_pass",
@@ -273,7 +273,7 @@
         "results/tables/official/sanity_checks.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:18.852237+00:00"
+      "timestamp": "2026-10-23T13:13:47.999402+00:00"
     },
     {
       "name": "clean_possessions_count_verified",
@@ -286,7 +286,7 @@
         "data/interim/official/possessions.parquet"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:19.073867+00:00"
+      "timestamp": "2026-10-23T13:13:48.436188+00:00"
     },
     {
       "name": "possession_unique_keys_verified",
@@ -299,7 +299,7 @@
         "data/interim/official/possessions.parquet"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:19.080403+00:00"
+      "timestamp": "2026-10-23T13:13:48.451415+00:00"
     },
     {
       "name": "min_passes_filter_verified",
@@ -310,7 +310,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:19.081408+00:00"
+      "timestamp": "2026-10-23T13:13:48.452443+00:00"
     },
     {
       "name": "regular_periods_only_verified",
@@ -321,7 +321,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:19.082406+00:00"
+      "timestamp": "2026-10-23T13:13:48.453424+00:00"
     },
     {
       "name": "pass_coordinates_and_players_non_null",
@@ -332,7 +332,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:19.087466+00:00"
+      "timestamp": "2026-10-23T13:13:48.464487+00:00"
     },
     {
       "name": "decision_0001_research_approval_status",
@@ -345,7 +345,7 @@
         "docs/decisions/0001-quy-tac-gan-nhan.md"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:19.088536+00:00"
+      "timestamp": "2026-10-23T13:13:48.465489+00:00"
     },
     {
       "name": "feature_names_json_dimensions_verified",
@@ -359,7 +359,7 @@
         "results/tables/official/graph_checks.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:19.090197+00:00"
+      "timestamp": "2026-10-23T13:13:48.469806+00:00"
     },
     {
       "name": "total_graphs_count_verified",
@@ -372,7 +372,7 @@
         "data/processed/official/graphs.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:51.177461+00:00"
+      "timestamp": "2026-10-23T13:14:14.514052+00:00"
     },
     {
       "name": "positive_graphs_count_verified",
@@ -383,7 +383,7 @@
       "observed": 6153,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:51.377751+00:00"
+      "timestamp": "2026-10-23T13:14:14.691569+00:00"
     },
     {
       "name": "graph_tensors_dimensions_match_schema",
@@ -394,7 +394,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:51.538395+00:00"
+      "timestamp": "2026-10-23T13:14:14.829506+00:00"
     },
     {
       "name": "no_edges_after_first_shot_verified",
@@ -405,7 +405,7 @@
       "observed": 0,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:53.343902+00:00"
+      "timestamp": "2026-10-23T13:14:16.365248+00:00"
     },
     {
       "name": "normalized_coordinates_strictly_in_unit_interval",
@@ -416,7 +416,7 @@
       "observed": "[0.0000, 1.0000]",
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.070447+00:00"
+      "timestamp": "2026-10-23T13:14:17.755529+00:00"
     },
     {
       "name": "player_role_temporal_assumption_documented",
@@ -427,7 +427,7 @@
       "observed": "Documented",
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.070447+00:00"
+      "timestamp": "2026-10-23T13:14:17.756431+00:00"
     },
     {
       "name": "matches_disjoint_and_counts_verified",
@@ -442,7 +442,7 @@
         "data/splits/test_matches.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.084016+00:00"
+      "timestamp": "2026-10-23T13:14:17.767251+00:00"
     },
     {
       "name": "graph_split_counts_verified",
@@ -455,7 +455,7 @@
         "results/tables/official/graph_split_summary.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.286602+00:00"
+      "timestamp": "2026-10-23T13:14:17.934435+00:00"
     },
     {
       "name": "multi_seed_metrics_artifact_present",
@@ -468,7 +468,7 @@
         "results/reproducibility/all_models_test_metrics_all_seeds.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.399749+00:00"
+      "timestamp": "2026-10-23T13:14:18.034351+00:00"
     },
     {
       "name": "b5_gcn_multi_seed_and_checkpoint_verified",
@@ -481,7 +481,7 @@
         "models/official/gcn_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.410300+00:00"
+      "timestamp": "2026-10-23T13:14:18.044870+00:00"
     },
     {
       "name": "b5_mpnn_multi_seed_and_checkpoint_verified",
@@ -494,7 +494,7 @@
         "models/official/mpnn_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.420860+00:00"
+      "timestamp": "2026-10-23T13:14:18.054052+00:00"
     },
     {
       "name": "b5_gatv2_multi_seed_and_checkpoint_verified",
@@ -507,7 +507,7 @@
         "models/official/gatv2_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.432125+00:00"
+      "timestamp": "2026-10-23T13:14:18.060030+00:00"
     },
     {
       "name": "b5_graphsage_multi_seed_and_checkpoint_verified",
@@ -520,7 +520,7 @@
         "models/official/graphsage_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.443545+00:00"
+      "timestamp": "2026-10-23T13:14:18.064204+00:00"
     },
     {
       "name": "b5_baselines_multi_seed_complete",
@@ -533,7 +533,7 @@
         "results/reproducibility/baselines_aggregate_summary.json"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.444595+00:00"
+      "timestamp": "2026-10-23T13:14:18.064204+00:00"
     },
     {
       "name": "model_comparison_has_all_7_models_5_seeds",
@@ -546,7 +546,7 @@
         "results/tables/official/model_comparison.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.458497+00:00"
+      "timestamp": "2026-10-23T13:14:18.072481+00:00"
     },
     {
       "name": "model_comparison_means_and_std_verified_from_all_seeds_metrics",
@@ -560,7 +560,7 @@
         "results/reproducibility/all_models_test_metrics_all_seeds.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.504236+00:00"
+      "timestamp": "2026-10-23T13:14:18.112378+00:00"
     },
     {
       "name": "model_metric_ci_file_present",
@@ -573,7 +573,7 @@
         "results/tables/official/model_metric_ci.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.505238+00:00"
+      "timestamp": "2026-10-23T13:14:18.113494+00:00"
     },
     {
       "name": "significance_tests_has_21_pairs_across_3_metrics",
@@ -586,7 +586,7 @@
         "results/tables/official/significance_tests.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.513484+00:00"
+      "timestamp": "2026-10-23T13:14:18.122112+00:00"
     },
     {
       "name": "holm_bonferroni_adjustment_validity",
@@ -599,13 +599,13 @@
         "results/tables/official/significance_tests.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:35:55.527400+00:00"
+      "timestamp": "2026-10-23T13:14:18.132376+00:00"
     },
     {
       "name": "independent_cluster_bootstrap_verification",
       "step": 6,
       "status": "PASS",
-      "details": "Độc lập cluster bootstrap (seed 2026, 1000 vòng): auc_pr diff=[-0.0718, -0.0185]; auc_roc diff=[-0.0214, -0.0040]. Khẳng định chiều hướng thực nghiệm: Random Forest >= MPNN. significance_tests.csv (ghép cặp 5-seed pooled) ghi nhận diff=-0.0203, KTC 95% [-0.0418, +0.0016], p_holm=0.2728.",
+      "details": "Độc lập cluster bootstrap (seed 2026, 1000 vòng trên single best checkpoint): auc_pr diff=[-0.0718, -0.0185]; auc_roc diff=[-0.0214, -0.0040]. Khẳng định chiều hướng thực nghiệm: Random Forest >= MPNN. Đối chiếu: significance_tests.csv tính trên xác suất gộp trung bình qua 5 seed (Pooled 5-seed Ensemble), triệt tiêu phương sai seed nên KTC hẹp hơn: diff=-0.0203, KTC 95% [-0.0418, +0.0016], p_holm=0.2728 (chứa 0, không khác biệt có ý nghĩa ở alpha=0.05).",
       "expected": true,
       "observed": true,
       "evidence_paths": [
@@ -613,7 +613,7 @@
         "results/tables/official/significance_tests.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:36:20.734311+00:00"
+      "timestamp": "2026-10-23T13:14:40.749862+00:00"
     },
     {
       "name": "experiment_manifest_checkpoint_shas_verified",
@@ -626,7 +626,7 @@
         "results/metadata/official/experiment_manifest.json"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T11:36:20.736836+00:00"
+      "timestamp": "2026-10-23T13:14:40.754861+00:00"
     }
   ],
   "evidence_paths": [
