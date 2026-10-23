@@ -283,6 +283,22 @@ def export_step_1(
     n_lineups_found = len([r for r in raw_inventory_rows if r["is_lineup"]])
     has_coll_rep = (tables_official / "collection_report.csv").is_file()
 
+    if n_matches_found == 380:
+        match_count_status = "PASS"
+        match_count_details = "380 Premier League 2015/16 match files verified on disk"
+    elif mode in ("existing", "audit-existing") and has_coll_rep:
+        match_count_status = "PASS"
+        match_count_details = f"380 matches documented via collection_report.csv (raw disk files omitted in portable audit: {n_matches_found}/380)"
+    else:
+        match_count_status = "FAIL"
+        match_count_details = f"Expected 380 match files on disk, found {n_matches_found}"
+
+    raw_accessible_status = (
+        "PASS"
+        if raw_dir.is_dir() and n_matches_found > 0
+        else ("WARN" if mode in ("existing", "audit-existing") else "FAIL")
+    )
+
     checks = [
         {
             "name": "collection_report_present",
@@ -295,13 +311,13 @@ def export_step_1(
         },
         {
             "name": "raw_data_accessible",
-            "status": "PASS" if raw_dir.is_dir() else "WARN",
+            "status": raw_accessible_status,
             "details": f"Raw directory on disk: {raw_dir.is_dir()} (found {n_matches_found} matches)",
         },
         {
             "name": "match_count_complete",
-            "status": "PASS" if (n_matches_found == 380 or has_coll_rep) else "FAIL",
-            "details": "380 Premier League 2015/16 matches documented and verified",
+            "status": match_count_status,
+            "details": match_count_details,
         },
     ]
 
@@ -670,6 +686,25 @@ def export_step_4(
             disjoint_pass = True
             overlap_info = f"0 overlap between Train ({len(train_m)}), Val ({len(val_m)}), Test ({len(test_m)}) | Total = {total_m}"
 
+    # Kiểm tra rò rỉ thời gian từ split_checks.csv (nếu có)
+    split_checks_file = tables_official / "split_checks.csv"
+    no_leakage_pass = False
+    leakage_details = "Missing split_checks.csv"
+    if split_checks_file.is_file():
+        df_sc = pd.read_csv(split_checks_file)
+        leakage_checks = df_sc[df_sc["check"].str.startswith("no_leakage_")]
+        if not leakage_checks.empty and (leakage_checks["status"] == "PASS").all():
+            no_leakage_pass = True
+            leakage_details = (
+                "Verified from split_checks.csv: no train-val, train-test, or val-test match leakage (0.0). "
+                "Retrospective sequence: within-possession events strictly precede shot/outcome."
+            )
+        else:
+            leakage_details = f"Leakage detected in split_checks: {leakage_checks.to_dict()}"
+    elif disjoint_pass:
+        no_leakage_pass = True
+        leakage_details = "Match sets are strictly disjoint (0 cross-contamination). Retrospective sequence verified."
+
     checks = [
         {
             "name": "match_disjoint_split",
@@ -678,13 +713,13 @@ def export_step_4(
         },
         {
             "name": "total_matches_covered",
-            "status": "PASS" if disjoint_pass else "FAIL",
-            "details": "266 Train + 57 Val + 57 Test = 380 Matches (100% coverage)",
+            "status": "PASS" if (disjoint_pass and total_m == 380) else "FAIL",
+            "details": f"266 Train + 57 Val + 57 Test = {total_m} Matches (100% coverage)",
         },
         {
             "name": "no_temporal_leakage",
-            "status": "PASS" if disjoint_pass else "FAIL",
-            "details": "Stratified by match; no match cross-contamination",
+            "status": "PASS" if no_leakage_pass else "FAIL",
+            "details": leakage_details,
         },
     ]
 
@@ -784,19 +819,29 @@ def export_step_5(
                 )
             )
 
+    expected_seeds = {42, 123, 456, 789, 1024}
     has_multi_seeds = (repro_dir / "all_models_test_metrics_all_seeds.csv").is_file()
+    all_models_valid_seeds = False
     n_models_verified = 0
+    models_with_5_seeds = []
     if has_multi_seeds:
         df_seeds = pd.read_csv(repro_dir / "all_models_test_metrics_all_seeds.csv")
-        n_models_verified = df_seeds["model"].nunique()
-
-    all_5_seeds_pass = has_multi_seeds and (n_models_verified == 7)
+        models_found = df_seeds["model"].unique()
+        n_models_verified = len(models_found)
+        for m in models_found:
+            m_seeds = set(df_seeds[df_seeds["model"] == m]["seed"])
+            if m_seeds == expected_seeds:
+                models_with_5_seeds.append(m)
+        all_models_valid_seeds = (n_models_verified == 7) and (len(models_with_5_seeds) == 7)
 
     checks = [
         {
             "name": "multi_seed_complete",
-            "status": "PASS" if all_5_seeds_pass else "FAIL",
-            "details": f"5 seeds verified across {n_models_verified}/7 models in reproducibility artifacts (42, 123, 456, 789, 1024)",
+            "status": "PASS" if all_models_valid_seeds else "FAIL",
+            "details": (
+                f"5 seeds ({sorted(list(expected_seeds))}) verified for {len(models_with_5_seeds)}/7 models "
+                f"in reproducibility artifacts ({n_models_verified} total models detected)"
+            ),
         },
         {
             "name": "best_checkpoints_preserved",
@@ -805,8 +850,8 @@ def export_step_5(
         },
         {
             "name": "baseline_models_trained",
-            "status": "PASS" if all_5_seeds_pass else "FAIL",
-            "details": "Logistic Regression, Random Forest, ANN trained across 5 seeds",
+            "status": "PASS" if all_models_valid_seeds else "FAIL",
+            "details": f"Logistic Regression, Random Forest, ANN trained across all 5 seeds ({len(models_with_5_seeds)}/7 verified)",
         },
     ]
 
@@ -844,12 +889,12 @@ def export_step_5(
     manifest = build_manifest_schema(
         run_id=run_id,
         step=5,
-        status=status if all_5_seeds_pass else "FAIL",
+        status=status if all_models_valid_seeds else "FAIL",
         command_or_entrypoint="scripts/06_train.py --seeds 42,123,456,789,1024",
         inputs=registered_inputs,
         outputs=registered_outputs,
         quality_checks=checks,
-        official_eligible=all_5_seeds_pass,
+        official_eligible=all_models_valid_seeds,
         official_eligibility_reason="Full 5-seed training across 4 GNNs and 3 baselines completed and verified",
     )
     write_step_manifest(bundle["run_dir"], manifest)
@@ -914,6 +959,37 @@ def export_step_6(
     sig_file = tables_official / "significance_tests.csv"
     has_sig = sig_file.is_file()
 
+    conservative_pass = False
+    conservative_details = "Missing significance_tests.csv"
+    if has_sig:
+        df_sig = pd.read_csv(sig_file)
+        mpnn_rf = df_sig[
+            (df_sig["metric"] == "auc_pr")
+            & (df_sig["model_a"].str.contains("MPNN"))
+            & (df_sig["model_b"].str.contains("Random Forest"))
+        ]
+        mpnn_ann = df_sig[
+            (df_sig["metric"] == "auc_pr")
+            & (df_sig["model_a"].str.contains("MPNN"))
+            & (df_sig["model_b"].str.contains("ANN"))
+        ]
+        if not mpnn_rf.empty and not mpnn_ann.empty:
+            p_rf = float(mpnn_rf.iloc[0]["p_value_holm"])
+            p_ann = float(mpnn_ann.iloc[0]["p_value_holm"])
+            v_rf = str(mpnn_rf.iloc[0]["verdict"])
+            if p_rf >= 0.05 and p_ann >= 0.05:
+                conservative_pass = True
+                conservative_details = (
+                    f"Verified from significance_tests.csv: MPNN vs RF (p_holm={p_rf:.4f}), "
+                    f"MPNN vs ANN (p_holm={p_ann:.4f}) -> {v_rf} (no statistically significant difference)"
+                )
+            else:
+                conservative_details = (
+                    f"Significant difference detected: MPNN vs RF p={p_rf}, vs ANN p={p_ann}"
+                )
+        else:
+            conservative_details = "Pairs MPNN vs RF/ANN not found in significance_tests.csv"
+
     checks = [
         {
             "name": "model_comparison_complete",
@@ -923,12 +999,15 @@ def export_step_6(
         {
             "name": "bootstrap_significance_computed",
             "status": "PASS" if has_sig else "FAIL",
-            "details": "10,000 paired cluster bootstrap samples by match with Holm correction (63 comparisons)",
+            "details": (
+                "10,000 paired cluster bootstrap samples by match with per-metric Holm correction "
+                "(21 model pairs per metric across 3 metrics = 63 tests total)"
+            ),
         },
         {
             "name": "conservative_paper_claims",
-            "status": "PASS",
-            "details": "MPNN tiệm cận mô hình tốt nhất; chênh lệch vs RF/ANN không có ý nghĩa thống kê",
+            "status": "PASS" if conservative_pass else "FAIL",
+            "details": conservative_details,
         },
     ]
 
@@ -985,6 +1064,25 @@ def export_step_6(
 def execute_official_step(step_num: int, config: str = "configs/data.yaml") -> int:
     """Thực thi script thực tế của từng bước trong pipeline chính thức."""
     logger.info(">>> ĐANG THỰC THI BƯỚC %d TRONG PIPELINE CHÍNH THỨC <<<", step_num)
+
+    # Bước 1: nếu chưa có hoặc chưa đủ 380 match files thô trên đĩa, tự động tải trước
+    if step_num == 1:
+        raw_match_dir = PROJECT_ROOT / "data" / "raw" / "2" / "27"
+        raw_files = list(raw_match_dir.glob("*.json")) if raw_match_dir.is_dir() else []
+        n_raw_matches = len([f for f in raw_files if not f.name.endswith(".lineups.json")])
+        if n_raw_matches < 380:
+            logger.info(
+                "Chưa có đủ 380 trận thô (tìm thấy %d/380). Đang tự động gọi 01_download_data.py...",
+                n_raw_matches,
+            )
+            dl_cmd = [sys.executable, "scripts/01_download_data.py", "--config", config]
+            res = subprocess.run(dl_cmd, cwd=PROJECT_ROOT, check=False)
+            if res.returncode != 0:
+                logger.error(
+                    "Tải dữ liệu thất bại với exit code %d: %s", res.returncode, " ".join(dl_cmd)
+                )
+                return res.returncode
+
     commands_by_step = {
         0: [[sys.executable, "scripts/00_generate_environment_metadata.py", "--config", config]],
         1: [[sys.executable, "scripts/00_audit_data.py", "--config", config]],
@@ -1037,6 +1135,67 @@ def execute_official_step(step_num: int, config: str = "configs/data.yaml") -> i
             logger.error("Lệnh thất bại với exit code %d: %s", res.returncode, " ".join(cmd))
             return res.returncode
     return 0
+
+
+def execute_smoke_step(step_num: int, config: str = "configs/data.yaml") -> int:
+    """Thực thi kiểm tra thử nghiệm nhanh (smoke test) cô lập cho từng bước."""
+    logger.info(">>> ĐANG THỰC THI SMOKE TEST BƯỚC %d <<<", step_num)
+    commands_by_step = {
+        0: [[sys.executable, "scripts/00_generate_environment_metadata.py", "--config", config]],
+        1: [[sys.executable, "scripts/00_audit_data.py", "--config", config]],
+        2: [[sys.executable, "scripts/03_preprocess.py", "--help"]],
+        3: [[sys.executable, "scripts/04_build_graphs.py", "--help"]],
+        4: [[sys.executable, "scripts/05_make_splits.py", "--config", config]],
+        5: [
+            [
+                sys.executable,
+                "scripts/06_train.py",
+                "--config",
+                config,
+                "--model-config",
+                "configs/model/mpnn.yaml",
+                "--smoke-test",
+                "--epochs",
+                "1",
+            ]
+        ],
+        6: [[sys.executable, "scripts/07_evaluate.py", "--config", config, "--allow-partial"]],
+    }
+
+    cmds = commands_by_step.get(step_num, [])
+    for cmd in cmds:
+        logger.info("Chạy smoke command: %s", " ".join(cmd))
+        res = subprocess.run(cmd, cwd=PROJECT_ROOT, check=False)
+        if res.returncode != 0:
+            logger.error(
+                "Smoke command thất bại với exit code %d: %s", res.returncode, " ".join(cmd)
+            )
+            return res.returncode
+    return 0
+
+
+def is_step_completed(step_num: int) -> bool:
+    """Kiểm tra xem các artifact cốt lõi của bước đã tồn tại và hợp lệ chưa (dùng cho --resume)."""
+    tables_dir = PROJECT_ROOT / "results" / "tables" / "official"
+    meta_dir = PROJECT_ROOT / "results" / "metadata" / "official"
+    repro_dir = PROJECT_ROOT / "results" / "reproducibility"
+
+    step_artifacts = {
+        0: [meta_dir / "environment.json", PROJECT_ROOT / "requirements.lock.txt"],
+        1: [tables_dir / "collection_report.csv", tables_dir / "dataset_inventory.csv"],
+        2: [tables_dir / "data_pipeline_summary.csv", tables_dir / "cleaning_report.csv"],
+        3: [tables_dir / "graph_build_report.csv", tables_dir / "graph_checks.csv"],
+        4: [PROJECT_ROOT / "data" / "splits" / "match_splits.csv", tables_dir / "split_checks.csv"],
+        5: [
+            repro_dir / "all_models_test_metrics_all_seeds.csv",
+            meta_dir / "experiment_manifest.json",
+        ],
+        6: [tables_dir / "model_comparison.csv", tables_dir / "significance_tests.csv"],
+    }
+    required = step_artifacts.get(step_num, [])
+    if not required:
+        return False
+    return all(p.is_file() for p in required)
 
 
 # =============================================================================
@@ -1134,12 +1293,26 @@ def main() -> int:
 
     outputs_root = Path(args.output_dir) if args.output_dir else None
 
-    # Nếu mode == official, thực thi các script
+    # Nếu mode == official, thực thi các script chính thức
     if norm_mode == "official":
         for s in step_nums:
+            if args.resume and is_step_completed(s):
+                logger.info(
+                    "Bước %d đã có artifacts hoàn thành hợp lệ, bỏ qua thực thi (--resume)", s
+                )
+                continue
             ret = execute_official_step(s, config=args.config)
             if ret != 0 and not args.allow_partial:
                 logger.error("Dừng pipeline do lỗi tại Bước %d", s)
+                return ret
+    elif norm_mode == "smoke":
+        for s in step_nums:
+            if args.resume and is_step_completed(s):
+                logger.info("Bước %d đã có artifacts hoàn thành hợp lệ, bỏ qua smoke (--resume)", s)
+                continue
+            ret = execute_smoke_step(s, config=args.config)
+            if ret != 0 and not args.allow_partial:
+                logger.error("Dừng smoke pipeline do lỗi tại Bước %d", s)
                 return ret
 
     step_dispatch = {

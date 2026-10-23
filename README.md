@@ -97,7 +97,7 @@ Branch hiện tại: `Clean`
 | **4** | Phân chia tập dữ liệu | **Đã hoàn thành** | Chia theo TRẬN ĐẤU (266 Train, 57 Val, 57 Test), không rò rỉ dữ liệu. Có 2 bảng tóm tắt: `split_summary.csv` và `graph_split_summary.csv` |
 | **5** | Huấn luyện GNN | **Đã hoàn thành** | 4 GNN × 5 seed (42, 123, 456, 789, 1024) + 3 baseline × 5 seed. Checkpoint `models/official/<model>_best.pt` = seed có Val AUC-PR cao nhất |
 | **6** | Đánh giá & Đối sánh | **Đã hoàn thành** | Test set, 5 seed: MPNN AUC-PR 0.5996 ± 0.0042 (tốt nhất nhóm GNN, có ý nghĩa thống kê); RF 0.6198 ± 0.0017, ANN 0.6117 ± 0.0097. Xem `results/tables/official/significance_tests.csv` |
-| **7–8**| XAI cho đồ thị | **Code hoàn tất; Chờ chạy toàn bộ Test set** | Module `xai_football.xai`, scripts `08_run_xai.py` và `09_evaluate_xai.py` đã triển khai và có test đầy đủ. Run lịch sử `20261017_091540` (5 đồ thị) được lưu trữ làm bằng chứng đối soát (`HISTORICAL_PROVISIONAL`) |
+| **7–8**| XAI cho đồ thị | **Code hoàn tất; Chờ chạy toàn bộ Test set** | Module `xai_football.xai`, scripts `08_explain.py` và `09_evaluate_xai.py` đã triển khai và có test đầy đủ. Run lịch sử `20261017_091540` (5 đồ thị) được lưu trữ làm bằng chứng đối soát (`HISTORICAL_PROVISIONAL`) |
 | **9–10**| Hybrid Centrality & UI | *Interface hoàn thành* | Interface trong `xai_football.centrality` đã triển khai. Quyết định công thức trọng số và kiểm chứng chuyên môn đang chờ hoàn tất thực nghiệm |
 
 ---
@@ -163,7 +163,7 @@ python scripts/06_train_baselines.py --config configs/data.yaml
 python scripts/07_evaluate.py --config configs/data.yaml
 
 # Bước 7: Chạy giải thích XAI (ví dụ trên mô hình tốt nhất MPNN)
-python scripts/08_run_xai.py --model-config configs/model/mpnn.yaml --method gnnexplainer --split test
+python scripts/08_explain.py --model-config configs/model/mpnn.yaml --method gnnexplainer --split test
 
 # Bước 8: Tổng hợp và đánh giá chất lượng XAI (BẮT BUỘC chỉ định run_id hoặc xai-dir)
 python scripts/09_evaluate_xai.py --run-id 20261017_091540 --allow-historical

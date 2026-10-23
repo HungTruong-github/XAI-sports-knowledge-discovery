@@ -254,9 +254,21 @@ def run_comprehensive_audit(
             if git_info.get("commit_sha") and git_info.get("commit_sha") != "unknown"
             else "FAIL"
         ),
-        details=f"Branch: {git_info.get('branch')} | Commit: {git_info.get('commit_sha')[:8]} | Clean: {clean_tree}",
+        details=f"Branch: {git_info.get('branch')} | Commit: {git_info.get('commit_sha')[:8]}",
         expected=True,
         observed=bool(git_info.get("commit_sha")),
+    )
+    collector.record_check(
+        "git_clean_working_tree_verified",
+        step=0,
+        status="PASS" if clean_tree else "WARN",
+        details=(
+            "Working tree is clean (no uncommitted modifications)"
+            if clean_tree
+            else "Working tree has uncommitted modifications; audit provenance may reflect in-flight changes"
+        ),
+        expected=True,
+        observed=clean_tree,
     )
 
     # =========================================================================
@@ -1081,6 +1093,22 @@ def run_comprehensive_audit(
     else:
         overall_status = "PASS"
 
+    # Tính dataset_fingerprint thực sự từ các artifact cốt lõi của dataset
+    dataset_files_to_hash = [
+        tables_dir / "collection_report.csv",
+        tables_dir / "data_pipeline_summary.csv",
+        tables_dir / "cleaning_report.csv",
+        root / "data/splits/match_splits.csv",
+    ]
+    actual_dataset_files = [f for f in dataset_files_to_hash if f.is_file()]
+    if actual_dataset_files:
+        hasher = hashlib.sha256()
+        for f in sorted(actual_dataset_files):
+            hasher.update(f.read_bytes())
+        dataset_fp = hasher.hexdigest()
+    else:
+        dataset_fp = None
+
     audit_report = {
         "repository": "HungTruong-github/XAI-sports-knowledge-discovery",
         "branch": git_info.get("branch", "Clean"),
@@ -1094,9 +1122,10 @@ def run_comprehensive_audit(
             "cuda_available": env_meta.get("cuda_available", False),
             "cuda_device_name": env_meta.get("cuda_device_name", "CPU only"),
             "git": git_info,
+            "requirements_lock_sha256": env_meta.get("requirements_lock_sha256"),
         },
         "config_hashes": cfg_hashes,
-        "dataset_fingerprint": env_meta.get("requirements_lock_sha256"),
+        "dataset_fingerprint": dataset_fp,
         "split_fingerprint": sha256_file(train_m_file) if train_m_file.is_file() else "",
         "steps": steps_output,
         "checks": collector.checks,

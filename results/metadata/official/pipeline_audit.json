@@ -1,8 +1,8 @@
 {
   "repository": "HungTruong-github/XAI-sports-knowledge-discovery",
   "branch": "Clean",
-  "commit_sha": "ae961fd938ac5a02c90abf4bd1e30f2d989c3081",
-  "audit_timestamp": "2026-10-23T08:13:26.698768+00:00",
+  "commit_sha": "825a73d504787b0cf0b19f7c69b104ff99f5b7d1",
+  "audit_timestamp": "2026-10-23T11:36:20.738431+00:00",
   "environment": {
     "os": "Windows-11-10.0.26200-SP0",
     "python_version": "3.12.0",
@@ -26,10 +26,11 @@
     "cuda_device_name": "CPU only",
     "git": {
       "branch": "Clean",
-      "commit_sha": "ae961fd938ac5a02c90abf4bd1e30f2d989c3081",
+      "commit_sha": "825a73d504787b0cf0b19f7c69b104ff99f5b7d1",
       "clean_working_tree": false,
       "is_git_repo": true
-    }
+    },
+    "requirements_lock_sha256": "8985ff320b5e903f4e0a71593f214cc9888edcabca68add06e6bca44603479fd"
   },
   "config_hashes": {
     "configs/data.yaml": "4f71e0683123038e77d343fcba30bb58bd42497f3e1da9218ad11ea263785d2b",
@@ -45,7 +46,7 @@
     "configs/train.yaml": "a22475773b83a12ea7c414b76b418761cdfea2588518385fe9075728c6948d10",
     "configs/xai.yaml": "76ad6a0ae671f746fe381379411f291fb4e62e06c04bb5fc5fd02289de8ed7c4"
   },
-  "dataset_fingerprint": "8985ff320b5e903f4e0a71593f214cc9888edcabca68add06e6bca44603479fd",
+  "dataset_fingerprint": "9808330442d6f158233a5534e3adf50f27b97dc86d21c5b3a6d6d75b9f177fac",
   "split_fingerprint": "6774bd48cedb8ad039062acd87d1a73c7a5327127d9ce4d2e137a0110a333ca9",
   "steps": [
     {
@@ -170,7 +171,7 @@
         "requirements.lock.txt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:11:43.503374+00:00"
+      "timestamp": "2026-10-23T11:34:36.873488+00:00"
     },
     {
       "name": "config_hashes_posix_compatible",
@@ -183,18 +184,29 @@
         "configs"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:11:43.504891+00:00"
+      "timestamp": "2026-10-23T11:34:36.874585+00:00"
     },
     {
       "name": "git_provenance_recorded",
       "step": 0,
       "status": "PASS",
-      "details": "Branch: Clean | Commit: ae961fd9 | Clean: False",
+      "details": "Branch: Clean | Commit: 825a73d5",
       "expected": true,
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:11:43.504891+00:00"
+      "timestamp": "2026-10-23T11:34:36.874585+00:00"
+    },
+    {
+      "name": "git_clean_working_tree_verified",
+      "step": 0,
+      "status": "WARN",
+      "details": "Working tree has uncommitted modifications; audit provenance may reflect in-flight changes",
+      "expected": true,
+      "observed": false,
+      "evidence_paths": [],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T11:34:36.874585+00:00"
     },
     {
       "name": "collection_summary_tables_exist",
@@ -208,7 +220,7 @@
         "results/tables/official/dataset_inventory.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:11:43.507842+00:00"
+      "timestamp": "2026-10-23T11:34:36.877162+00:00"
     },
     {
       "name": "raw_match_and_lineup_counts_verified",
@@ -221,7 +233,7 @@
         "data/raw/2/27"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:11:43.549781+00:00"
+      "timestamp": "2026-10-23T11:34:36.900457+00:00"
     },
     {
       "name": "raw_event_count_matches_report",
@@ -234,7 +246,7 @@
         "results/tables/official/collection_report.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:27.795778+00:00"
+      "timestamp": "2026-10-23T11:35:18.840046+00:00"
     },
     {
       "name": "preprocessing_summary_tables_exist",
@@ -248,7 +260,7 @@
         "results/tables/official/sanity_checks.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:27.797276+00:00"
+      "timestamp": "2026-10-23T11:35:18.843532+00:00"
     },
     {
       "name": "sanity_checks_all_pass",
@@ -261,7 +273,7 @@
         "results/tables/official/sanity_checks.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:27.805385+00:00"
+      "timestamp": "2026-10-23T11:35:18.852237+00:00"
     },
     {
       "name": "clean_possessions_count_verified",
@@ -274,7 +286,7 @@
         "data/interim/official/possessions.parquet"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:27.986426+00:00"
+      "timestamp": "2026-10-23T11:35:19.073867+00:00"
     },
     {
       "name": "possession_unique_keys_verified",
@@ -287,7 +299,7 @@
         "data/interim/official/possessions.parquet"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:27.991419+00:00"
+      "timestamp": "2026-10-23T11:35:19.080403+00:00"
     },
     {
       "name": "min_passes_filter_verified",
@@ -298,7 +310,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:27.991419+00:00"
+      "timestamp": "2026-10-23T11:35:19.081408+00:00"
     },
     {
       "name": "regular_periods_only_verified",
@@ -309,7 +321,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:27.992420+00:00"
+      "timestamp": "2026-10-23T11:35:19.082406+00:00"
     },
     {
       "name": "pass_coordinates_and_players_non_null",
@@ -320,7 +332,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:27.997873+00:00"
+      "timestamp": "2026-10-23T11:35:19.087466+00:00"
     },
     {
       "name": "decision_0001_research_approval_status",
@@ -333,7 +345,7 @@
         "docs/decisions/0001-quy-tac-gan-nhan.md"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:27.997873+00:00"
+      "timestamp": "2026-10-23T11:35:19.088536+00:00"
     },
     {
       "name": "feature_names_json_dimensions_verified",
@@ -343,10 +355,11 @@
       "expected": "8 node, 12 edge",
       "observed": "8 node, 12 edge",
       "evidence_paths": [
-        "data/processed/official/feature_names.json"
+        "data/processed/official/feature_names.json",
+        "results/tables/official/graph_checks.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:27.999879+00:00"
+      "timestamp": "2026-10-23T11:35:19.090197+00:00"
     },
     {
       "name": "total_graphs_count_verified",
@@ -359,7 +372,7 @@
         "data/processed/official/graphs.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:57.516940+00:00"
+      "timestamp": "2026-10-23T11:35:51.177461+00:00"
     },
     {
       "name": "positive_graphs_count_verified",
@@ -370,7 +383,7 @@
       "observed": 6153,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:57.722295+00:00"
+      "timestamp": "2026-10-23T11:35:51.377751+00:00"
     },
     {
       "name": "graph_tensors_dimensions_match_schema",
@@ -381,7 +394,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:57.900690+00:00"
+      "timestamp": "2026-10-23T11:35:51.538395+00:00"
     },
     {
       "name": "no_edges_after_first_shot_verified",
@@ -392,7 +405,7 @@
       "observed": 0,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:12:59.789126+00:00"
+      "timestamp": "2026-10-23T11:35:53.343902+00:00"
     },
     {
       "name": "normalized_coordinates_strictly_in_unit_interval",
@@ -403,7 +416,7 @@
       "observed": "[0.0000, 1.0000]",
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.469499+00:00"
+      "timestamp": "2026-10-23T11:35:55.070447+00:00"
     },
     {
       "name": "player_role_temporal_assumption_documented",
@@ -414,7 +427,7 @@
       "observed": "Documented",
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.469499+00:00"
+      "timestamp": "2026-10-23T11:35:55.070447+00:00"
     },
     {
       "name": "matches_disjoint_and_counts_verified",
@@ -429,7 +442,7 @@
         "data/splits/test_matches.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.479987+00:00"
+      "timestamp": "2026-10-23T11:35:55.084016+00:00"
     },
     {
       "name": "graph_split_counts_verified",
@@ -442,7 +455,7 @@
         "results/tables/official/graph_split_summary.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.621492+00:00"
+      "timestamp": "2026-10-23T11:35:55.286602+00:00"
     },
     {
       "name": "multi_seed_metrics_artifact_present",
@@ -455,7 +468,7 @@
         "results/reproducibility/all_models_test_metrics_all_seeds.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.713447+00:00"
+      "timestamp": "2026-10-23T11:35:55.399749+00:00"
     },
     {
       "name": "b5_gcn_multi_seed_and_checkpoint_verified",
@@ -468,7 +481,7 @@
         "models/official/gcn_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.722093+00:00"
+      "timestamp": "2026-10-23T11:35:55.410300+00:00"
     },
     {
       "name": "b5_mpnn_multi_seed_and_checkpoint_verified",
@@ -481,7 +494,7 @@
         "models/official/mpnn_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.731663+00:00"
+      "timestamp": "2026-10-23T11:35:55.420860+00:00"
     },
     {
       "name": "b5_gatv2_multi_seed_and_checkpoint_verified",
@@ -494,7 +507,7 @@
         "models/official/gatv2_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.738920+00:00"
+      "timestamp": "2026-10-23T11:35:55.432125+00:00"
     },
     {
       "name": "b5_graphsage_multi_seed_and_checkpoint_verified",
@@ -507,7 +520,7 @@
         "models/official/graphsage_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.745168+00:00"
+      "timestamp": "2026-10-23T11:35:55.443545+00:00"
     },
     {
       "name": "b5_baselines_multi_seed_complete",
@@ -520,7 +533,7 @@
         "results/reproducibility/baselines_aggregate_summary.json"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.746191+00:00"
+      "timestamp": "2026-10-23T11:35:55.444595+00:00"
     },
     {
       "name": "model_comparison_has_all_7_models_5_seeds",
@@ -533,7 +546,7 @@
         "results/tables/official/model_comparison.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.756407+00:00"
+      "timestamp": "2026-10-23T11:35:55.458497+00:00"
     },
     {
       "name": "model_comparison_means_and_std_verified_from_all_seeds_metrics",
@@ -547,7 +560,7 @@
         "results/reproducibility/all_models_test_metrics_all_seeds.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.788925+00:00"
+      "timestamp": "2026-10-23T11:35:55.504236+00:00"
     },
     {
       "name": "model_metric_ci_file_present",
@@ -560,7 +573,7 @@
         "results/tables/official/model_metric_ci.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.789922+00:00"
+      "timestamp": "2026-10-23T11:35:55.505238+00:00"
     },
     {
       "name": "significance_tests_has_21_pairs_across_3_metrics",
@@ -573,7 +586,7 @@
         "results/tables/official/significance_tests.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.795096+00:00"
+      "timestamp": "2026-10-23T11:35:55.513484+00:00"
     },
     {
       "name": "holm_bonferroni_adjustment_validity",
@@ -586,7 +599,7 @@
         "results/tables/official/significance_tests.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:01.802195+00:00"
+      "timestamp": "2026-10-23T11:35:55.527400+00:00"
     },
     {
       "name": "independent_cluster_bootstrap_verification",
@@ -600,7 +613,7 @@
         "results/tables/official/significance_tests.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:26.694189+00:00"
+      "timestamp": "2026-10-23T11:36:20.734311+00:00"
     },
     {
       "name": "experiment_manifest_checkpoint_shas_verified",
@@ -613,7 +626,7 @@
         "results/metadata/official/experiment_manifest.json"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-10-23T08:13:26.698768+00:00"
+      "timestamp": "2026-10-23T11:36:20.736836+00:00"
     }
   ],
   "evidence_paths": [
@@ -627,6 +640,7 @@
     "data/interim/official/possessions.parquet",
     "docs/decisions/0001-quy-tac-gan-nhan.md",
     "data/processed/official/feature_names.json",
+    "results/tables/official/graph_checks.csv",
     "data/processed/official/graphs.pt",
     "data/splits/train_matches.csv",
     "data/splits/val_matches.csv",

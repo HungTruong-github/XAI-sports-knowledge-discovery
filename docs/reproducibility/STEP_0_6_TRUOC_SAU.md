@@ -4,8 +4,8 @@
 > **TÀI LIỆU LỊCH SỬ (HISTORICAL AUDIT LOG — 21–22/10/2026):**
 > Tài liệu này ghi lại nhật ký đối chiếu kỹ thuật đợt rà soát đầu tiên (commit `8d82bf8`). Trạng thái "chưa commit" tại dòng 8 phản ánh thời điểm trước khi commit `8d82bf8`.
 > Báo cáo kiểm toán chính thức, toàn diện và có hiệu lực cho nhánh `Clean` hiện tại được lưu trữ tại:
-> [`docs/reproducibility/PIPELINE_0_6_COMPLETION_AUDIT.md`](file:///d:/Project/XAI-sports-knowledge-discovery/docs/reproducibility/PIPELINE_0_6_COMPLETION_AUDIT.md)
-> và hồ sơ máy đọc được tại [`results/metadata/official/pipeline_audit.json`](file:///d:/Project/XAI-sports-knowledge-discovery/results/metadata/official/pipeline_audit.json).
+> [`docs/reproducibility/PIPELINE_0_6_COMPLETION_AUDIT.md`](PIPELINE_0_6_COMPLETION_AUDIT.md)
+> và hồ sơ máy đọc được tại [`results/metadata/official/pipeline_audit.json`](../../results/metadata/official/pipeline_audit.json).
 
 - **Ngày thực hiện:** 21–22/10/2026
 - **Phạm vi:** chỉ Bước 0–6 (môi trường → thu thập → tiền xử lý → đồ thị → chia tập → huấn luyện → đánh giá).

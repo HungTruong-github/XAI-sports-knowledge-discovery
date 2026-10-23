@@ -165,7 +165,7 @@ python scripts/07_evaluate.py --config configs/data.yaml --allow-partial
 ### 8.2. Giải thích XAI (Bước 7)
 ```bash
 # Chạy giải thích GNNExplainer trên tập Test với mô hình MPNN:
-python scripts/08_run_xai.py --model-config configs/model/mpnn.yaml --method gnnexplainer --split test
+python scripts/08_explain.py --model-config configs/model/mpnn.yaml --method gnnexplainer --split test
 ```
 
 ### 8.3. Tổng hợp và Đánh giá Chất lượng XAI (Bước 8)

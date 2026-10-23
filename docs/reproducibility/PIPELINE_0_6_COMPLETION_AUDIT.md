@@ -7,10 +7,10 @@
 - **Thời điểm kiểm toán:** 23/10/2026
 - **Công cụ kiểm toán độc lập:** `scripts/audit_steps_0_6.py` (CLI hỗ trợ `--strict`, `--mode [full, portable]`)
 - **Bộ điều phối pipeline:** `scripts/run_pipeline_0_6.py` (CLI hỗ trợ `--mode [official, smoke, audit-existing]`)
-- **Báo cáo máy đọc được (JSON):** [`results/metadata/official/pipeline_audit.json`](file:///d:/Project/XAI-sports-knowledge-discovery/results/metadata/official/pipeline_audit.json)
-- **JSON Schema:** [`results/metadata/official/pipeline_audit.schema.json`](file:///d:/Project/XAI-sports-knowledge-discovery/results/metadata/official/pipeline_audit.schema.json)
-- **Danh mục bằng chứng:** [`results/reproducibility/step_0_6_evidence_manifest.json`](file:///d:/Project/XAI-sports-knowledge-discovery/results/reproducibility/step_0_6_evidence_manifest.json)
-- **Bằng chứng dự đoán nén:** [`results/reproducibility/official_test_predictions_compact.csv.gz`](file:///d:/Project/XAI-sports-knowledge-discovery/results/reproducibility/official_test_predictions_compact.csv.gz)
+- **Báo cáo máy đọc được (JSON):** [`results/metadata/official/pipeline_audit.json`](../../results/metadata/official/pipeline_audit.json)
+- **JSON Schema:** [`results/metadata/official/pipeline_audit.schema.json`](../../results/metadata/official/pipeline_audit.schema.json)
+- **Danh mục bằng chứng:** [`results/reproducibility/step_0_6_evidence_manifest.json`](../../results/reproducibility/step_0_6_evidence_manifest.json)
+- **Bằng chứng dự đoán nén:** [`results/reproducibility/official_test_predictions_compact.csv.gz`](../../results/reproducibility/official_test_predictions_compact.csv.gz)
 
 ---
 
@@ -108,7 +108,7 @@ Trong quá trình kiểm toán toàn diện, 8 vấn đề kỹ thuật và mâu
 
 ### Lỗi 6: Thiếu artifact dự đoán nén để kiểm chứng độc lập mà không cần checkpoint
 - **Phát hiện:** Checkpoints binary `.pt` có dung lượng hàng trăm MB bị `.gitignore` hợp lệ, khiến reviewer trên clone mới không thể tự tính lại độ đo và chạy bootstrap nếu thiếu file dự đoán.
-- **Khắc phục:** Tạo artifact nén [`results/reproducibility/official_test_predictions_compact.csv.gz`](file:///d:/Project/XAI-sports-knowledge-discovery/results/reproducibility/official_test_predictions_compact.csv.gz) dung lượng chỉ **102.7 KB**, lưu trữ toàn bộ $6.646$ dự đoán trên tập Test kèm `match_id`, `possession_id`, `y_true`, và xác suất dự đoán của MPNN, Random Forest, Logistic Regression, ANN. Reviewer có thể kiểm chứng độc lập trong 2 giây.
+- **Khắc phục:** Tạo artifact nén [`results/reproducibility/official_test_predictions_compact.csv.gz`](../../results/reproducibility/official_test_predictions_compact.csv.gz) dung lượng chỉ **102.7 KB**, lưu trữ toàn bộ $6.646$ dự đoán trên tập Test kèm `match_id`, `possession_id`, `y_true`, và xác suất dự đoán của MPNN, Random Forest, Logistic Regression, ANN. Reviewer có thể kiểm chứng độc lập trong 2 giây.
 
 ### Lỗi 7: Drift mã băm SHA-256 giữa checkpoint local cũ và manifest chính thức
 - **Phát hiện:** Các file checkpoint binary `.pt` trên máy local lưu từ ngày 11/10/2026 có mã SHA khác với SHA được ghi nhận trong `results/metadata/official/experiment_manifest.json` (sinh từ đợt chạy 5-seed chính thức ngày 22/10/2026).
@@ -124,7 +124,7 @@ Trong quá trình kiểm toán toàn diện, 8 vấn đề kỹ thuật và mâu
 
 ### 5.1 Bảng kết quả chính thức qua 5 seeds trên tập Test ($N = 6.646$ đồ thị)
 
-Bảng trích xuất trực tiếp từ [`results/tables/official/model_comparison.csv`](file:///d:/Project/XAI-sports-knowledge-discovery/results/tables/official/model_comparison.csv), đối chiếu độc lập khớp 100% với trung bình 5 seeds trong [`results/reproducibility/all_models_test_metrics_all_seeds.csv`](file:///d:/Project/XAI-sports-knowledge-discovery/results/reproducibility/all_models_test_metrics_all_seeds.csv):
+Bảng trích xuất trực tiếp từ [`results/tables/official/model_comparison.csv`](../../results/tables/official/model_comparison.csv), đối chiếu độc lập khớp 100% với trung bình 5 seeds trong [`results/reproducibility/all_models_test_metrics_all_seeds.csv`](../../results/reproducibility/all_models_test_metrics_all_seeds.csv):
 
 | Mô hình | Nhóm kiến trúc | Số seed | AUC-PR (Mean ± Std) | ROC-AUC (Mean ± Std) | F1-Score (Mean ± Std) | Brier Score (Mean ± Std) | Ngưỡng F1 tối ưu (Val) |
 |---|---|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -138,14 +138,37 @@ Bảng trích xuất trực tiếp từ [`results/tables/official/model_comparis
 
 ### 5.2 Kết quả kiểm định ý nghĩa thống kê (Paired Cluster Bootstrap theo trận, 10.000 mẫu, hiệu chỉnh Holm)
 
-Trích xuất từ [`results/tables/official/significance_tests.csv`](file:///d:/Project/XAI-sports-knowledge-discovery/results/tables/official/significance_tests.csv):
+Trích xuất từ [`results/tables/official/significance_tests.csv`](../../results/tables/official/significance_tests.csv):
 - **MPNN vs Random Forest (AUC-PR):** Chênh lệch $\Delta = -0.0203$, KTC 95% $[-0.0418, +0.0016]$, $p_{\text{raw}} = 0.0682$, $p_{\text{holm}} = 0.2728$. Kết luận: **Không khác biệt có ý nghĩa thống kê** ở mức $\alpha = 0.05$ (khoảng tin cậy chứa giá trị 0).
 - **MPNN vs GraphSAGE (AUC-PR):** Chênh lệch $\Delta = +0.0837$, KTC 95% $[+0.0674, +0.0998]$, $p_{\text{holm}} < 0.001$. Kết luận: **MPNN vượt trội có ý nghĩa thống kê** so với GraphSAGE.
 - **MPNN vs GATv2 (AUC-PR):** Chênh lệch $\Delta = +0.1376$, KTC 95% $[+0.1192, +0.1558]$, $p_{\text{holm}} < 0.001$. Kết luận: **MPNN vượt trội có ý nghĩa thống kê**.
 - **MPNN vs GCN (AUC-PR):** Chênh lệch $\Delta = +0.1470$, KTC 95% $[+0.1285, +0.1652]$, $p_{\text{holm}} < 0.001$. Kết luận: **MPNN vượt trội có ý nghĩa thống kê**.
 
 ### 5.3 Kết luận khoa học trung thực
-Không có sự gượng ép hay thiên kiến kết quả để khẳng định GNN bắt buộc phải tốt nhất. Dữ liệu thực tế cho thấy các mô hình học bảng (Random Forest và ANN) đạt hiệu năng cao hơn một chút so với MPNN trên dự đoán xác suất cú sút tĩnh, do đặc trưng bảng tổng hợp thông tin tích lũy của possession rất hiệu quả. Tuy nhiên, MPNN là mô hình biểu diễn đồ thị vượt trội nhất ($+0.0837$ AUC-PR so với baseline GNN tốt thứ nhì), đồng thời cho phép trích xuất giải thích ở cấp độ từng đường chuyền và từng cầu thủ tương tác (mục tiêu cốt lõi của Bài toán 2 về XAI).
+Không có sự gượng ép hay thiên kiến kết quả để khẳng định GNN bắt buộc phải tốt nhất. Dữ liệu thực tế cho thấy các mô hình học bảng (Random Forest và ANN) đạt hiệu năng cao hơn một chút so với MPNN trên dự đoán xác suất cú sút tĩnh. Tuy nhiên, MPNN là mô hình biểu diễn đồ thị vượt trội nhất ($+0.0837$ AUC-PR so với baseline GNN tốt thứ nhì), đồng thời cho phép trích xuất giải thích ở cấp độ từng đường chuyền và từng cầu thủ tương tác (mục tiêu cốt lõi của Bài toán 2 về XAI).
+
+### 5.4 Phân tích công bằng thông tin đầu vào & Feature Ablation (Lợi thế của `final_x`, `final_y`)
+Để giải thích khách quan tại sao Random Forest và ANN đạt AUC-PR nhỉnh hơn MPNN ($0.6198$ và $0.6117$ vs $0.5996$), nghiên cứu đã thực hiện thí nghiệm cô lập đặc trưng (Ablation study, chi tiết tại `results/tables/official/baseline_feature_ablation.csv`):
+- Khi cung cấp đủ 10 đặc trưng tổng hợp bao gồm tọa độ kết thúc của đợt tấn công (`final_x`, `final_y`), Random Forest đạt AUC-PR $0.620$, ANN đạt $0.612$.
+- Khi **loại bỏ `final_x` và `final_y`**, AUC-PR của Random Forest giảm mạnh từ $0.620$ xuống **$0.268$**; ANN giảm từ $0.612$ xuống **$0.271$**.
+- Ngược lại, nếu **chỉ dùng duy nhất 2 đặc trưng `final_x` và `final_y`**, ANN vẫn đạt AUC-PR lên tới **$0.623$**!
+- **Ý nghĩa phương pháp luận:** 
+  1. Tọa độ điểm cuối của chuỗi chuyền bóng mang tín hiệu cực kỳ áp đảo (đường chuyền cuối cùng đưa bóng vào khu vực 1/3 sân đối phương hoặc vòng cấm địa có xác suất chuyển hóa thành cú sút rất cao).
+  2. Trong bài toán phân loại hồi cứu (retrospective sequence classification), `final_x, final_y` là đặc trưng hợp lệ sau khi possession kết thúc. Tuy nhiên, đối với bài toán dự đoán trực tuyến theo thời gian thực (online prediction), thông tin về điểm kết thúc của chuỗi chưa thể có sẵn tại các thời điểm ban đầu.
+  3. Các kiến trúc GNN baseline (GCN, GATv2, GraphSAGE) chỉ tổng hợp node features qua ma trận kề mà không dùng edge attributes hay readout nhắm riêng vào vị trí kết thúc, trong khi MPNN có tận dụng cạnh chuyền bóng nên đạt kết quả tiệm cận tabular baselines ($0.5996$). Do đó, so sánh giữa GNN và baselines cần được xem xét trên góc độ bất đối xứng thông tin đầu vào này.
+
+### 5.5 Phân tích độ nhạy của quy tắc cắt tại cú sút và loại 318 đồ thị ngắn (Decision 0001 & 0003)
+Số liệu từ `results/tables/official/graph_build_report.csv` và `cleaning_report.csv`:
+- Tổng số possession sau làm sạch: $45.365$ possession, trong đó có $6.471$ possession có nhãn shot dương ($14,26\%$).
+- Sau khi áp dụng quy tắc cắt chuỗi tại sự kiện sút bóng đầu tiên (nhằm ngăn chặn rò rỉ diễn biến tiếp theo sau cú sút), có **$318$ possession dương** chỉ gồm duy nhất cú sút hoặc có ít hơn 2 đường chuyền hợp lệ, do đó không thỏa mãn điều kiện tối thiểu để tạo thành một đồ thị chuyền bóng có nghĩa.
+- Số lượng đồ thị chính thức đưa vào huấn luyện và đánh giá: $45.047$ đồ thị, với $6.153$ đồ thị dương (tỷ lệ nhãn dương đạt $13,66\%$, độ lệch nhỏ $0,6\%$ so với tập possession ban đầu).
+- Quần thể thực nghiệm áp dụng: các đợt kiểm soát bóng có cấu trúc phối hợp chuyền bóng (ít nhất 2 đường chuyền). Quy tắc này được ghi nhận minh bạch trong Decision 0001 và 0003.
+
+### 5.6 Làm rõ phạm vi kiểm soát sai số FWER của kiểm định Holm
+Trong code triển khai tại `src/xai_football/evaluation/significance.py`:
+- Thủ tục hiệu chỉnh Holm–Bonferroni được áp dụng **độc lập theo từng độ đo (per-metric family)**. Với 7 mô hình tham gia đối sánh, mỗi metric có $\binom{7}{2} = 21$ cặp so sánh cần kiểm soát Family-Wise Error Rate (FWER) ở mức $\alpha = 0.05$.
+- Tổng cộng trên 3 metrics (AUC-PR, ROC-AUC, Brier score) có $21 \times 3 = 63$ phép kiểm định thống kê.
+- Việc kiểm soát FWER riêng cho từng metric giúp cân bằng giữa việc tránh dương tính giả trong cùng một mục tiêu so sánh và không làm suy giảm quá mức công suất kiểm định (statistical power).
 
 ---
 
