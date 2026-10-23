@@ -23,7 +23,7 @@
   "cuda_device_name": "CPU only",
   "git": {
     "branch": "Clean",
-    "commit_sha": "825a73d504787b0cf0b19f7c69b104ff99f5b7d1",
+    "commit_sha": "4f88b843752b6b99f666c37cc5028d9ae51b019e",
     "clean_working_tree": false
   },
   "config_hashes": {
