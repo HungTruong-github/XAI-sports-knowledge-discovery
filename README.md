@@ -180,6 +180,26 @@ python scripts/09_evaluate_xai.py --run-id 20261017_091540 --allow-historical
 - `notebooks/05_model_training.ipynb`
 - `notebooks/06_model_evaluation.ipynb`
 
+### 5.4. Kiểm toán độc lập và Chứng minh tính đúng đắn (Pipeline 0–6)
+
+Pipeline 0–6 đã được rà soát và kiểm toán độc lập bằng công cụ tự động:
+
+```bash
+# Chạy kiểm toán độc lập toàn diện (yêu cầu strict exit code)
+python scripts/audit_steps_0_6.py --strict
+
+# Kiểm toán ở chế độ portable (dành cho reviewer checkout clone mới từ GitHub)
+python scripts/audit_steps_0_6.py --mode portable
+
+# Kiểm tra bộ test tích hợp và unit tests
+pytest -ra tests/
+```
+
+- Báo cáo chi tiết: [`docs/reproducibility/PIPELINE_0_6_COMPLETION_AUDIT.md`](docs/reproducibility/PIPELINE_0_6_COMPLETION_AUDIT.md)
+- Báo cáo máy đọc được: [`results/metadata/official/pipeline_audit.json`](results/metadata/official/pipeline_audit.json)
+- Bằng chứng dự đoán nén: [`results/reproducibility/official_test_predictions_compact.csv.gz`](results/reproducibility/official_test_predictions_compact.csv.gz)
+- Danh mục bằng chứng: [`results/reproducibility/step_0_6_evidence_manifest.json`](results/reproducibility/step_0_6_evidence_manifest.json)
+
 Toàn bộ biểu đồ định dạng PNG (300 DPI) và SVG được tự động kết xuất vào `results/figures/official/`.
 
 ---

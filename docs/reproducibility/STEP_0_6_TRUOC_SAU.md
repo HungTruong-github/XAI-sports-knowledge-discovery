@@ -1,11 +1,18 @@
 # Rà soát & hoàn thiện Bước 0–6 — Đối chiếu TRƯỚC / SAU
 
+> [!NOTE]
+> **TÀI LIỆU LỊCH SỬ (HISTORICAL AUDIT LOG — 21–22/10/2026):**
+> Tài liệu này ghi lại nhật ký đối chiếu kỹ thuật đợt rà soát đầu tiên (commit `8d82bf8`). Trạng thái "chưa commit" tại dòng 8 phản ánh thời điểm trước khi commit `8d82bf8`.
+> Báo cáo kiểm toán chính thức, toàn diện và có hiệu lực cho nhánh `Clean` hiện tại được lưu trữ tại:
+> [`docs/reproducibility/PIPELINE_0_6_COMPLETION_AUDIT.md`](file:///d:/Project/XAI-sports-knowledge-discovery/docs/reproducibility/PIPELINE_0_6_COMPLETION_AUDIT.md)
+> và hồ sơ máy đọc được tại [`results/metadata/official/pipeline_audit.json`](file:///d:/Project/XAI-sports-knowledge-discovery/results/metadata/official/pipeline_audit.json).
+
 - **Ngày thực hiện:** 21–22/10/2026
 - **Phạm vi:** chỉ Bước 0–6 (môi trường → thu thập → tiền xử lý → đồ thị → chia tập → huấn luyện → đánh giá).
   Bước 7–10 (XAI, Hybrid Centrality, demo) **không bị sửa**.
 - **Commit gốc khi bắt đầu:** `fc18a92` (nhánh `main`, working tree sạch).
+- **Commit kết quả đợt 1:** `8d82bf8` (đã commit và đẩy lên nhánh `Clean`).
 - **Môi trường chạy lại:** Windows 11, Python 3.13.0 (`.venv`), CPU; phiên bản thư viện khóa trong `requirements.lock.txt`.
-- **Chưa commit.** Mọi thay đổi đang nằm ở working tree; xem bằng `git diff` / `git status`.
 
 Mỗi mục bên dưới có: **Trước** (hiện trạng + bằng chứng), **Sau** (đã đổi gì), **File**, và **Cách hoàn tác**
 (để dễ sửa lại nếu giảng viên/nhóm không đồng ý).

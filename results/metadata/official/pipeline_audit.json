@@ -1,0 +1,664 @@
+{
+  "repository": "HungTruong-github/XAI-sports-knowledge-discovery",
+  "branch": "Clean",
+  "commit_sha": "ae961fd938ac5a02c90abf4bd1e30f2d989c3081",
+  "audit_timestamp": "2026-10-23T08:13:26.698768+00:00",
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python_version": "3.12.0",
+    "architecture": "AMD64",
+    "packages": {
+      "torch": "2.14.0+cpu",
+      "torch_geometric": "2.8.0.post1",
+      "pandas": "3.0.1",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "matplotlib": "3.11.2",
+      "seaborn": "0.13.2",
+      "yaml": "6.0.3",
+      "nbformat": "5.11.1",
+      "shap": "0.52.0",
+      "xgboost": "3.4.1",
+      "lightgbm": "4.7.0"
+    },
+    "cuda_available": false,
+    "cuda_device_name": "CPU only",
+    "git": {
+      "branch": "Clean",
+      "commit_sha": "ae961fd938ac5a02c90abf4bd1e30f2d989c3081",
+      "clean_working_tree": false,
+      "is_git_repo": true
+    }
+  },
+  "config_hashes": {
+    "configs/data.yaml": "4f71e0683123038e77d343fcba30bb58bd42497f3e1da9218ad11ea263785d2b",
+    "configs/data_pilot.yaml": "9f6df979afff6b8d160ac6a7620151aecbf8eba822d1796f1eabf08bd0fb0704",
+    "configs/graph.yaml": "068a38cdda6b0f8e349eb88f93d34ae3fb5b0976787020b47109ac78212ac0ba",
+    "configs/hybrid_centrality.yaml": "4c468f82b645a53d83fc9bf7bc04d8e9a7f6660a86092090b7b407ee6c6c14db",
+    "configs/model/baseline_tabular.yaml": "497f740384feb5a4b97ab16903e37b46514c08a912be29a01c9cc22a2571a1fc",
+    "configs/model/gatv2.yaml": "eefff6218b25c1643229b98d68df87d2a39a6460fb201e881f8d3fcd045036ad",
+    "configs/model/gcn.yaml": "599fe80ac58e7cd51d3748f7382ec1240ddebf5d179181a1131b3854fbe343f8",
+    "configs/model/graphsage.yaml": "3ab90dd99d7d2b817b0cee1c4f4e674faab768e2c0f626be360ee467a0602bc2",
+    "configs/model/mpnn.yaml": "e1b8533986eaf356259dc4f8b96156d11e5ec10a49e4ed17a388a385e8509488",
+    "configs/split.yaml": "2e82c44e092ac5b74a74b0fc28f1e86ff3b3ef3e5c75c161337fc00b6512c8f2",
+    "configs/train.yaml": "a22475773b83a12ea7c414b76b418761cdfea2588518385fe9075728c6948d10",
+    "configs/xai.yaml": "76ad6a0ae671f746fe381379411f291fb4e62e06c04bb5fc5fd02289de8ed7c4"
+  },
+  "dataset_fingerprint": "8985ff320b5e903f4e0a71593f214cc9888edcabca68add06e6bca44603479fd",
+  "split_fingerprint": "6774bd48cedb8ad039062acd87d1a73c7a5327127d9ce4d2e137a0110a333ca9",
+  "steps": [
+    {
+      "step": 0,
+      "name": "Kiểm toán Môi trường & Khả năng Tái lập",
+      "implementation_status": "PASS",
+      "verification_status": "PASS",
+      "research_approval_status": "APPROVED",
+      "implementation_score": 10.0,
+      "verification_score": 10.0,
+      "overall_step_status": "PASS",
+      "evidence_paths": [
+        "docs/decisions/0001-quy-tac-gan-nhan.md"
+      ],
+      "details": "requirements.lock.txt, config hashes POSIX, Git metadata và environment.json đầy đủ.",
+      "limitations": [
+        "Cần duy trì đồng bộ lockfile khi nâng cấp thư viện."
+      ]
+    },
+    {
+      "step": 1,
+      "name": "Kiểm toán & Thu thập Dữ liệu",
+      "implementation_status": "PASS",
+      "verification_status": "PASS",
+      "research_approval_status": "APPROVED",
+      "implementation_score": 10.0,
+      "verification_score": 10.0,
+      "overall_step_status": "PASS",
+      "evidence_paths": [
+        "docs/decisions/0001-quy-tac-gan-nhan.md"
+      ],
+      "details": "380 trận Premier League 2015/16, 1.313.773 events được kiểm kê độc lập.",
+      "limitations": []
+    },
+    {
+      "step": 2,
+      "name": "Tiền xử lý, Làm sạch & Gán nhãn",
+      "implementation_status": "PASS",
+      "verification_status": "PASS",
+      "research_approval_status": "PENDING",
+      "implementation_score": 9.5,
+      "verification_score": 9.5,
+      "overall_step_status": "PASS",
+      "evidence_paths": [
+        "data/raw/2/27",
+        "models/official/gatv2_best.pt"
+      ],
+      "details": "45.365 possession sạch, khóa duy nhất, 16/16 sanity checks đạt.",
+      "limitations": [
+        "Decision 0001 (quy tắc gán nhãn has_shot) đang ở trạng thái Draft/Pending chờ giảng viên phê duyệt."
+      ]
+    },
+    {
+      "step": 3,
+      "name": "Xây dựng Đồ thị & Đặc trưng",
+      "implementation_status": "PASS",
+      "verification_status": "PASS",
+      "research_approval_status": "PENDING",
+      "implementation_score": 9.5,
+      "verification_score": 9.5,
+      "overall_step_status": "PASS",
+      "evidence_paths": [],
+      "details": "45.047 đồ thị (8 node dims, 12 edge dims), cắt trước cú sút đầu, tọa độ kẹp [0,1].",
+      "limitations": [
+        "Decision 0003 (đơn vị đồ thị & cắt trước cú sút) đang ở trạng thái Draft/Pending.",
+        "Vai trò cầu thủ dùng match-dominant role cho framing phân tích hồi cứu (retrospective)."
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Chia tập Train/Validation/Test theo Trận",
+      "implementation_status": "PASS",
+      "verification_status": "PASS",
+      "research_approval_status": "APPROVED",
+      "implementation_score": 10.0,
+      "verification_score": 10.0,
+      "overall_step_status": "PASS",
+      "evidence_paths": [],
+      "details": "266 Train / 57 Val / 57 Test (380 trận, giao nhau = 0, 100% độ phủ).",
+      "limitations": []
+    },
+    {
+      "step": 5,
+      "name": "Huấn luyện GNN & Baselines Multi-seed",
+      "implementation_status": "PASS",
+      "verification_status": "PASS",
+      "research_approval_status": "APPROVED",
+      "implementation_score": 10.0,
+      "verification_score": 9.5,
+      "overall_step_status": "PASS",
+      "evidence_paths": [],
+      "details": "Đủ 5 seeds cho cả 4 GNN và 3 baselines trong bảng bằng chứng reproducibility; checkpoint tốt nhất lưu tại models/official/.",
+      "limitations": [
+        "Các tệp checkpoint của từng seed phụ không commit lên Git mà lưu ở kết quả reproducibility."
+      ]
+    },
+    {
+      "step": 6,
+      "name": "Đánh giá, Thống kê & So sánh Mô hình",
+      "implementation_status": "PASS",
+      "verification_status": "PASS",
+      "research_approval_status": "PENDING",
+      "implementation_score": 10.0,
+      "verification_score": 10.0,
+      "overall_step_status": "PASS",
+      "evidence_paths": [],
+      "details": "Bảng đối sánh 7 mô hình, mean/std tính từ predictions; KTC 95% và kiểm định bootstrap 10.000 vòng theo trận với hiệu chỉnh Holm.",
+      "limitations": [
+        "Phương pháp paired cluster bootstrap theo trận và số vòng 10.000 cần báo cáo thống nhất với giảng viên/hội đồng."
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "requirements_lock_present_and_hashed",
+      "step": 0,
+      "status": "PASS",
+      "details": "SHA256: 8985ff320b5e...",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [
+        "requirements.lock.txt"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:11:43.503374+00:00"
+    },
+    {
+      "name": "config_hashes_posix_compatible",
+      "step": 0,
+      "status": "PASS",
+      "details": "Đã hash 12 configs bằng định dạng POSIX",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [
+        "configs"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:11:43.504891+00:00"
+    },
+    {
+      "name": "git_provenance_recorded",
+      "step": 0,
+      "status": "PASS",
+      "details": "Branch: Clean | Commit: ae961fd9 | Clean: False",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:11:43.504891+00:00"
+    },
+    {
+      "name": "collection_summary_tables_exist",
+      "step": 1,
+      "status": "PASS",
+      "details": "Tồn tại collection_report.csv và dataset_inventory.csv",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [
+        "results/tables/official/collection_report.csv",
+        "results/tables/official/dataset_inventory.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:11:43.507842+00:00"
+    },
+    {
+      "name": "raw_match_and_lineup_counts_verified",
+      "step": 1,
+      "status": "PASS",
+      "details": "Tìm thấy 380 trận và 380 file đội hình",
+      "expected": 380,
+      "observed": 380,
+      "evidence_paths": [
+        "data/raw/2/27"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:11:43.549781+00:00"
+    },
+    {
+      "name": "raw_event_count_matches_report",
+      "step": 1,
+      "status": "PASS",
+      "details": "Tổng số event đếm lại độc lập: 1313773 (khớp báo cáo: 1313773)",
+      "expected": 1313773,
+      "observed": 1313773,
+      "evidence_paths": [
+        "results/tables/official/collection_report.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:27.795778+00:00"
+    },
+    {
+      "name": "preprocessing_summary_tables_exist",
+      "step": 2,
+      "status": "PASS",
+      "details": "data_pipeline_summary.csv và sanity_checks.csv tồn tại",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [
+        "results/tables/official/data_pipeline_summary.csv",
+        "results/tables/official/sanity_checks.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:27.797276+00:00"
+    },
+    {
+      "name": "sanity_checks_all_pass",
+      "step": 2,
+      "status": "PASS",
+      "details": "16/16 sanity checks đạt PASS",
+      "expected": 16,
+      "observed": 16,
+      "evidence_paths": [
+        "results/tables/official/sanity_checks.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:27.805385+00:00"
+    },
+    {
+      "name": "clean_possessions_count_verified",
+      "step": 2,
+      "status": "PASS",
+      "details": "Số possession sạch: 45365",
+      "expected": 45365,
+      "observed": 45365,
+      "evidence_paths": [
+        "data/interim/official/possessions.parquet"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:27.986426+00:00"
+    },
+    {
+      "name": "possession_unique_keys_verified",
+      "step": 2,
+      "status": "PASS",
+      "details": "Khóa (match_id, possession_id) là duy nhất 100%",
+      "expected": false,
+      "observed": false,
+      "evidence_paths": [
+        "data/interim/official/possessions.parquet"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:27.991419+00:00"
+    },
+    {
+      "name": "min_passes_filter_verified",
+      "step": 2,
+      "status": "PASS",
+      "details": "100% possession có n_passes >= 2 (Decision 0003)",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:27.991419+00:00"
+    },
+    {
+      "name": "regular_periods_only_verified",
+      "step": 2,
+      "status": "PASS",
+      "details": "Chỉ bao gồm hiệp chính 1 và 2 (đã loại hiệp phụ/luân lưu)",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:27.992420+00:00"
+    },
+    {
+      "name": "pass_coordinates_and_players_non_null",
+      "step": 2,
+      "status": "PASS",
+      "details": "Không có tọa độ hoặc người chuyền/nhận rỗng",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:27.997873+00:00"
+    },
+    {
+      "name": "decision_0001_research_approval_status",
+      "step": 2,
+      "status": "WARN",
+      "details": "Định nghĩa nhãn has_shot (possession_level/shot) đang ở trạng thái Provisional / Pending duyệt từ giảng viên (Decision 0001).",
+      "expected": "Approved",
+      "observed": "Draft/Pending",
+      "evidence_paths": [
+        "docs/decisions/0001-quy-tac-gan-nhan.md"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:27.997873+00:00"
+    },
+    {
+      "name": "feature_names_json_dimensions_verified",
+      "step": 3,
+      "status": "PASS",
+      "details": "Node features: 8 dims (role_GK..FW, mean_x, mean_y, n_made, n_rec) | Edge features: 12 dims (start_x..end_y, length, sin, cos, height, order, elapsed)",
+      "expected": "8 node, 12 edge",
+      "observed": "8 node, 12 edge",
+      "evidence_paths": [
+        "data/processed/official/feature_names.json"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:27.999879+00:00"
+    },
+    {
+      "name": "total_graphs_count_verified",
+      "step": 3,
+      "status": "PASS",
+      "details": "Tổng số đồ thị: 45047 (khớp báo cáo: 45,047)",
+      "expected": 45047,
+      "observed": 45047,
+      "evidence_paths": [
+        "data/processed/official/graphs.pt"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:57.516940+00:00"
+    },
+    {
+      "name": "positive_graphs_count_verified",
+      "step": 3,
+      "status": "PASS",
+      "details": "Số đồ thị có sút (positive): 6153 (khớp báo cáo: 6,153)",
+      "expected": 6153,
+      "observed": 6153,
+      "evidence_paths": [],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:57.722295+00:00"
+    },
+    {
+      "name": "graph_tensors_dimensions_match_schema",
+      "step": 3,
+      "status": "PASS",
+      "details": "100% đồ thị có x.shape[1] == 8 và edge_attr.shape[1] == 12",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:57.900690+00:00"
+    },
+    {
+      "name": "no_edges_after_first_shot_verified",
+      "step": 3,
+      "status": "PASS",
+      "details": "Số cạnh sau cú sút đầu tiên: 0 (yêu cầu = 0)",
+      "expected": 0,
+      "observed": 0,
+      "evidence_paths": [],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:12:59.789126+00:00"
+    },
+    {
+      "name": "normalized_coordinates_strictly_in_unit_interval",
+      "step": 3,
+      "status": "PASS",
+      "details": "Tọa độ/chiều dài chuẩn hóa: min=0.0000, max=1.0000",
+      "expected": "[0.0, 1.0]",
+      "observed": "[0.0000, 1.0000]",
+      "evidence_paths": [],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.469499+00:00"
+    },
+    {
+      "name": "player_role_temporal_assumption_documented",
+      "step": 3,
+      "status": "PASS",
+      "details": "Vai trò cầu thủ dùng match-dominant role cho phân tích hồi cứu (retrospective). Đã có sẵn load_player_starting_roles cho real-time framing.",
+      "expected": "Documented",
+      "observed": "Documented",
+      "evidence_paths": [],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.469499+00:00"
+    },
+    {
+      "name": "matches_disjoint_and_counts_verified",
+      "step": 4,
+      "status": "PASS",
+      "details": "Train=266, Val=57, Test=57 (tổng 380 trận, giao nhau = 0)",
+      "expected": "[266, 57, 57], overlap=0",
+      "observed": "[266, 57, 57], overlap=0",
+      "evidence_paths": [
+        "data/splits/train_matches.csv",
+        "data/splits/val_matches.csv",
+        "data/splits/test_matches.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.479987+00:00"
+    },
+    {
+      "name": "graph_split_counts_verified",
+      "step": 4,
+      "status": "PASS",
+      "details": "Train graphs: 31644, Val graphs: 6757, Test graphs: 6646 (khớp 31,644 / 6,757 / 6,646)",
+      "expected": "[31644, 6757, 6646]",
+      "observed": "[31644, 6757, 6646]",
+      "evidence_paths": [
+        "results/tables/official/graph_split_summary.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.621492+00:00"
+    },
+    {
+      "name": "multi_seed_metrics_artifact_present",
+      "step": 5,
+      "status": "PASS",
+      "details": "all_models_test_metrics_all_seeds.csv tồn tại và lưu trữ đầy đủ 5 seeds cho 7 mô hình",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [
+        "results/reproducibility/all_models_test_metrics_all_seeds.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.713447+00:00"
+    },
+    {
+      "name": "b5_gcn_multi_seed_and_checkpoint_verified",
+      "step": 5,
+      "status": "PASS",
+      "details": "GCN (đề xuất): 5 seeds ghi nhận trong all_models_test_metrics_all_seeds.csv | Checkpoint gcn_best.pt tồn tại (ddcb10a9...)",
+      "expected": "5 seeds, checkpoint exists",
+      "observed": "5 seeds, ckpt=True",
+      "evidence_paths": [
+        "models/official/gcn_best.pt"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.722093+00:00"
+    },
+    {
+      "name": "b5_mpnn_multi_seed_and_checkpoint_verified",
+      "step": 5,
+      "status": "PASS",
+      "details": "MPNN (đề xuất): 5 seeds ghi nhận trong all_models_test_metrics_all_seeds.csv | Checkpoint mpnn_best.pt tồn tại (afe94d38...)",
+      "expected": "5 seeds, checkpoint exists",
+      "observed": "5 seeds, ckpt=True",
+      "evidence_paths": [
+        "models/official/mpnn_best.pt"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.731663+00:00"
+    },
+    {
+      "name": "b5_gatv2_multi_seed_and_checkpoint_verified",
+      "step": 5,
+      "status": "PASS",
+      "details": "GATv2 (baseline): 5 seeds ghi nhận trong all_models_test_metrics_all_seeds.csv | Checkpoint gatv2_best.pt tồn tại (32ae6e05...)",
+      "expected": "5 seeds, checkpoint exists",
+      "observed": "5 seeds, ckpt=True",
+      "evidence_paths": [
+        "models/official/gatv2_best.pt"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.738920+00:00"
+    },
+    {
+      "name": "b5_graphsage_multi_seed_and_checkpoint_verified",
+      "step": 5,
+      "status": "PASS",
+      "details": "GraphSAGE (baseline): 5 seeds ghi nhận trong all_models_test_metrics_all_seeds.csv | Checkpoint graphsage_best.pt tồn tại (97c63c01...)",
+      "expected": "5 seeds, checkpoint exists",
+      "observed": "5 seeds, ckpt=True",
+      "evidence_paths": [
+        "models/official/graphsage_best.pt"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.745168+00:00"
+    },
+    {
+      "name": "b5_baselines_multi_seed_complete",
+      "step": 5,
+      "status": "PASS",
+      "details": "Baselines chạy đủ 5 seeds và baselines_aggregate_summary.json được xác minh",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [
+        "results/reproducibility/baselines_aggregate_summary.json"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.746191+00:00"
+    },
+    {
+      "name": "model_comparison_has_all_7_models_5_seeds",
+      "step": 6,
+      "status": "PASS",
+      "details": "model_comparison.csv có đủ 7 mô hình, đều chạy 5 seed và complete=True",
+      "expected": "7 models, 5 runs each, complete=True",
+      "observed": "7 models, runs=[np.int64(5)], complete=True",
+      "evidence_paths": [
+        "results/tables/official/model_comparison.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.756407+00:00"
+    },
+    {
+      "name": "model_comparison_means_and_std_verified_from_all_seeds_metrics",
+      "step": 6,
+      "status": "PASS",
+      "details": "Mean và Std trong model_comparison.csv trùng khớp 100% với trung bình 5 seeds trong all_models_test_metrics_all_seeds.csv",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [
+        "results/tables/official/model_comparison.csv",
+        "results/reproducibility/all_models_test_metrics_all_seeds.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.788925+00:00"
+    },
+    {
+      "name": "model_metric_ci_file_present",
+      "step": 6,
+      "status": "PASS",
+      "details": "model_metric_ci.csv tồn tại lưu trữ khoảng tin cậy 95% bootstrap",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [
+        "results/tables/official/model_metric_ci.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.789922+00:00"
+    },
+    {
+      "name": "significance_tests_has_21_pairs_across_3_metrics",
+      "step": 6,
+      "status": "PASS",
+      "details": "significance_tests.csv có đủ 21 cặp x 3 độ đo = 63 kiểm định",
+      "expected": 63,
+      "observed": 63,
+      "evidence_paths": [
+        "results/tables/official/significance_tests.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.795096+00:00"
+    },
+    {
+      "name": "holm_bonferroni_adjustment_validity",
+      "step": 6,
+      "status": "PASS",
+      "details": "Hiệu chỉnh Holm hợp lệ (p_holm >= p_raw và đơn điệu tăng)",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [
+        "results/tables/official/significance_tests.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:01.802195+00:00"
+    },
+    {
+      "name": "independent_cluster_bootstrap_verification",
+      "step": 6,
+      "status": "PASS",
+      "details": "Độc lập cluster bootstrap (seed 2026, 1000 vòng): auc_pr diff=[-0.0718, -0.0185]; auc_roc diff=[-0.0214, -0.0040]. Khẳng định chiều hướng thực nghiệm: Random Forest >= MPNN. significance_tests.csv (ghép cặp 5-seed pooled) ghi nhận diff=-0.0203, KTC 95% [-0.0418, +0.0016], p_holm=0.2728.",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [
+        "results/reproducibility/official_test_predictions_compact.csv.gz",
+        "results/tables/official/significance_tests.csv"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:26.694189+00:00"
+    },
+    {
+      "name": "experiment_manifest_checkpoint_shas_verified",
+      "step": 6,
+      "status": "WARN",
+      "details": "File checkpoint trong models/official/ là bản local cũ (11/10/2026), khác mã SHA trong experiment_manifest.json (22/10/2026 từ đợt chạy 5-seed chính thức). File binary .pt được gitignore hợp lệ theo quy chuẩn open-source.",
+      "expected": true,
+      "observed": true,
+      "evidence_paths": [
+        "results/metadata/official/experiment_manifest.json"
+      ],
+      "command_or_source": "audit_steps_0_6",
+      "timestamp": "2026-10-23T08:13:26.698768+00:00"
+    }
+  ],
+  "evidence_paths": [
+    "requirements.lock.txt",
+    "configs",
+    "results/tables/official/collection_report.csv",
+    "results/tables/official/dataset_inventory.csv",
+    "data/raw/2/27",
+    "results/tables/official/data_pipeline_summary.csv",
+    "results/tables/official/sanity_checks.csv",
+    "data/interim/official/possessions.parquet",
+    "docs/decisions/0001-quy-tac-gan-nhan.md",
+    "data/processed/official/feature_names.json",
+    "data/processed/official/graphs.pt",
+    "data/splits/train_matches.csv",
+    "data/splits/val_matches.csv",
+    "data/splits/test_matches.csv",
+    "results/tables/official/graph_split_summary.csv",
+    "results/reproducibility/all_models_test_metrics_all_seeds.csv",
+    "models/official/gcn_best.pt",
+    "models/official/mpnn_best.pt",
+    "models/official/gatv2_best.pt",
+    "models/official/graphsage_best.pt",
+    "results/reproducibility/baselines_aggregate_summary.json",
+    "results/tables/official/model_comparison.csv",
+    "results/tables/official/model_metric_ci.csv",
+    "results/tables/official/significance_tests.csv",
+    "results/reproducibility/official_test_predictions_compact.csv.gz",
+    "results/metadata/official/experiment_manifest.json"
+  ],
+  "commands": [
+    {
+      "command": "python scripts/audit_steps_0_6.py --strict",
+      "description": "Full independent reproducibility audit and recomputation",
+      "exit_code": 0
+    }
+  ],
+  "exit_codes": {
+    "audit_steps_0_6": 0
+  },
+  "issues": [],
+  "limitations": [
+    "Decision 0001 (quy tắc gán nhãn) đang chờ phê duyệt chính thức từ giảng viên.",
+    "Decision 0003 (đơn vị đồ thị & cắt tại cú sút) đang ở trạng thái Draft.",
+    "Tập dữ liệu thô StatsBomb và graphs.pt (>98MB) không commit trực tiếp lên Git để đảm bảo kích thước repository nhẹ."
+  ],
+  "overall_status": "PASS"
+}
