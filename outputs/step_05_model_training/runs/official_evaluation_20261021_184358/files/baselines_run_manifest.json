@@ -1,0 +1,31 @@
+{
+  "model_type": "tabular_baselines",
+  "models": [
+    "logistic_regression",
+    "random_forest",
+    "ann"
+  ],
+  "features": [
+    "n_passes",
+    "n_players_involved",
+    "sequence_length",
+    "mean_pass_distance",
+    "mean_pass_angle",
+    "duration",
+    "start_x",
+    "start_y",
+    "final_x",
+    "final_y"
+  ],
+  "seed": 42,
+  "threshold_strategy": "val_optimal",
+  "thresholds": {
+    "logistic_regression": 0.6591,
+    "random_forest": 0.4136,
+    "ann": 0.25
+  },
+  "train_samples": 31644,
+  "val_samples": 6757,
+  "test_samples": 6646,
+  "training_time_seconds": 32.54
+}

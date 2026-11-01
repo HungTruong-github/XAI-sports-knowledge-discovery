@@ -1,0 +1,6 @@
+{
+  "source_path": "data/interim/official/events.parquet",
+  "size_bytes": 91298101,
+  "sha256": "b7f6847fc3fe5da161646a36a9db16b8025ebaafdcd14268688b55317797fd26",
+  "reason": "Exceeds max size limit or heavy binary format, registered by reference"
+}

@@ -1,0 +1,10 @@
+[2026-10-22T18:20:12.044081+00:00] Đã đăng ký split file: train_matches.csv
+[2026-10-22T18:20:12.051076+00:00] Đã đăng ký split file: val_matches.csv
+[2026-10-22T18:20:12.058629+00:00] Đã đăng ký split file: test_matches.csv
+[2026-10-22T18:20:12.066592+00:00] Đã đăng ký split file: match_splits.csv
+[2026-10-22T18:20:12.074005+00:00] Đã đăng ký split file: split_summary.csv
+[2026-10-22T18:20:12.081706+00:00] Đã đăng ký split file: graph_split_summary.csv
+[2026-10-22T18:20:12.096638+00:00] Đã đăng ký biểu đồ: 04_split_distribution.png
+[2026-10-22T18:20:12.104786+00:00] Đã đăng ký biểu đồ: 04_split_distribution.svg
+[2026-10-22T18:20:12.112229+00:00] Đã đăng ký biểu đồ: 04_split_balance.png
+[2026-10-22T18:20:12.118547+00:00] Đã đăng ký biểu đồ: 04_split_balance.svg

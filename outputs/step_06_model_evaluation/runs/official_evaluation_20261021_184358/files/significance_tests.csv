@@ -1,0 +1,64 @@
+﻿metric,model_a,model_b,diff_a_minus_b,ci95_low,ci95_high,p_value,p_value_holm,significant_holm_0.05,verdict
+auc_pr,GCN (đề xuất),MPNN (đề xuất),-0.147,-0.1698,-0.1244,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+auc_pr,GCN (đề xuất),GATv2 (baseline),-0.0095,-0.0262,0.0071,0.2552,0.5103,False,không khác biệt có ý nghĩa
+auc_pr,GCN (đề xuất),GraphSAGE (baseline),-0.0634,-0.0783,-0.0474,0.0002,0.0042,True,GraphSAGE (baseline) tốt hơn
+auc_pr,GCN (đề xuất),Logistic Regression,0.1147,0.087,0.1402,0.0002,0.0042,True,GCN (đề xuất) tốt hơn
+auc_pr,GCN (đề xuất),Random Forest,-0.1673,-0.1954,-0.1383,0.0002,0.0042,True,Random Forest tốt hơn
+auc_pr,GCN (đề xuất),ANN (MLP),-0.1591,-0.1841,-0.1343,0.0002,0.0042,True,ANN (MLP) tốt hơn
+auc_pr,MPNN (đề xuất),GATv2 (baseline),0.1375,0.1132,0.1617,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+auc_pr,MPNN (đề xuất),GraphSAGE (baseline),0.0836,0.0645,0.1035,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+auc_pr,MPNN (đề xuất),Logistic Regression,0.2617,0.236,0.285,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+auc_pr,MPNN (đề xuất),Random Forest,-0.0203,-0.0418,0.0016,0.0682,0.2728,False,không khác biệt có ý nghĩa
+auc_pr,MPNN (đề xuất),ANN (MLP),-0.0121,-0.0264,0.0018,0.089,0.2728,False,không khác biệt có ý nghĩa
+auc_pr,GATv2 (baseline),GraphSAGE (baseline),-0.0539,-0.0709,-0.0355,0.0002,0.0042,True,GraphSAGE (baseline) tốt hơn
+auc_pr,GATv2 (baseline),Logistic Regression,0.1242,0.0975,0.1481,0.0002,0.0042,True,GATv2 (baseline) tốt hơn
+auc_pr,GATv2 (baseline),Random Forest,-0.1578,-0.1864,-0.1278,0.0002,0.0042,True,Random Forest tốt hơn
+auc_pr,GATv2 (baseline),ANN (MLP),-0.1497,-0.1759,-0.1227,0.0002,0.0042,True,ANN (MLP) tốt hơn
+auc_pr,GraphSAGE (baseline),Logistic Regression,0.1781,0.1517,0.2024,0.0002,0.0042,True,GraphSAGE (baseline) tốt hơn
+auc_pr,GraphSAGE (baseline),Random Forest,-0.1039,-0.1298,-0.0784,0.0002,0.0042,True,Random Forest tốt hơn
+auc_pr,GraphSAGE (baseline),ANN (MLP),-0.0957,-0.1168,-0.0754,0.0002,0.0042,True,ANN (MLP) tốt hơn
+auc_pr,Logistic Regression,Random Forest,-0.282,-0.3109,-0.2512,0.0002,0.0042,True,Random Forest tốt hơn
+auc_pr,Logistic Regression,ANN (MLP),-0.2739,-0.2982,-0.2478,0.0002,0.0042,True,ANN (MLP) tốt hơn
+auc_pr,Random Forest,ANN (MLP),0.0082,-0.0096,0.0254,0.371,0.5103,False,không khác biệt có ý nghĩa
+auc_roc,GCN (đề xuất),MPNN (đề xuất),-0.0447,-0.0547,-0.0356,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+auc_roc,GCN (đề xuất),GATv2 (baseline),-0.0098,-0.0167,-0.0032,0.0046,0.023,True,GATv2 (baseline) tốt hơn
+auc_roc,GCN (đề xuất),GraphSAGE (baseline),-0.0194,-0.026,-0.0125,0.0002,0.0042,True,GraphSAGE (baseline) tốt hơn
+auc_roc,GCN (đề xuất),Logistic Regression,0.0089,-0.0038,0.0215,0.1728,0.3456,False,không khác biệt có ý nghĩa
+auc_roc,GCN (đề xuất),Random Forest,-0.0546,-0.0672,-0.0427,0.0002,0.0042,True,Random Forest tốt hơn
+auc_roc,GCN (đề xuất),ANN (MLP),-0.0529,-0.0646,-0.0425,0.0002,0.0042,True,ANN (MLP) tốt hơn
+auc_roc,MPNN (đề xuất),GATv2 (baseline),0.0349,0.0273,0.0431,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+auc_roc,MPNN (đề xuất),GraphSAGE (baseline),0.0253,0.0172,0.034,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+auc_roc,MPNN (đề xuất),Logistic Regression,0.0536,0.0425,0.0641,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+auc_roc,MPNN (đề xuất),Random Forest,-0.0099,-0.0181,-0.0021,0.0126,0.0504,False,không khác biệt có ý nghĩa
+auc_roc,MPNN (đề xuất),ANN (MLP),-0.0083,-0.0153,-0.0015,0.0146,0.0504,False,không khác biệt có ý nghĩa
+auc_roc,GATv2 (baseline),GraphSAGE (baseline),-0.0096,-0.0156,-0.0034,0.0032,0.0196,True,GraphSAGE (baseline) tốt hơn
+auc_roc,GATv2 (baseline),Logistic Regression,0.0187,0.0072,0.0302,0.0028,0.0196,True,GATv2 (baseline) tốt hơn
+auc_roc,GATv2 (baseline),Random Forest,-0.0448,-0.0548,-0.0347,0.0002,0.0042,True,Random Forest tốt hơn
+auc_roc,GATv2 (baseline),ANN (MLP),-0.0432,-0.0519,-0.0346,0.0002,0.0042,True,ANN (MLP) tốt hơn
+auc_roc,GraphSAGE (baseline),Logistic Regression,0.0283,0.0162,0.0401,0.0002,0.0042,True,GraphSAGE (baseline) tốt hơn
+auc_roc,GraphSAGE (baseline),Random Forest,-0.0352,-0.0452,-0.0258,0.0002,0.0042,True,Random Forest tốt hơn
+auc_roc,GraphSAGE (baseline),ANN (MLP),-0.0336,-0.0429,-0.025,0.0002,0.0042,True,ANN (MLP) tốt hơn
+auc_roc,Logistic Regression,Random Forest,-0.0635,-0.0751,-0.052,0.0002,0.0042,True,Random Forest tốt hơn
+auc_roc,Logistic Regression,ANN (MLP),-0.0618,-0.0727,-0.0505,0.0002,0.0042,True,ANN (MLP) tốt hơn
+auc_roc,Random Forest,ANN (MLP),0.0016,-0.003,0.0062,0.4844,0.4844,False,không khác biệt có ý nghĩa
+brier_score,GCN (đề xuất),MPNN (đề xuất),0.0387,0.0345,0.0429,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+brier_score,GCN (đề xuất),GATv2 (baseline),0.0155,0.0129,0.0181,0.0002,0.0042,True,GATv2 (baseline) tốt hơn
+brier_score,GCN (đề xuất),GraphSAGE (baseline),0.0228,0.0208,0.025,0.0002,0.0042,True,GraphSAGE (baseline) tốt hơn
+brier_score,GCN (đề xuất),Logistic Regression,-0.0158,-0.0205,-0.011,0.0002,0.0042,True,GCN (đề xuất) tốt hơn
+brier_score,GCN (đề xuất),Random Forest,0.0821,0.0772,0.0868,0.0002,0.0042,True,Random Forest tốt hơn
+brier_score,GCN (đề xuất),ANN (MLP),0.0901,0.0849,0.0952,0.0002,0.0042,True,ANN (MLP) tốt hơn
+brier_score,MPNN (đề xuất),GATv2 (baseline),-0.0232,-0.0273,-0.0192,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+brier_score,MPNN (đề xuất),GraphSAGE (baseline),-0.0159,-0.0195,-0.0123,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+brier_score,MPNN (đề xuất),Logistic Regression,-0.0545,-0.0599,-0.0491,0.0002,0.0042,True,MPNN (đề xuất) tốt hơn
+brier_score,MPNN (đề xuất),Random Forest,0.0434,0.0391,0.0475,0.0002,0.0042,True,Random Forest tốt hơn
+brier_score,MPNN (đề xuất),ANN (MLP),0.0515,0.0464,0.0564,0.0002,0.0042,True,ANN (MLP) tốt hơn
+brier_score,GATv2 (baseline),GraphSAGE (baseline),0.0073,0.0048,0.0098,0.0002,0.0042,True,GraphSAGE (baseline) tốt hơn
+brier_score,GATv2 (baseline),Logistic Regression,-0.0313,-0.0354,-0.0271,0.0002,0.0042,True,GATv2 (baseline) tốt hơn
+brier_score,GATv2 (baseline),Random Forest,0.0666,0.0624,0.0706,0.0002,0.0042,True,Random Forest tốt hơn
+brier_score,GATv2 (baseline),ANN (MLP),0.0747,0.0702,0.079,0.0002,0.0042,True,ANN (MLP) tốt hơn
+brier_score,GraphSAGE (baseline),Logistic Regression,-0.0387,-0.0436,-0.0337,0.0002,0.0042,True,GraphSAGE (baseline) tốt hơn
+brier_score,GraphSAGE (baseline),Random Forest,0.0592,0.0549,0.0636,0.0002,0.0042,True,Random Forest tốt hơn
+brier_score,GraphSAGE (baseline),ANN (MLP),0.0673,0.0624,0.072,0.0002,0.0042,True,ANN (MLP) tốt hơn
+brier_score,Logistic Regression,Random Forest,0.0979,0.0919,0.1038,0.0002,0.0042,True,Random Forest tốt hơn
+brier_score,Logistic Regression,ANN (MLP),0.106,0.0995,0.1124,0.0002,0.0042,True,ANN (MLP) tốt hơn
+brier_score,Random Forest,ANN (MLP),0.0081,0.0058,0.0103,0.0002,0.0042,True,ANN (MLP) tốt hơn

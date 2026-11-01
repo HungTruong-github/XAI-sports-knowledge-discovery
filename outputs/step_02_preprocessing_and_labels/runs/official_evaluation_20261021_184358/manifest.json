@@ -1,0 +1,223 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "official_evaluation_20261021_184358",
+  "step_id": "step_02",
+  "step_name": "Preprocessing & Labeling",
+  "status": "VERIFIED",
+  "started_at": "2026-10-22T18:20:11.171158+00:00",
+  "finished_at": "2026-10-22T18:20:11.171158+00:00",
+  "command_or_entrypoint": "scripts/03_preprocess.py --config configs/data.yaml",
+  "exit_code": 0,
+  "git": {
+    "branch": "Clean",
+    "commit_sha": "7d9e0f8fa249249605752834a485726247affc0e",
+    "clean_working_tree": false
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python_version": "3.12.0",
+    "architecture": "AMD64",
+    "packages": {
+      "torch": "2.14.0+cpu",
+      "torch_geometric": "2.8.0.post1",
+      "pandas": "3.0.1",
+      "numpy": "2.5.4",
+      "scikit-learn": "not installed"
+    }
+  },
+  "configs": {},
+  "inputs": [
+    {
+      "name": "events.parquet",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/files/events.parquet.pointer.json",
+      "source_path": "data/interim/official/events.parquet",
+      "size_bytes": 91298101,
+      "sha256": "b7f6847fc3fe5da161646a36a9db16b8025ebaafdcd14268688b55317797fd26",
+      "file_type": "dataset",
+      "generator": "03_preprocess.py",
+      "is_by_reference": true
+    },
+    {
+      "name": "possessions.parquet",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/files/possessions.parquet.pointer.json",
+      "source_path": "data/interim/official/possessions.parquet",
+      "size_bytes": 292726,
+      "sha256": "3ce77622dcadf8be1387beb616c742386096dabb7736428a20ed42b7905198dc",
+      "file_type": "dataset",
+      "generator": "03_preprocess.py",
+      "is_by_reference": true
+    },
+    {
+      "name": "possession_events.parquet",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/files/possession_events.parquet.pointer.json",
+      "source_path": "data/interim/official/possession_events.parquet",
+      "size_bytes": 15399919,
+      "sha256": "5b399761361cac1fe1359bf4dc4365a0181a63ec198795d899a5112d635c15dd",
+      "file_type": "dataset",
+      "generator": "03_preprocess.py",
+      "is_by_reference": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "data_pipeline_summary.csv",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/files/data_pipeline_summary.csv",
+      "source_path": "results/tables/official/data_pipeline_summary.csv",
+      "size_bytes": 581,
+      "sha256": "c91dab19bd659c17336fd78b4ed82df4f4640047628b34f75d3b43bc03341ab0",
+      "file_type": "table",
+      "generator": "03_preprocess.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "cleaning_report.csv",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/files/cleaning_report.csv",
+      "source_path": "results/tables/official/cleaning_report.csv",
+      "size_bytes": 337,
+      "sha256": "b44631f4523de6954eee52f03b68b3bee7324f8fd2c6e408c245229bcd973135",
+      "file_type": "table",
+      "generator": "03_preprocess.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "label_comparison.csv",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/files/label_comparison.csv",
+      "source_path": "results/tables/official/label_comparison.csv",
+      "size_bytes": 445,
+      "sha256": "807a2abdf4d2fe93d9671ef9948f78a7c89b53d9a14a5fd2bb3ba299479c0e87",
+      "file_type": "table",
+      "generator": "03_preprocess.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "play_pattern_distribution.csv",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/files/play_pattern_distribution.csv",
+      "source_path": "results/tables/official/play_pattern_distribution.csv",
+      "size_bytes": 471,
+      "sha256": "5dde0c0b7f20de66929acd29a1c55207782e3ba038228218bd72b1257cfb64af",
+      "file_type": "table",
+      "generator": "03_preprocess.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "descriptive_stats.csv",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/files/descriptive_stats.csv",
+      "source_path": "results/tables/official/descriptive_stats.csv",
+      "size_bytes": 525,
+      "sha256": "88d606472f31f2f4789d6008e8016a3d1910de4530ef13b9160c7463f1c4b902",
+      "file_type": "table",
+      "generator": "03_preprocess.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "sanity_checks.csv",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/files/sanity_checks.csv",
+      "source_path": "results/tables/official/sanity_checks.csv",
+      "size_bytes": 1044,
+      "sha256": "685ce6c04fcad54dedd4a21d860289473dc9645baa5bd18b466d044c7a0c49f2",
+      "file_type": "table",
+      "generator": "03_preprocess.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "02_cleaning_funnel.png",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/figures/02_cleaning_funnel.png",
+      "source_path": "results/figures/official/02_cleaning_funnel.png",
+      "size_bytes": 106994,
+      "sha256": "388803315c283f9aca2197e48508f49b0fb9b60ebde20ba00299bfa5bbe3eea9",
+      "file_type": "figure",
+      "generator": "notebooks/02",
+      "is_by_reference": false
+    },
+    {
+      "name": "02_cleaning_funnel.svg",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/figures/02_cleaning_funnel.svg",
+      "source_path": "results/figures/official/02_cleaning_funnel.svg",
+      "size_bytes": 70722,
+      "sha256": "b6b6d89bf936eefbdd4452787b074810393d5026506a756194a1f0a8aed84647",
+      "file_type": "figure",
+      "generator": "notebooks/02",
+      "is_by_reference": false
+    },
+    {
+      "name": "02_label_comparison.png",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/figures/02_label_comparison.png",
+      "source_path": "results/figures/official/02_label_comparison.png",
+      "size_bytes": 162699,
+      "sha256": "e7ca818bc4edeb9df28e8c16323955064192960644610a2f96eb8f1caad648cb",
+      "file_type": "figure",
+      "generator": "notebooks/02",
+      "is_by_reference": false
+    },
+    {
+      "name": "02_label_comparison.svg",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/figures/02_label_comparison.svg",
+      "source_path": "results/figures/official/02_label_comparison.svg",
+      "size_bytes": 71301,
+      "sha256": "a87818bcba2fdb0f2d228db7753466b15a8ae64c71f25e70bcc70c7c61a475e5",
+      "file_type": "figure",
+      "generator": "notebooks/02",
+      "is_by_reference": false
+    },
+    {
+      "name": "02_possession_length_dist.png",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/figures/02_possession_length_dist.png",
+      "source_path": "results/figures/official/02_possession_length_dist.png",
+      "size_bytes": 80432,
+      "sha256": "62417613a9443b6622a1dea6e5fc8de10778a11be579a28d8277c579f086396a",
+      "file_type": "figure",
+      "generator": "notebooks/02",
+      "is_by_reference": false
+    },
+    {
+      "name": "02_possession_length_dist.svg",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/figures/02_possession_length_dist.svg",
+      "source_path": "results/figures/official/02_possession_length_dist.svg",
+      "size_bytes": 70008,
+      "sha256": "01d9dd1cde9d6b1553873abf3c7fb58573b1aff5ac0b7b13e179088f49cd2437",
+      "file_type": "figure",
+      "generator": "notebooks/02",
+      "is_by_reference": false
+    },
+    {
+      "name": "preprocessing_report.md",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/reports/preprocessing_report.md",
+      "source_path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/reports/preprocessing_report.md",
+      "size_bytes": 621,
+      "sha256": "c61eff89d135ec450b75fae1f17682139acaa4d00d243758df7d1326780898bc",
+      "file_type": "report",
+      "generator": "report",
+      "is_by_reference": false
+    },
+    {
+      "name": "step_02_preprocessing.log",
+      "path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/logs/step_02_preprocessing.log",
+      "source_path": "outputs/step_02_preprocessing_and_labels/runs/official_evaluation_20261021_184358/logs/step_02_preprocessing.log",
+      "size_bytes": 1315,
+      "sha256": "33d286c63716bac6c3ce0c7aefc8ad177aaed34876e1ab93d1e0a3e66397a936",
+      "file_type": "log",
+      "generator": "step_02",
+      "is_by_reference": false
+    }
+  ],
+  "quality_checks": [
+    {
+      "name": "sanity_checks_pass",
+      "status": "PASS",
+      "details": "Sanity check table missing"
+    },
+    {
+      "name": "possessions_extracted",
+      "status": "PASS",
+      "details": "45,365 possessions cleaned, 261,205 passes"
+    },
+    {
+      "name": "decision_0001_status",
+      "status": "WARN",
+      "details": "Decision 0001 (shot vs goal label) is PENDING supervisor confirmation"
+    }
+  ],
+  "dependencies": [],
+  "official_eligible": true,
+  "official_eligibility_reason": "All 16 sanity checks verified PASS; pending final label approval"
+}

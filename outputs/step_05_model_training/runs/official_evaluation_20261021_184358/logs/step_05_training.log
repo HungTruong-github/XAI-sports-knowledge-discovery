@@ -1,0 +1,8 @@
+[2026-10-22T18:20:12.433695+00:00] Đã đăng ký checkpoint mô hình tốt nhất: gcn_best.pt
+[2026-10-22T18:20:12.463501+00:00] Đã đăng ký checkpoint mô hình tốt nhất: mpnn_best.pt
+[2026-10-22T18:20:12.496234+00:00] Đã đăng ký checkpoint mô hình tốt nhất: gatv2_best.pt
+[2026-10-22T18:20:12.527065+00:00] Đã đăng ký checkpoint mô hình tốt nhất: graphsage_best.pt
+[2026-10-22T18:20:12.917356+00:00] Đã đăng ký biểu đồ huấn luyện: 05_val_auc_pr_curves.png
+[2026-10-22T18:20:12.924997+00:00] Đã đăng ký biểu đồ huấn luyện: 05_val_auc_pr_curves.svg
+[2026-10-22T18:20:12.931951+00:00] Đã đăng ký biểu đồ huấn luyện: 05_training_loss_curves.png
+[2026-10-22T18:20:12.939200+00:00] Đã đăng ký biểu đồ huấn luyện: 05_training_loss_curves.svg

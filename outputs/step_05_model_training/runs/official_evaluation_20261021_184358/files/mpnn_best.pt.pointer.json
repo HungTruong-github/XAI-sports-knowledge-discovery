@@ -1,0 +1,6 @@
+{
+  "source_path": "models/official/mpnn_best.pt",
+  "size_bytes": 599809,
+  "sha256": "afe94d38981644af1d00002e46a93c5ab64cd4819e7ed91cddc7db449ffdb70b",
+  "reason": "Exceeds max size limit or heavy binary format, registered by reference"
+}

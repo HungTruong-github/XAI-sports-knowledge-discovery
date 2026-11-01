@@ -51,11 +51,11 @@ preprocessing:
                                  # (chưa cài đặt: đặt true sẽ báo lỗi, không chạy âm thầm)
 
 pitch:
-  length: 120                    # hệ quy chiếu chuẩn StatsBomb
+  length: 120                    # hệ quy chiếu chuẩn StatsBomb (120 x 80)
   width: 80
-  normalize_attack_direction: true   # mọi trận tấn công cùng một hướng (mục 2.4)
-  # StatsBomb đã chuẩn hóa sẵn hướng tấn công nên để false.
-  # Chỉ bật cho nguồn đã xác minh là CHƯA chuẩn hóa (ví dụ Wyscout).
+  normalize_attack_direction: true   # bật hàm kiểm định tính chuẩn hóa hướng tấn công (mục 2.4)
+  # StatsBomb đã chuẩn hóa sẵn hướng tấn công sang khung thành x=120, nên force_flip_misoriented=false.
+  # Chỉ bật force_flip_misoriented=true cho nguồn dữ liệu đã xác minh là CHƯA chuẩn hóa (ví dụ Wyscout).
   force_flip_misoriented: false
 
 # ------------------------------------------------------------

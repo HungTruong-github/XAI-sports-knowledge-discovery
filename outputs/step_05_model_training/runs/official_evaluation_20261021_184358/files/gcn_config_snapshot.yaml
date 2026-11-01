@@ -1,0 +1,85 @@
+seed: 42
+model_name: gcn
+smoke_test: true
+model_config:
+  name: gcn
+  type: gnn
+  num_layers: 2
+  hidden_dim: 64
+  dropout: 0.3
+  readout: mean
+  head_hidden_dim: 32
+train_config:
+  seed: 42
+  seeds:
+  - 42
+  - 123
+  - 456
+  - 789
+  - 1024
+  epochs: 200
+  batch_size: 64
+  optimizer:
+    name: adamw
+    lr: 0.001
+    weight_decay: 0.0001
+  scheduler:
+    name: reduce_on_plateau
+    monitor: val_auc_pr
+    patience: 10
+    factor: 0.5
+  loss:
+    name: null
+    pos_weight: null
+    focal_gamma: 2.0
+  early_stopping:
+    monitor: val_auc_pr
+    mode: max
+    patience: 20
+  n_runs: 5
+  tracking:
+    backend: mlflow
+    output_dir: experiments
+data_config:
+  run_name: official
+  source: statsbomb_open_data
+  competitions:
+  - name: Premier League
+    season: 2015/2016
+    competition_id: 2
+    season_id: 27
+  expected_matches: 380
+  paths:
+    raw: data/raw
+    interim: data/interim
+    processed: data/processed
+  event_types_keep:
+  - Pass
+  - Shot
+  - Carry
+  - Dribble
+  - Ball Receipt*
+  - Dispossessed
+  preprocessing:
+    min_passes_per_possession: 2
+    drop_extra_time: true
+    drop_missing_coordinates: true
+    impute_coordinates: false
+  pitch:
+    length: 120
+    width: 80
+    normalize_attack_direction: true
+    force_flip_misoriented: false
+  labeling:
+    mode: possession_level
+    target: shot
+    shot_window_seconds: null
+split_config:
+  level: match
+  ratios:
+    train: 0.7
+    val: 0.15
+    test: 0.15
+  stratify_by: positive_label_rate
+  seed: 42
+  output_dir: data/splits
