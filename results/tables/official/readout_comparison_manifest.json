@@ -1,0 +1,41 @@
+{
+  "step": "Phase 1: GNN Readout Comparison",
+  "decision_D4": "Giữ nguyên mpnn (mean pooling) làm backbone chính thức (margin cao nhất: +0.0074 < 0.01)",
+  "selected_backbone": "mpnn",
+  "mean_pooling_val_auc_pr": 0.5847,
+  "best_variant": "mpnn_lastedge",
+  "best_variant_val_auc_pr": 0.5921,
+  "margin": 0.0074,
+  "robustness": {
+    "mpnn": {
+      "auc_pr_edges_2_3": 0.568872050024359,
+      "auc_pr_edges_4_5": 0.6037180410909735,
+      "auc_pr_edges_6_plus": 0.5693205263471431,
+      "auc_pr_open_play": 0.5843260836798477
+    },
+    "mpnn_max": {
+      "auc_pr_edges_2_3": 0.5916284169155275,
+      "auc_pr_edges_4_5": 0.6080548800995788,
+      "auc_pr_edges_6_plus": 0.5804489786319594,
+      "auc_pr_open_play": 0.6027912311484622
+    },
+    "mpnn_attn": {
+      "auc_pr_edges_2_3": 0.5983353244667329,
+      "auc_pr_edges_4_5": 0.6135508021896062,
+      "auc_pr_edges_6_plus": 0.5818194022957236,
+      "auc_pr_open_play": 0.6098374536932657
+    },
+    "mpnn_lastedge": {
+      "auc_pr_edges_2_3": 0.6074086188766387,
+      "auc_pr_edges_4_5": 0.646368283543087,
+      "auc_pr_edges_6_plus": 0.6053564731865264,
+      "auc_pr_open_play": 0.6202390336402214
+    }
+  },
+  "git": {
+    "branch": "feature/08-xai-completion",
+    "commit_sha": "d0b92db86fdc1fa08303a618fa2abb67ac3227d6",
+    "clean_working_tree": false,
+    "is_git_repo": true
+  }
+}
