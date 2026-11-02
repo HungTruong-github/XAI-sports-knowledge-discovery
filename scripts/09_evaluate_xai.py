@@ -34,7 +34,6 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 from xai_football.utils.io import load_yaml, save_atomic_csv  # noqa: E402
@@ -46,6 +45,7 @@ from xai_football.utils.provenance import (  # noqa: E402
     scan_available_xai_runs,
     validate_run_manifest,
 )
+from xai_football.xai.metrics import compute_gate_d17_cluster_bootstrap  # noqa: E402
 
 logger = get_logger("evaluate_xai")
 
@@ -226,60 +226,50 @@ def main() -> int:
     summary_df = pd.read_csv(summary_file)
     logger.info("Đã tải tệp tổng hợp XAI từ: %s (%d dòng)", summary_file, len(summary_df))
 
-    # Đánh giá Cổng kiểm soát D17 nếu có tệp chi tiết xai_metrics_by_graph.csv
+    # Đánh giá Cổng kiểm soát D17 bằng Paired Clustered Bootstrap theo match_id
     detailed_file = target_dir / "xai_metrics_by_graph.csv"
     gate_d17_passed = False
     gate_d17_info = {}
     if detailed_file.exists():
         by_graph_df = pd.read_csv(detailed_file)
-        # Tính delta fidelity: (Fidelity+ - Fidelity-)
-        by_graph_df["delta_fid"] = by_graph_df["fidelity_plus"] - by_graph_df["fidelity_minus"]
+        print("\n=== ĐÁNH GIÁ CỔNG KIỂM SOÁT GATE D17 (PAIRED CLUSTERED BOOTSTRAP BY MATCH_ID) ===")
+        try:
+            gate_d17_info = compute_gate_d17_cluster_bootstrap(by_graph_df, n_bootstraps=1000, seed=42)
+            for expl, info in gate_d17_info.items():
+                is_pass = info["gate_d17_pass"]
+                if is_pass:
+                    gate_d17_passed = True
+                print(
+                    f"[{expl}] Paired Δ(Fid+ - Fid-) vs Random: "
+                    f"Mean={info['mean_paired_diff']:+.4f}, "
+                    f"95% Cluster CI=[{info['ci_lower']:+.4f}, {info['ci_upper']:+.4f}] "
+                    f"({info['n_matches_clustered']} matches, {info['n_graphs_paired']} graphs) "
+                    f"-> {'PASS' if is_pass else 'FAIL'}"
+                )
+            logger.info("Kết quả kiểm tra Cổng Gate D17: %s", "ĐẠT (PASS)" if gate_d17_passed else "KHÔNG ĐẠT (FAIL)")
+        except Exception as exc:
+            logger.warning("Không thể chạy paired cluster bootstrap: %s", exc)
 
-        # Tìm random baseline
-        rand_sub = by_graph_df[by_graph_df["explainer"] == "random"]
-        rand_delta_mean = float(rand_sub["delta_fid"].mean()) if not rand_sub.empty else 0.0
+    # Phân loại rõ ràng trạng thái run và bảo vệ bảng canonical
+    sample_mode = manifest.get("sample_mode", "pilot" if "pilot" in str(target_dir).lower() else "official")
+    n_graphs_explained = int(manifest.get("n_graphs_explained", len(summary_df)))
+    is_pilot = (sample_mode == "pilot") or (n_graphs_explained < 500)
 
-        print("\n=== ĐÁNH GIÁ CỔNG KIỂM SOÁT GATE D17 ===")
-        for expl in by_graph_df["explainer"].unique():
-            if expl == "random":
-                continue
-            sub = by_graph_df[by_graph_df["explainer"] == expl]
-            n_samples = len(sub)
-            if n_samples == 0:
-                continue
-
-            # Bootstrap 95% CI cho (Delta_fid_expl - Delta_fid_rand)
-            diffs = []
-            rng = np.random.default_rng(42)
-            arr = sub["delta_fid"].values
-            for _ in range(1000):
-                boot_idx = rng.choice(len(arr), size=len(arr), replace=True)
-                diffs.append(float(np.mean(arr[boot_idx]) - rand_delta_mean))
-            ci_lower = float(np.percentile(diffs, 2.5))
-            ci_upper = float(np.percentile(diffs, 97.5))
-            mean_diff = float(np.mean(diffs))
-
-            is_pass = ci_lower > 0.0
-            print(f"[{expl}] (Fid+ - Fid-) vs Random: Mean={mean_diff:.4f}, 95% CI=[{ci_lower:.4f}, {ci_upper:.4f}] -> {'PASS' if is_pass else 'FAIL'}")
-            gate_d17_info[expl] = {
-                "mean_diff_vs_random": mean_diff,
-                "ci_lower": ci_lower,
-                "ci_upper": ci_upper,
-                "gate_d17_pass": is_pass,
-            }
-            if is_pass:
-                gate_d17_passed = True
-        logger.info("Kết quả kiểm tra Cổng Gate D17: %s", "ĐẠT (PASS)" if gate_d17_passed else "KHÔNG ĐẠT (FAIL)")
+    if is_historical:
+        provenance_status = "HISTORICAL_PROVISIONAL"
+    elif is_pilot:
+        provenance_status = "PILOT_PROVISIONAL"
+    else:
+        provenance_status = "OFFICIAL_VERIFIED"
 
     # Gắn metadata nguồn gốc vào DataFrame
     summary_df["run_id"] = run_id
     summary_df["run_name"] = manifest_run_name
+    summary_df["sample_mode"] = sample_mode
     summary_df["split"] = split
     summary_df["git_commit"] = commit_sha[:8]
     summary_df["checkpoint_sha256"] = checkpoint_sha[:8] if checkpoint_sha else "none"
-    summary_df["provenance_status"] = (
-        "HISTORICAL_PROVISIONAL" if is_historical else "OFFICIAL_VERIFIED"
-    )
+    summary_df["provenance_status"] = provenance_status
 
     tables_dir.mkdir(parents=True, exist_ok=True)
 
@@ -288,15 +278,19 @@ def main() -> int:
         out_table = tables_dir / f"xai_comparison_historical_{run_id}.csv"
         save_atomic_csv(summary_df, out_table, index=False, encoding="utf-8-sig")
         print("\n=== BẢNG ĐỐI SÁNH XAI (HISTORICAL RUN — KHÔNG PHẢI CANONICAL OFFICIAL) ===")
+    elif is_pilot:
+        out_table = tables_dir / f"xai_comparison_pilot_{run_id}.csv"
+        save_atomic_csv(summary_df, out_table, index=False, encoding="utf-8-sig")
+        print("\n=== BẢNG ĐỐI SÁNH XAI PILOT (THỬ NGHIỆM — KHÔNG GHI ĐÈ BẢNG OFFICIAL CANONICAL) ===")
     else:
         out_table = tables_dir / "xai_comparison.csv"
         save_atomic_csv(summary_df, out_table, index=False, encoding="utf-8-sig")
         print("\n=== BẢNG ĐỐI SÁNH CHẤT LƯỢNG GIẢI THÍCH XAI CHÍNH THỨC (BƯỚC 8) ===")
 
     print(summary_df.to_string(index=False))
-    print(f"\n[THÀNH CÔNG] Đã lưu an toàn kết quả đối sánh XAI vào: {out_table}")
+    print(f"\n[THÀNH CÔNG] Đã lưu kết quả đối sánh XAI vào: {out_table}")
     print(
-        f"Nguồn gốc run: run_id={run_id}, commit={commit_sha[:8]}, samples={n_graphs}, split={split}"
+        f"Nguồn gốc: run_id={run_id}, mode={sample_mode}, commit={commit_sha[:8]}, samples={n_graphs_explained}, split={split}, status={provenance_status}"
     )
 
     return 0

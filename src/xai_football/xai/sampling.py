@@ -123,8 +123,22 @@ def stratified_sample(
 
     rng = np.random.default_rng(seed)
 
-    sampled_pos = _stratified_sample_group(pos_graphs, n_pos, rng)
-    sampled_neg = _stratified_sample_group(neg_graphs, n_neg, rng)
+    # Nếu yêu cầu cân bằng (n_pos == n_neg) nhưng số lượng đồ thị dương ít hơn yêu cầu:
+    if n_pos == n_neg:
+        target_each = min(n_pos, len(pos_graphs), len(neg_graphs))
+        if target_each < n_pos:
+            logger.warning(
+                "Tập đồ thị chỉ có %d đồ thị dương (ít hơn yêu cầu %d). "
+                "Tự động điều chỉnh kích thước cân bằng mỗi lớp: %d",
+                len(pos_graphs),
+                n_pos,
+                target_each,
+            )
+        sampled_pos = _stratified_sample_group(pos_graphs, target_each, rng)
+        sampled_neg = _stratified_sample_group(neg_graphs, target_each, rng)
+    else:
+        sampled_pos = _stratified_sample_group(pos_graphs, n_pos, rng)
+        sampled_neg = _stratified_sample_group(neg_graphs, n_neg, rng)
 
     combined = sampled_pos + sampled_neg
 

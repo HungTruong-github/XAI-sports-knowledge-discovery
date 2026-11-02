@@ -132,7 +132,7 @@ class FootballGNNExplainer(BaseGraphExplainer):
                 task_level="graph",
                 return_type="raw",
             ),
-            node_mask_type="attributes",
+            node_mask_type="object",
             edge_mask_type="object",
         )
 

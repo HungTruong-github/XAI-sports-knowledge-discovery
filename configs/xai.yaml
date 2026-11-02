@@ -10,8 +10,8 @@ explainers:
   gnn_explainer:
     enabled: true
     explanation_type: "phenomenon"  # D5: hướng đích theo phenomenon và target=1
-    epochs: 200                    # số bước tối ưu mask cho mỗi possession
-    lr: 0.01
+    epochs: 50                     # 50 bước tối ưu mask cho mỗi possession
+    lr: 0.02
   pg_explainer:
     enabled: true
     explanation_type: "phenomenon"
@@ -54,7 +54,7 @@ sampling:
 
 # D9: Đánh giá độ ổn định
 stability:
-  n_samples: 100                   # 100 đồ thị
+  n_samples: 25                    # 25 đồ thị cho phân tích độ ổn định
   n_repeats: 5                     # 5 lần lặp
   noise_std: 0.01                  # Gaussian noise 0.01 trên node features
   metric: "jaccard"

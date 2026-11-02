@@ -383,3 +383,94 @@ def evaluate_explanation_quality(
         "insertion_auc": curves["insertion_auc"],
         "roar": "not_run",  # D10: ghi nhận not_run
     }
+
+
+def compute_gate_d17_cluster_bootstrap(
+    by_graph_df: Any,
+    n_bootstraps: int = 1000,
+    seed: int = 42,
+    alpha: float = 0.05,
+) -> dict[str, dict[str, Any]]:
+    """Tính toán kiểm định Cổng chất lượng Gate D17 bằng Paired Clustered Bootstrap theo match_id.
+
+    Tham chiếu: docs/decisions/0006-giao-thuc-xai.md (Quyết định D17).
+
+    Quy tắc D17:
+        1. Trên mỗi đồ thị g, tính delta_fid = fidelity_plus - fidelity_minus.
+        2. Tính chênh lệch ghép cặp D(g) = delta_fid_expl(g) - delta_fid_rand(g) trên CÙNG đồ thị.
+        3. Phân cụm đồ thị theo match_id.
+        4. Cluster bootstrap bằng cách lấy mẫu lại match_id có hoàn lại (sampling with replacement).
+        5. Thu thập toàn bộ đồ thị thuộc các trận được chọn và tính giá trị trung bình chênh lệch ghép cặp.
+        6. Khoảng tin cậy (1 - alpha) lấy từ phân vị phân phối bootstrap.
+        7. Cổng đạt (PASS) khi và chỉ khi cận dưới CI > 0.
+
+    Args:
+        by_graph_df: DataFrame chi tiết từng đồ thị chứa match_id, explainer, fidelity_plus, fidelity_minus.
+        n_bootstraps: Số lần lấy mẫu bootstrap (mặc định 1000).
+        seed: Seed sinh số ngẫu nhiên (mặc định 42).
+        alpha: Mức ý nghĩa thống kê (mặc định 0.05 -> khoảng tin cậy 95%).
+
+    Returns:
+        Dict chứa kết quả kiểm định cho từng explainer.
+    """
+    import pandas as pd
+
+    df = by_graph_df.copy()
+    df["delta_fid"] = df["fidelity_plus"] - df["fidelity_minus"]
+
+    merge_keys = [c for c in ["match_id", "possession_id", "graph_index"] if c in df.columns]
+    if not merge_keys:
+        merge_keys = ["match_id"]
+
+    rand_df = df[df["explainer"] == "random"][merge_keys + ["delta_fid"]].rename(
+        columns={"delta_fid": "delta_fid_rand"}
+    )
+    if rand_df.empty:
+        raise ValueError("DataFrame không chứa kết quả của 'random' explainer để đối sánh ghép cặp.")
+
+    # Tránh trùng lặp khóa ghép cặp nếu có
+    rand_df = rand_df.drop_duplicates(subset=merge_keys)
+
+    results = {}
+    rng = np.random.default_rng(seed)
+
+    for expl in df["explainer"].unique():
+        if expl == "random":
+            continue
+
+        expl_df = df[df["explainer"] == expl][merge_keys + ["delta_fid"]].rename(
+            columns={"delta_fid": "delta_fid_expl"}
+        ).drop_duplicates(subset=merge_keys)
+
+        merged = pd.merge(expl_df, rand_df, on=merge_keys, how="inner")
+        if len(merged) == 0:
+            continue
+
+        merged["paired_diff"] = merged["delta_fid_expl"] - merged["delta_fid_rand"]
+        match_ids = merged["match_id"].unique()
+        n_matches = len(match_ids)
+
+        # Ánh xạ match_id sang mảng paired_diff của trận đó
+        match_to_diffs = {m: merged[merged["match_id"] == m]["paired_diff"].values for m in match_ids}
+
+        boot_means = []
+        for _ in range(n_bootstraps):
+            sampled_matches = rng.choice(match_ids, size=n_matches, replace=True)
+            all_diffs = np.concatenate([match_to_diffs[m] for m in sampled_matches])
+            boot_means.append(float(np.mean(all_diffs)))
+
+        ci_lower = float(np.percentile(boot_means, 100 * (alpha / 2)))
+        ci_upper = float(np.percentile(boot_means, 100 * (1 - alpha / 2)))
+        mean_diff = float(np.mean(merged["paired_diff"]))
+        is_pass = ci_lower > 0.0
+
+        results[expl] = {
+            "n_graphs_paired": len(merged),
+            "n_matches_clustered": int(n_matches),
+            "mean_paired_diff": round(mean_diff, 4),
+            "ci_lower": round(ci_lower, 4),
+            "ci_upper": round(ci_upper, 4),
+            "gate_d17_pass": is_pass,
+        }
+
+    return results
