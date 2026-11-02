@@ -1,0 +1,6 @@
+{
+  "source_path": "models/official/graphsage_best.pt",
+  "size_bytes": 150325,
+  "sha256": "97c63c017bed0717f24245f9032578f6295a054783c2f8df91cc85cff29a648c",
+  "reason": "Exceeds max size limit or heavy binary format, registered by reference"
+}

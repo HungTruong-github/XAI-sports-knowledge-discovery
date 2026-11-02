@@ -1,0 +1,14 @@
+[2026-10-22T18:20:13.249382+00:00] Đã đăng ký bảng đánh giá: model_comparison.csv
+[2026-10-22T18:20:13.256039+00:00] Đã đăng ký bảng đánh giá: val_model_comparison.csv
+[2026-10-22T18:20:13.263911+00:00] Đã đăng ký bảng đánh giá: baseline_comparison.csv
+[2026-10-22T18:20:13.271028+00:00] Đã đăng ký bảng đánh giá: val_baseline_comparison.csv
+[2026-10-22T18:20:13.278720+00:00] Đã đăng ký bảng đánh giá: model_metric_ci.csv
+[2026-10-22T18:20:13.287017+00:00] Đã đăng ký bảng đánh giá: significance_tests.csv
+[2026-10-22T18:20:13.292906+00:00] Đã đăng ký manifest: experiment_manifest.json
+[2026-10-22T18:20:13.300082+00:00] Đã đăng ký manifest: evaluation_manifest.json
+[2026-10-22T18:20:13.308167+00:00] Đã đăng ký biểu đồ: 06_model_auc_comparison.png
+[2026-10-22T18:20:13.313976+00:00] Đã đăng ký biểu đồ: 06_model_auc_comparison.svg
+[2026-10-22T18:20:13.324287+00:00] Đã đăng ký biểu đồ: 06_pr_roc_curves.png
+[2026-10-22T18:20:13.331630+00:00] Đã đăng ký biểu đồ: 06_pr_roc_curves.svg
+[2026-10-22T18:20:13.340615+00:00] Đã đăng ký biểu đồ: 06_brier_score_comparison.png
+[2026-10-22T18:20:13.349109+00:00] Đã đăng ký biểu đồ: 06_brier_score_comparison.svg

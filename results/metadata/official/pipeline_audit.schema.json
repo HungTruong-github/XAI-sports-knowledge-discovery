@@ -1,0 +1,182 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PipelineAuditReport",
+  "description": "Schema kiểm toán độc lập cho Pipeline Bước 0–6 của XAI-Football",
+  "type": "object",
+  "required": [
+    "repository",
+    "branch",
+    "commit_sha",
+    "audit_timestamp",
+    "environment",
+    "config_hashes",
+    "split_fingerprint",
+    "steps",
+    "checks",
+    "evidence_paths",
+    "commands",
+    "exit_codes",
+    "issues",
+    "limitations",
+    "overall_status"
+  ],
+  "properties": {
+    "repository": {
+      "type": "string"
+    },
+    "branch": {
+      "type": "string"
+    },
+    "commit_sha": {
+      "type": "string"
+    },
+    "audit_timestamp": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "os": { "type": "string" },
+        "python_version": { "type": "string" },
+        "architecture": { "type": "string" },
+        "packages": { "type": "object" },
+        "cuda_available": { "type": "boolean" },
+        "cuda_device_name": { "type": "string" },
+        "git": { "type": "object" }
+      },
+      "required": ["os", "python_version", "git"]
+    },
+    "config_hashes": {
+      "type": "object"
+    },
+    "dataset_fingerprint": {
+      "type": ["string", "null"]
+    },
+    "split_fingerprint": {
+      "type": "string"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "step",
+          "name",
+          "implementation_status",
+          "verification_status",
+          "research_approval_status",
+          "implementation_score",
+          "verification_score",
+          "overall_step_status",
+          "evidence_paths",
+          "details"
+        ],
+        "properties": {
+          "step": { "type": "integer" },
+          "name": { "type": "string" },
+          "implementation_status": {
+            "type": "string",
+            "enum": ["PASS", "PARTIAL", "FAIL", "BLOCKED", "NOT_VERIFIED"]
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": ["PASS", "PARTIAL", "FAIL", "BLOCKED", "NOT_VERIFIED"]
+          },
+          "research_approval_status": {
+            "type": "string",
+            "enum": ["APPROVED", "PENDING", "BLOCKED", "NOT_APPLICABLE"]
+          },
+          "implementation_score": { "type": "number", "minimum": 0, "maximum": 10 },
+          "verification_score": { "type": "number", "minimum": 0, "maximum": 10 },
+          "overall_step_status": {
+            "type": "string",
+            "enum": ["PASS", "PARTIAL", "FAIL", "BLOCKED", "NOT_VERIFIED"]
+          },
+          "evidence_paths": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "details": { "type": "string" },
+          "limitations": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "step",
+          "status",
+          "details",
+          "evidence_paths",
+          "expected",
+          "observed",
+          "command_or_source"
+        ],
+        "properties": {
+          "name": { "type": "string" },
+          "step": { "type": "integer" },
+          "status": {
+            "type": "string",
+            "enum": ["PASS", "PARTIAL", "FAIL", "BLOCKED", "NOT_VERIFIED", "WARN"]
+          },
+          "details": { "type": "string" },
+          "evidence_paths": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "expected": { "type": ["string", "number", "boolean", "null"] },
+          "observed": { "type": ["string", "number", "boolean", "null"] },
+          "command_or_source": { "type": "string" },
+          "timestamp": { "type": "string" }
+        }
+      }
+    },
+    "evidence_paths": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "command": { "type": "string" },
+          "description": { "type": "string" },
+          "exit_code": { "type": "integer" }
+        }
+      }
+    },
+    "exit_codes": {
+      "type": "object"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "step", "severity", "description", "status", "resolution"],
+        "properties": {
+          "id": { "type": "string" },
+          "step": { "type": "integer" },
+          "severity": { "type": "string", "enum": ["HIGH", "MEDIUM", "LOW"] },
+          "description": { "type": "string" },
+          "status": { "type": "string", "enum": ["RESOLVED", "OPEN", "BLOCKED", "DOCUMENTED"] },
+          "resolution": { "type": "string" }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": ["PASS", "PARTIAL", "FAIL", "BLOCKED", "NOT_VERIFIED"]
+    }
+  }
+}

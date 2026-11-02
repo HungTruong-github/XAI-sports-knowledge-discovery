@@ -1,0 +1,6 @@
+{
+  "source_path": "data/processed/official/graph_index.parquet",
+  "size_bytes": 420677,
+  "sha256": "7a07f557203b284b36bb321cf9df5134ec57a0fdaa37c5784a1e1b9c5623b2c5",
+  "reason": "Exceeds max size limit or heavy binary format, registered by reference"
+}

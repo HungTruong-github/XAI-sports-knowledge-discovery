@@ -22,14 +22,14 @@ from ..utils.paths import INTERIM_DIR, RAW_DIR, ensure_dir
 logger = get_logger(__name__)
 
 
-def _name(value: Any) -> str | None:
+def extract_name(value: Any) -> str | None:
     """Lấy tên từ trường StatsBomb có thể là dict {'id','name'} hoặc chuỗi."""
     if isinstance(value, dict):
         return value.get("name")
     return value
 
 
-def _id(value: Any) -> int | None:
+def extract_id(value: Any) -> int | None:
     """Lấy id từ trường StatsBomb có thể là dict {'id','name'} hoặc int."""
     if isinstance(value, dict):
         v = value.get("id")
@@ -39,10 +39,16 @@ def _id(value: Any) -> int | None:
     return None
 
 
-def _nested(event: dict[str, Any], group: str, key: str) -> Any:
+def extract_nested(event: dict[str, Any], group: str, key: str) -> Any:
     """Đọc event[group][key], trả None nếu thiếu bất kỳ cấp nào."""
     sub = event.get(group)
     return sub.get(key) if isinstance(sub, dict) else None
+
+
+# Backward-compatible aliases
+_name = extract_name
+_id = extract_id
+_nested = extract_nested
 
 
 def canonicalize_event(event: dict[str, Any], match_id: int) -> dict[str, Any]:

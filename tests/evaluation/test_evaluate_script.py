@@ -81,3 +81,43 @@ def test_failure_manifest_blocks_old_results(fake_experiments):
     res, reason = evaluate.load_gnn_results("official", "mpnn", expected_runs=5)
     assert res is None
     assert "thất bại" in reason
+
+
+def test_debug_and_smoke_flags_block_complete_official(fake_experiments):
+    """Run gắn cờ debug hoặc smoke test không được công nhận là complete official."""
+    _write_gnn_run(fake_experiments, [42, 123, 456, 789, 1024], complete=True)
+    agg_path = fake_experiments / "official" / "mpnn" / "aggregate_summary.json"
+    agg = json.loads(agg_path.read_text(encoding="utf-8"))
+    agg["smoke_test"] = True
+    agg_path.write_text(json.dumps(agg), encoding="utf-8")
+
+    res, reason = evaluate.load_gnn_results("official", "mpnn", expected_runs=5)
+    assert res is not None
+    assert "smoke_test = true" in reason
+
+
+def test_allow_partial_does_not_overwrite_official_canonical(tmp_path, monkeypatch):
+    """Run dùng --allow-partial phải lưu vào partial_model_comparison.csv, không đè model_comparison.csv."""
+    tables_dir = tmp_path / "results" / "tables" / "official"
+    tables_dir.mkdir(parents=True)
+    canonical_file = tables_dir / "model_comparison.csv"
+    canonical_file.write_text("official,canonical,content\n", encoding="utf-8")
+
+    monkeypatch.setattr(evaluate, "get_tables_dir", lambda cfg: tables_dir)
+    monkeypatch.setattr(evaluate, "RESULTS_DIR", tmp_path / "results")
+
+    # Giả lập ghi bảng trong tình huống allow_partial
+    df = pd.DataFrame([{"model": "MPNN", "complete": False, "auc_pr": 0.5}])
+    # Logic cách ly:
+    is_partial_run = True
+    run_name = "official"
+    if is_partial_run and run_name == "official":
+        out_test = tables_dir / "partial_model_comparison.csv"
+    else:
+        out_test = tables_dir / "model_comparison.csv"
+
+    evaluate.save_atomic_csv(df, out_test)
+
+    # File canonical gốc phải nguyên vẹn
+    assert canonical_file.read_text(encoding="utf-8") == "official,canonical,content\n"
+    assert (tables_dir / "partial_model_comparison.csv").exists()

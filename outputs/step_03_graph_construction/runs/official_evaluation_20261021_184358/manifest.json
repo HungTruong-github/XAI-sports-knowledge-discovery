@@ -1,0 +1,178 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "official_evaluation_20261021_184358",
+  "step_id": "step_03",
+  "step_name": "Graph Construction",
+  "status": "VERIFIED",
+  "started_at": "2026-10-22T18:20:11.793219+00:00",
+  "finished_at": "2026-10-22T18:20:11.793219+00:00",
+  "command_or_entrypoint": "scripts/04_build_graphs.py --config configs/data.yaml",
+  "exit_code": 0,
+  "git": {
+    "branch": "Clean",
+    "commit_sha": "7d9e0f8fa249249605752834a485726247affc0e",
+    "clean_working_tree": false
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python_version": "3.12.0",
+    "architecture": "AMD64",
+    "packages": {
+      "torch": "2.14.0+cpu",
+      "torch_geometric": "2.8.0.post1",
+      "pandas": "3.0.1",
+      "numpy": "2.5.4",
+      "scikit-learn": "not installed"
+    }
+  },
+  "configs": {},
+  "inputs": [
+    {
+      "name": "graphs.pt",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/files/graphs.pt.pointer.json",
+      "source_path": "data/processed/official/graphs.pt",
+      "size_bytes": 98670817,
+      "sha256": "9b39461440e38ecce35df36eeeffbc1b9b490ff03030bea37f6a464fed443b4b",
+      "file_type": "graph_dataset",
+      "generator": "04_build_graphs.py",
+      "is_by_reference": true
+    },
+    {
+      "name": "graph_index.parquet",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/files/graph_index.parquet.pointer.json",
+      "source_path": "data/processed/official/graph_index.parquet",
+      "size_bytes": 420677,
+      "sha256": "7a07f557203b284b36bb321cf9df5134ec57a0fdaa37c5784a1e1b9c5623b2c5",
+      "file_type": "graph_dataset",
+      "generator": "04_build_graphs.py",
+      "is_by_reference": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "feature_names.json",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/files/feature_names.json",
+      "source_path": "data/processed/official/feature_names.json",
+      "size_bytes": 423,
+      "sha256": "54193b660b962442fe843ad4f7e47c7a51eec418a664cac26957943ba3a2b2ed",
+      "file_type": "metadata",
+      "generator": "features.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "graph_build_report.csv",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/files/graph_build_report.csv",
+      "source_path": "results/tables/official/graph_build_report.csv",
+      "size_bytes": 361,
+      "sha256": "808f9033b200d36797396da984ca107fe659e57adb8c01c985c0d13eb2a0cb00",
+      "file_type": "table",
+      "generator": "04_build_graphs.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "graph_checks.csv",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/files/graph_checks.csv",
+      "source_path": "results/tables/official/graph_checks.csv",
+      "size_bytes": 452,
+      "sha256": "e277c36cec05f5edc78e4b311a1acd06d823348257f251840f3d15f37c84944f",
+      "file_type": "table",
+      "generator": "04_build_graphs.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "graph_size_distribution.csv",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/files/graph_size_distribution.csv",
+      "source_path": "results/tables/official/graph_size_distribution.csv",
+      "size_bytes": 1348,
+      "sha256": "9b35fefe61ebc3694143dd6fcc64fa238191a09c0774f9908b0fe5eb094b0029",
+      "file_type": "table",
+      "generator": "04_build_graphs.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "03_graph_node_edge_dist.png",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/figures/03_graph_node_edge_dist.png",
+      "source_path": "results/figures/official/03_graph_node_edge_dist.png",
+      "size_bytes": 130318,
+      "sha256": "f5832e17311e8abead22822736d27c86d7c295c74134f730c7fc50fae9e479e9",
+      "file_type": "figure",
+      "generator": "notebooks/03",
+      "is_by_reference": false
+    },
+    {
+      "name": "03_graph_node_edge_dist.svg",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/figures/03_graph_node_edge_dist.svg",
+      "source_path": "results/figures/official/03_graph_node_edge_dist.svg",
+      "size_bytes": 87575,
+      "sha256": "3e97c676192e4a8d1aa726f31c890d889cf4b8896d073bce291fcf0a5279ffc4",
+      "file_type": "figure",
+      "generator": "notebooks/03",
+      "is_by_reference": false
+    },
+    {
+      "name": "03_sample_possession_graph.png",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/figures/03_sample_possession_graph.png",
+      "source_path": "results/figures/official/03_sample_possession_graph.png",
+      "size_bytes": 181389,
+      "sha256": "f0f15c10730dfcdee7f0cb0eaa44e7e3c6f89730069bee6db61c9a0f4fabe537",
+      "file_type": "figure",
+      "generator": "notebooks/03",
+      "is_by_reference": false
+    },
+    {
+      "name": "03_sample_possession_graph.svg",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/figures/03_sample_possession_graph.svg",
+      "source_path": "results/figures/official/03_sample_possession_graph.svg",
+      "size_bytes": 71343,
+      "sha256": "8208c25032884311633d51c405e7d6305c2fb9a39e7a258d2e9e923e9d61d6cb",
+      "file_type": "figure",
+      "generator": "notebooks/03",
+      "is_by_reference": false
+    },
+    {
+      "name": "graph_construction_report.md",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/reports/graph_construction_report.md",
+      "source_path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/reports/graph_construction_report.md",
+      "size_bytes": 691,
+      "sha256": "e8718144a61cc23364c7cd40302e8e5da23822ca76a803bf88dd0f9ef41662ac",
+      "file_type": "report",
+      "generator": "report",
+      "is_by_reference": false
+    },
+    {
+      "name": "step_03_graph_construction.log",
+      "path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/logs/step_03_graph_construction.log",
+      "source_path": "outputs/step_03_graph_construction/runs/official_evaluation_20261021_184358/logs/step_03_graph_construction.log",
+      "size_bytes": 802,
+      "sha256": "e2457e16350dcae2f05e389fe5c032c074c79172271d49e87f45bf1952887317",
+      "file_type": "log",
+      "generator": "step_03",
+      "is_by_reference": false
+    }
+  ],
+  "quality_checks": [
+    {
+      "name": "graph_integrity_checks",
+      "status": "PASS",
+      "details": "Graph checks verified"
+    },
+    {
+      "name": "feature_dimensions_consistent",
+      "status": "PASS",
+      "details": "Node features: 18 dims, Edge features: 6 dims"
+    },
+    {
+      "name": "no_nan_or_inf",
+      "status": "PASS",
+      "details": "0 NaN or Inf detected in graph tensors"
+    },
+    {
+      "name": "decision_0003_status",
+      "status": "WARN",
+      "details": "Decision 0003 (minimum length and truncation) is Draft/Pending"
+    }
+  ],
+  "dependencies": [],
+  "official_eligible": true,
+  "official_eligibility_reason": "All 9 graph integrity checks PASS"
+}

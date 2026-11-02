@@ -21,29 +21,12 @@ from typing import Any
 
 from ..utils.io import load_json
 from ..utils.paths import match_json_path
+from .canonicalize import extract_id, extract_name, extract_nested
 
-
-def _name(value: Any) -> str | None:
-    """Lấy tên từ một trường StatsBomb có thể là dict {'id','name'} hoặc chuỗi."""
-    if isinstance(value, dict):
-        return value.get("name")
-    return value
-
-
-def _id(value: Any) -> int | None:
-    """Lấy id từ trường StatsBomb có thể là dict {'id','name'} hoặc int."""
-    if isinstance(value, dict):
-        v = value.get("id")
-        return int(v) if v is not None else None
-    if isinstance(value, (int, float)):
-        return int(value)
-    return None
-
-
-def _nested(event: dict[str, Any], group: str, key: str) -> Any:
-    """Đọc `event[group][key]`, trả None nếu thiếu bất kỳ cấp nào."""
-    sub = event.get(group)
-    return sub.get(key) if isinstance(sub, dict) else None
+# Backward-compatible aliases
+_name = extract_name
+_id = extract_id
+_nested = extract_nested
 
 
 @dataclass

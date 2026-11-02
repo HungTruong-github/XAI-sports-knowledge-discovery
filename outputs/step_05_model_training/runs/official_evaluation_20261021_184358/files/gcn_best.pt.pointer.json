@@ -1,0 +1,6 @@
+{
+  "source_path": "models/official/gcn_best.pt",
+  "size_bytes": 92725,
+  "sha256": "ddcb10a9cb441f666ff0d7bcda5ae65766184e2a33b3ebef15535974b8699b39",
+  "reason": "Exceeds max size limit or heavy binary format, registered by reference"
+}

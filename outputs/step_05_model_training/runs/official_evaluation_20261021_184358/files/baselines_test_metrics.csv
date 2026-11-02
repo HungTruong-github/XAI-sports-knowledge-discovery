@@ -1,0 +1,4 @@
+model,tier,type,split,accuracy,precision,recall,f1,auc_roc,auc_pr,brier_score,threshold
+logistic_regression,Tier 3(a) — Non-graph Baseline,Tabular,test,0.7893,0.3532,0.6318,0.4531,0.8221,0.3378,0.1847,0.6591
+random_forest,Tier 3(a) — Non-graph Baseline,Tabular,test,0.8629,0.5027,0.7004,0.5853,0.8856,0.6188,0.0869,0.4136
+ann,Tier 3(a) — Non-graph Baseline,Tabular,test,0.8613,0.4985,0.7059,0.5843,0.8854,0.6187,0.0783,0.25

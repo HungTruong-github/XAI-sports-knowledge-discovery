@@ -1,0 +1,303 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "official_evaluation_20261021_184358",
+  "step_id": "step_05",
+  "step_name": "Model Training",
+  "status": "HISTORICAL_OFFICIAL",
+  "started_at": "2026-10-22T18:20:12.983758+00:00",
+  "finished_at": "2026-10-22T18:20:12.983758+00:00",
+  "command_or_entrypoint": "scripts/06_train.py --seeds 42,123,456,789,1024",
+  "exit_code": 0,
+  "git": {
+    "branch": "Clean",
+    "commit_sha": "7d9e0f8fa249249605752834a485726247affc0e",
+    "clean_working_tree": false
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python_version": "3.12.0",
+    "architecture": "AMD64",
+    "packages": {
+      "torch": "2.14.0+cpu",
+      "torch_geometric": "2.8.0.post1",
+      "pandas": "3.0.1",
+      "numpy": "2.5.4",
+      "scikit-learn": "not installed"
+    }
+  },
+  "configs": {},
+  "inputs": [
+    {
+      "name": "gcn_best.pt",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/gcn_best.pt.pointer.json",
+      "source_path": "models/official/gcn_best.pt",
+      "size_bytes": 92725,
+      "sha256": "ddcb10a9cb441f666ff0d7bcda5ae65766184e2a33b3ebef15535974b8699b39",
+      "file_type": "checkpoint",
+      "generator": "06_train.py",
+      "is_by_reference": true
+    },
+    {
+      "name": "mpnn_best.pt",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/mpnn_best.pt.pointer.json",
+      "source_path": "models/official/mpnn_best.pt",
+      "size_bytes": 599809,
+      "sha256": "afe94d38981644af1d00002e46a93c5ab64cd4819e7ed91cddc7db449ffdb70b",
+      "file_type": "checkpoint",
+      "generator": "06_train.py",
+      "is_by_reference": true
+    },
+    {
+      "name": "gatv2_best.pt",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/gatv2_best.pt.pointer.json",
+      "source_path": "models/official/gatv2_best.pt",
+      "size_bytes": 161461,
+      "sha256": "32ae6e050efa51de1f915520abcf4f243b835608666741baa4e84fa7a8ba376b",
+      "file_type": "checkpoint",
+      "generator": "06_train.py",
+      "is_by_reference": true
+    },
+    {
+      "name": "graphsage_best.pt",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/graphsage_best.pt.pointer.json",
+      "source_path": "models/official/graphsage_best.pt",
+      "size_bytes": 150325,
+      "sha256": "97c63c017bed0717f24245f9032578f6295a054783c2f8df91cc85cff29a648c",
+      "file_type": "checkpoint",
+      "generator": "06_train.py",
+      "is_by_reference": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "gcn_training_history.csv",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/gcn_training_history.csv",
+      "source_path": "experiments/official/gcn/training_history.csv",
+      "size_bytes": 140,
+      "sha256": "d6c68890c5b638907d3d463f91e2150c4d5388086ab653c4fdc6c9776bb0a816",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "gcn_validation_metrics.csv",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/gcn_validation_metrics.csv",
+      "source_path": "experiments/official/gcn/validation_metrics.csv",
+      "size_bytes": 178,
+      "sha256": "63534288e5b0f143e160b24e95538e999ac16fe2614679c2e0f05818ae69b87c",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "gcn_test_metrics.csv",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/gcn_test_metrics.csv",
+      "source_path": "experiments/official/gcn/test_metrics.csv",
+      "size_bytes": 114,
+      "sha256": "3ee8ea4495437fd353b5332815e4b9c89dba935de7d56f1ed85818abd96d6970",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "gcn_run_manifest.json",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/gcn_run_manifest.json",
+      "source_path": "experiments/official/gcn/run_manifest.json",
+      "size_bytes": 720,
+      "sha256": "12792240e241f6d22c6d7a758071379fd00d985e977c83a110e7ce30f6614c96",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "gcn_config_snapshot.yaml",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/gcn_config_snapshot.yaml",
+      "source_path": "experiments/official/gcn/config_snapshot.yaml",
+      "size_bytes": 1593,
+      "sha256": "1e7e3f155cd10e0602db626ee21667224d86e3bd6ea5589492ced080a26e1c68",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "mpnn_training_history.csv",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/mpnn_training_history.csv",
+      "source_path": "experiments/official/mpnn/training_history.csv",
+      "size_bytes": 372,
+      "sha256": "b41d1a9a907d444f2fe888243ddb029e3431d1ce615fb2cc5ca5484583ed8c8f",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "mpnn_test_metrics.csv",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/mpnn_test_metrics.csv",
+      "source_path": "experiments/official/mpnn/test_metrics.csv",
+      "size_bytes": 117,
+      "sha256": "197e30f9238c03a7a28e6ee2129bd15c81fa0266a2321be877b0ec095aaaf320",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "gatv2_training_history.csv",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/gatv2_training_history.csv",
+      "source_path": "experiments/official/gatv2/training_history.csv",
+      "size_bytes": 375,
+      "sha256": "06c94b75e75bff8accafcf71d2aa7edee66839aad0c986a87f5212d3677bccef",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "gatv2_test_metrics.csv",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/gatv2_test_metrics.csv",
+      "source_path": "experiments/official/gatv2/test_metrics.csv",
+      "size_bytes": 118,
+      "sha256": "f60d450386a7e5de3c2a77c11939bfadaecc66d3a9d4484461fdc27a59de5e08",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "graphsage_training_history.csv",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/graphsage_training_history.csv",
+      "source_path": "experiments/official/graphsage/training_history.csv",
+      "size_bytes": 374,
+      "sha256": "4d77d1f525a1d4bce3e11c4ccee231901a5ea7b002c6c4c7b4af4e56b4dedf4b",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "graphsage_test_metrics.csv",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/graphsage_test_metrics.csv",
+      "source_path": "experiments/official/graphsage/test_metrics.csv",
+      "size_bytes": 119,
+      "sha256": "cca7b325cfaf1457227bbc67723517966e226ef12431d8818b77de4e1d1c9bb3",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "baselines_aggregate_summary.json",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/baselines_aggregate_summary.json",
+      "source_path": "experiments/official/baselines/aggregate_summary.json",
+      "size_bytes": 4276,
+      "sha256": "64419a4dd6d9c76d2050310d283adf0eb5f33306186731b93f39c35e6301ebca",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "baselines_validation_metrics.csv",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/baselines_validation_metrics.csv",
+      "source_path": "experiments/official/baselines/validation_metrics.csv",
+      "size_bytes": 451,
+      "sha256": "c7ad32c5698424d192f31931911bbecde32b3d59d772b03b03d44235792734e4",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "baselines_test_metrics.csv",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/baselines_test_metrics.csv",
+      "source_path": "experiments/official/baselines/test_metrics.csv",
+      "size_bytes": 434,
+      "sha256": "40b2860b598b068aaf033947743c42abe745cfe5c4aeca2cafe2041da784284e",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "baselines_run_manifest.json",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/files/baselines_run_manifest.json",
+      "source_path": "experiments/official/baselines/run_manifest.json",
+      "size_bytes": 619,
+      "sha256": "df9d9822f6c2b2ebee3dfef25aa71ebb167532ef821b58fba6f573ca736f79bf",
+      "file_type": "training_log",
+      "generator": "06_train.py",
+      "is_by_reference": false
+    },
+    {
+      "name": "05_val_auc_pr_curves.png",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/figures/05_val_auc_pr_curves.png",
+      "source_path": "results/figures/official/05_val_auc_pr_curves.png",
+      "size_bytes": 529842,
+      "sha256": "c3812835c6c34853e2e980df18053117a475f3a097774f9c130c990ddce19b14",
+      "file_type": "figure",
+      "generator": "notebooks/05",
+      "is_by_reference": false
+    },
+    {
+      "name": "05_val_auc_pr_curves.svg",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/figures/05_val_auc_pr_curves.svg",
+      "source_path": "results/figures/official/05_val_auc_pr_curves.svg",
+      "size_bytes": 127554,
+      "sha256": "df006e21b4040d1ae7afb3cd40bffaed93aa05b0ae5d7699dff657cad6e28f02",
+      "file_type": "figure",
+      "generator": "notebooks/05",
+      "is_by_reference": false
+    },
+    {
+      "name": "05_training_loss_curves.png",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/figures/05_training_loss_curves.png",
+      "source_path": "results/figures/official/05_training_loss_curves.png",
+      "size_bytes": 145468,
+      "sha256": "c07c9db78181cb02736cce0ef67a4c25834d86dc0fff948b28f80b66b7f80f55",
+      "file_type": "figure",
+      "generator": "notebooks/05",
+      "is_by_reference": false
+    },
+    {
+      "name": "05_training_loss_curves.svg",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/figures/05_training_loss_curves.svg",
+      "source_path": "results/figures/official/05_training_loss_curves.svg",
+      "size_bytes": 49310,
+      "sha256": "7595ff1faf50dceb34fbd1556607633e65ba0a81aadf8c812084f8352d09ad2b",
+      "file_type": "figure",
+      "generator": "notebooks/05",
+      "is_by_reference": false
+    },
+    {
+      "name": "training_report.md",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/reports/training_report.md",
+      "source_path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/reports/training_report.md",
+      "size_bytes": 726,
+      "sha256": "fea75df7e08c6dc1fc49d4be3304601abc4d1ba0bd401bac9232060f3a9840ce",
+      "file_type": "report",
+      "generator": "report",
+      "is_by_reference": false
+    },
+    {
+      "name": "step_05_training.log",
+      "path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/logs/step_05_training.log",
+      "source_path": "outputs/step_05_model_training/runs/official_evaluation_20261021_184358/logs/step_05_training.log",
+      "size_bytes": 835,
+      "sha256": "8888785964611f9aedc18736a1ed0c975bbaacbf2a90ddd9bb79a29fa56fd59a",
+      "file_type": "log",
+      "generator": "step_05",
+      "is_by_reference": false
+    }
+  ],
+  "quality_checks": [
+    {
+      "name": "multi_seed_complete",
+      "status": "PASS",
+      "details": "5 seeds trained for all 4 GNNs (42, 123, 456, 789, 1024)"
+    },
+    {
+      "name": "best_checkpoints_preserved",
+      "status": "PASS",
+      "details": "Best models saved based on Validation AUC-PR"
+    },
+    {
+      "name": "baseline_models_trained",
+      "status": "PASS",
+      "details": "Logistic Regression, Random Forest, ANN trained across 5 seeds"
+    }
+  ],
+  "dependencies": [],
+  "official_eligible": true,
+  "official_eligibility_reason": "Full 5-seed training across 4 GNNs and 3 baselines completed and verified"
+}

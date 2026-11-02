@@ -1,0 +1,32 @@
+{
+  "model_name": "gcn",
+  "seed": 42,
+  "best_epoch": 1,
+  "best_val_metric": 0.159,
+  "threshold_strategy": "val_optimal",
+  "threshold": 0.4591,
+  "training_time_seconds": 0.33,
+  "timestamp": "2026-10-16T12:59:45.963618+00:00",
+  "validation_metrics": {
+    "accuracy": 0.28,
+    "precision": 0.1818,
+    "recall": 1.0,
+    "f1": 0.3077,
+    "auc_roc": 0.4643,
+    "auc_pr": 0.159,
+    "brier_score": 0.2257,
+    "threshold": 0.4591,
+    "loss": 1.1231
+  },
+  "test_metrics": {
+    "accuracy": 0.34,
+    "precision": 0.1667,
+    "recall": 0.6667,
+    "f1": 0.2667,
+    "auc_roc": 0.3713,
+    "auc_pr": 0.152,
+    "brier_score": 0.2275,
+    "threshold": 0.4591,
+    "loss": 1.1912
+  }
+}
