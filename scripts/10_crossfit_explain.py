@@ -47,6 +47,9 @@ def main() -> int:
     parser.add_argument("--explainer", default="pg_explainer", help="Explainer sử dụng cho out-of-fold (pg_explainer hoặc gnn_explainer)")
     parser.add_argument("--max-graphs-per-match", type=int, default=40)
     parser.add_argument("--min-edges", type=int, default=4)
+    parser.add_argument("--model-dir", default="models/crossfit", help="Thư mục chứa checkpoints của các fold")
+    parser.add_argument("--target-matches-file", default=None, help="Tệp split JSON chứa các trận đấu đích cần giải thích (ví dụ: Set B)")
+    parser.add_argument("--target-split-key", default=None, help="Key trong tệp split JSON chứa danh sách trận (ví dụ: set_b)")
     parser.add_argument("--output-dir", default="results/xai/crossfit")
     parser.add_argument("--device", default=None)
     args = parser.parse_args()
@@ -58,6 +61,20 @@ def main() -> int:
 
     with open(split_path, encoding="utf-8") as f:
         crossfit_meta = json.load(f)
+
+    # Nếu chỉ định target matches riêng (ví dụ Set B giải thích bằng mô hình Set A)
+    override_test_mids: set[int] | None = None
+    if args.target_matches_file:
+        t_path = Path(args.target_matches_file)
+        if t_path.exists():
+            with open(t_path, encoding="utf-8") as f:
+                t_data = json.load(f)
+            key = args.target_split_key or "matches"
+            if key in t_data and isinstance(t_data[key], dict) and "matches" in t_data[key]:
+                override_test_mids = set(t_data[key]["matches"])
+            elif key in t_data and isinstance(t_data[key], list):
+                override_test_mids = set(t_data[key])
+            logger.info("Đã tải %d trận đấu đích từ %s (key=%s)", len(override_test_mids) if override_test_mids else 0, t_path, key)
 
     data_cfg = load_yaml(args.config)
     xai_cfg = load_yaml(args.xai_config)
@@ -82,7 +99,7 @@ def main() -> int:
     fold_manifests = {}
 
     for fold_name, fold_data in folds.items():
-        ckpt_path = Path("models/crossfit") / fold_name / "best_model.pt"
+        ckpt_path = Path(args.model_dir) / fold_name / "best_model.pt"
         if not ckpt_path.exists():
             logger.error("Không tìm thấy checkpoint %s. Hãy chạy scripts/06d_crossfit_train.py trước.", ckpt_path)
             continue
@@ -100,8 +117,11 @@ def main() -> int:
 
         explainer = build_explainer(args.explainer, model=model, xai_cfg=xai_cfg, device=device)
 
-        # Lọc đồ thị thuộc tập test_matches của fold này
-        test_mids = set(fold_data["test_matches"])
+        # Lọc đồ thị: nếu có override_test_mids (Set B), dùng mô hình Set A để giải thích Set B
+        if override_test_mids is not None:
+            test_mids = override_test_mids
+        else:
+            test_mids = set(fold_data["test_matches"])
         # Gom nhóm theo match để giới hạn max_graphs_per_match
         match_graphs: dict[int, list[Any]] = defaultdict(list)
         for g in graphs:
@@ -146,6 +166,10 @@ def main() -> int:
             "n_graphs_explained": len(fold_graphs),
             "n_matches": len(match_graphs),
         }
+
+        if override_test_mids is not None:
+            logger.info("Hoàn tất giải thích các trận đấu đích bằng mô hình của %s", fold_name)
+            break
 
     # Lưu kết quả tổng hợp Out-of-Fold
     if all_exp_rows:

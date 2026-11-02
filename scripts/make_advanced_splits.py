@@ -101,6 +101,33 @@ def main() -> int:
         json.dump(hybrid_dict, f, indent=2)
     logger.info("Đã lưu hybrid A/B split vào %s", hybrid_path)
 
+    # 3. Tạo phân chia 5-fold cross-fitting NỘI BỘ tập Set A (D15, D16)
+    set_a_sub = match_stats[match_stats["match_id"].isin(set_a_matches)].sort_values(by="match_id").reset_index(drop=True)
+    a_mids = set_a_sub["match_id"].values
+    a_strata = set_a_sub["strata"].values
+
+    set_a_crossfit_dict = {
+        "description": "5-fold match-level stratified cross-fitting split strictly WITHIN Set A (190 matches)",
+        "n_matches": len(set_a_matches),
+        "seed": 42,
+        "folds": {},
+    }
+
+    for fold_idx, (train_idx, val_idx) in enumerate(skf_5.split(a_mids, a_strata)):
+        fold_train = [int(m) for m in a_mids[train_idx]]
+        fold_val = [int(m) for m in a_mids[val_idx]]
+        set_a_crossfit_dict["folds"][f"fold_{fold_idx + 1}"] = {
+            "train_matches": fold_train,
+            "test_matches": fold_val,
+            "n_train": len(fold_train),
+            "n_test": len(fold_val),
+        }
+
+    set_a_crossfit_path = out_dir / "set_a_crossfit_5fold.json"
+    with open(set_a_crossfit_path, "w", encoding="utf-8") as f:
+        json.dump(set_a_crossfit_dict, f, indent=2)
+    logger.info("Đã lưu Set A internal crossfit split vào %s", set_a_crossfit_path)
+
     return 0
 
 

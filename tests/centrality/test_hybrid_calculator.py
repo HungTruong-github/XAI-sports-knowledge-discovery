@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from xai_football.centrality.calculator import (
+    apply_xai_shrinkage,
     compute_hybrid_centrality,
     compute_match_traditional_centrality,
     optimize_alpha_on_set_a,
@@ -40,9 +41,37 @@ def test_percentile_rank():
     ranks = percentile_rank(s)
     assert ranks.min() == 0.0
     assert ranks.max() == 1.0
-    # Thứ tự phân vị: 10 -> 0.0, 20 -> 0.333, 50 -> 0.667, 100 -> 1.0
     assert ranks.iloc[0] == 0.0
     assert ranks.iloc[3] == 1.0
+
+
+def test_apply_xai_shrinkage():
+    # Giả lập bảng điểm XAI cấp possession
+    rows = []
+    # Cầu thủ 1 có 50 lần tham gia, điểm cao 0.9
+    for _ in range(50):
+        rows.append({"player_id": 1, "mean_importance": 0.9, "mean_importance_no_last": 0.85})
+    # Cầu thủ 2 có 40 lần tham gia, điểm thấp 0.1
+    for _ in range(40):
+        rows.append({"player_id": 2, "mean_importance": 0.1, "mean_importance_no_last": 0.1})
+    # Cầu thủ 3 chỉ có 10 lần tham gia (dưới ngưỡng min_possessions=30)
+    for _ in range(10):
+        rows.append({"player_id": 3, "mean_importance": 0.95, "mean_importance_no_last": 0.9})
+
+    raw_df = pd.DataFrame(rows)
+    shrunk_df = apply_xai_shrinkage(raw_df, shrinkage_m=20.0, min_possessions=30)
+
+    # Cầu thủ 3 phải bị loại vì n < 30
+    assert len(shrunk_df) == 2
+    assert set(shrunk_df["player_id"]) == {1, 2}
+
+    p1 = shrunk_df[shrunk_df["player_id"] == 1].iloc[0]
+    p2 = shrunk_df[shrunk_df["player_id"] == 2].iloc[0]
+
+    # Điểm shrunk của P1 phải co về trung bình toàn cục (nhỏ hơn 0.9)
+    assert p1["shrunk_importance"] < 0.9
+    # Điểm shrunk của P2 phải co về trung bình toàn cục (lớn hơn 0.1)
+    assert p2["shrunk_importance"] > 0.1
 
 
 def test_compute_hybrid_centrality():
@@ -50,20 +79,23 @@ def test_compute_hybrid_centrality():
         "player_id": [1, 2, 3],
         "player_name": ["A", "B", "C"],
         "betweenness": [0.1, 0.5, 0.9],
+        "is_goalkeeper": [False, False, True],
     })
     xai_df = pd.DataFrame({
         "player_id": [1, 2, 3],
         "mean_importance": [0.8, 0.4, 0.2],
     })
 
-    # alpha = 0.5
-    hc = compute_hybrid_centrality(cent_df, xai_df, alpha=0.5)
-    assert len(hc) == 3
+    # Test exclude_goalkeepers=True
+    hc = compute_hybrid_centrality(cent_df, xai_df, alpha=0.5, exclude_goalkeepers=True)
+    # Thủ môn (player_id 3) phải bị loại
+    assert len(hc) == 2
+    assert 3 not in hc["player_id"].values
     assert "hybrid_centrality" in hc.columns
     assert (hc["hybrid_centrality"] >= 0.0).all() and (hc["hybrid_centrality"] <= 1.0).all()
 
 
-def test_optimize_alpha_on_set_a():
+def test_optimize_alpha_on_set_a_with_reliability():
     cent_df = pd.DataFrame({
         "player_id": list(range(10)),
         "player_name": [f"P{i}" for i in range(10)],
@@ -79,7 +111,18 @@ def test_optimize_alpha_on_set_a():
         "xt_per_90": np.linspace(0.01, 0.25, 10),
     })
 
-    best_alpha, curve_df = optimize_alpha_on_set_a(cent_df, xai_df, ref_df)
+    # Giả lập half_a1 và half_a2
+    h1 = cent_df.copy()
+    h1["mean_importance"] = xai_df["mean_importance"]
+    h2 = cent_df.copy()
+    h2["mean_importance"] = xai_df["mean_importance"]
+
+    best_alpha, curve_df = optimize_alpha_on_set_a(
+        cent_df, xai_df, ref_df,
+        half_a1_df=h1, half_a2_df=h2,
+        split_half_min_reliability_ratio=0.7,
+    )
     assert 0.0 <= best_alpha <= 1.0
     assert len(curve_df) > 0
-
+    assert "split_half_reliability" in curve_df.columns
+    assert "meets_reliability_constraint" in curve_df.columns

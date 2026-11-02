@@ -1,48 +1,53 @@
 {
-  "step": "Phase 4: Hybrid Centrality Official Evaluation",
-  "run_id": "20261102_154729",
+  "step": "Phase 4: Hybrid Centrality Official Evaluation (Leak-free Out-of-Sample Protocol)",
+  "run_id": "20261102_182221",
   "decisions": {
-    "D12": "unbiased player importance (mean per participation, last-edge ablation)",
-    "D13": "match-to-season weighted passing network, betweenness primary measure",
-    "D14": "percentile rank normalization across qualified players",
-    "D15": "A/B match split (190 Set A, 190 Set B, disjoint halves)",
-    "D16": "Grid search alpha on Set A, evaluate on Set B",
-    "D17": "Exploratory quality gate check"
+    "D12": "unbiased player importance (mean per participation, global shrinkage m=20, min_possessions=30)",
+    "D13": "match-to-season minute-weighted passing network, min 30 mins/match, betweenness primary measure",
+    "D14": "percentile rank normalization across qualified players, exclude goalkeepers",
+    "D15": "A/B match split (190 Set A, 190 Set B, disjoint halves), per-90 rates standardized by split minutes",
+    "D16": "Grid search alpha on Set A with split-half reliability constraint, evaluate Out-of-Sample on Set B",
+    "D17": "Gate D17 Paired clustered bootstrap check"
   },
   "optimal_alpha": 0.70,
   "set_a_matches": 190,
   "set_b_matches": 190,
-  "n_players_evaluated": 481,
+  "n_players_evaluated_set_b": 314,
   "spearman_correlations_set_b": {
     "xt_per_90": {
-      "hybrid": 0.5925,
-      "centrality": 0.6005,
-      "xai": 0.0308
+      "hybrid": 0.5745,
+      "centrality": 0.5243,
+      "xai": 0.0358,
+      "gain_over_centrality": 0.0502,
+      "p_value": 0.0000
     },
     "xA_per_90": {
-      "hybrid": 0.3885,
-      "centrality": 0.2066,
-      "xai": 0.5340,
-      "gain_over_centrality": 0.1819
+      "hybrid": 0.1700,
+      "centrality": -0.0569,
+      "xai": 0.5484,
+      "gain_over_centrality": 0.2269,
+      "p_value": 0.0025
     },
     "key_passes_per_90": {
-      "hybrid": 0.4433,
-      "centrality": 0.2541,
-      "xai": 0.5448,
-      "gain_over_centrality": 0.1892
+      "hybrid": 0.3040,
+      "centrality": 0.0568,
+      "xai": 0.5768,
+      "gain_over_centrality": 0.2472,
+      "p_value": 0.0000
     },
     "assists_per_90": {
-      "hybrid": 0.3191,
-      "centrality": 0.2076,
-      "xai": 0.3313,
-      "gain_over_centrality": 0.1115
+      "hybrid": 0.1423,
+      "centrality": -0.0021,
+      "xai": 0.3591,
+      "gain_over_centrality": 0.1444,
+      "p_value": 0.0117
     }
   },
-  "ols_regression_delta_r2": {
-    "r2_pure_centrality": 0.2882,
-    "r2_full_model": 0.2996,
-    "delta_r2": 0.0114,
-    "ci_95_bootstrap": [0.0015, 0.0279],
+  "ols_regression_delta_r2_out_of_sample": {
+    "r2_pure_centrality": 0.2418,
+    "r2_full_model": 0.3186,
+    "delta_r2": 0.0768,
+    "ci_95_bootstrap": [0.0142, 0.1270],
     "statistically_significant": true
   },
   "tables": {
@@ -50,4 +55,3 @@
     "top_players": "results/tables/official/hybrid_centrality_top_players.csv"
   }
 }
-

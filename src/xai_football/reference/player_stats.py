@@ -37,21 +37,24 @@ def _parse_time_str(t_str: str | None, default_val: float = 90.0) -> float:
 def compute_player_minutes(
     lineups_dir: Path | str = "data/raw/2/27",
     match_ids: set[int] | None = None,
+    return_match_level: bool = False,
 ) -> pd.DataFrame:
     """Tính tổng số phút thi đấu của từng cầu thủ từ các tệp *.lineups.json.
 
     Args:
         lineups_dir: Thư mục chứa các tệp lineups json của mùa giải.
         match_ids: Tập match_id cần lọc (nếu None, tính toàn bộ 380 trận).
+        return_match_level: Nếu True, trả về chi tiết từng trận [match_id, player_id, minutes, is_goalkeeper].
 
     Returns:
-        DataFrame: [player_id, player_name, team_name, minutes_played, match_count]
+        DataFrame: [player_id, player_name, team_name, minutes_played, match_count, is_goalkeeper]
     """
     p_dir = Path(lineups_dir)
     lineup_files = list(p_dir.glob("*.lineups.json"))
     if not lineup_files:
         logger.warning("Không tìm thấy tệp lineup nào tại %s", p_dir)
-        return pd.DataFrame(columns=["player_id", "player_name", "team_name", "minutes_played", "match_count"])
+        cols = ["match_id", "player_id", "minutes", "is_goalkeeper"] if return_match_level else ["player_id", "player_name", "team_name", "minutes_played", "match_count", "is_goalkeeper"]
+        return pd.DataFrame(columns=cols)
 
     rows: list[dict[str, Any]] = []
 
@@ -83,6 +86,7 @@ def compute_player_minutes(
                     continue
 
                 total_p_mins = 0.0
+                is_gk = any(pos.get("position") == "Goalkeeper" or pos.get("position_id") == 1 for pos in positions)
                 for pos in positions:
                     t_from = _parse_time_str(pos.get("from"), default_val=0.0)
                     t_to = _parse_time_str(pos.get("to"), default_val=90.0)
@@ -96,17 +100,23 @@ def compute_player_minutes(
                         "player_id": int(pid),
                         "player_name": pname,
                         "minutes": total_p_mins,
+                        "is_goalkeeper": is_gk,
                     })
 
     if not rows:
-        return pd.DataFrame(columns=["player_id", "player_name", "team_name", "minutes_played", "match_count"])
+        return pd.DataFrame(columns=["player_id", "player_name", "team_name", "minutes_played", "match_count", "is_goalkeeper"])
 
     df = pd.DataFrame(rows)
-    # Tổng hợp theo cầu thủ
-    agg = df.groupby(["player_id", "player_name"]).agg(
+    if return_match_level:
+        return df
+
+    # Tổng hợp theo duy nhất player_id để đảm bảo 1 dòng / 1 cầu thủ
+    agg = df.groupby("player_id").agg(
+        player_name=("player_name", "last"),
         team_name=("team_name", "last"),
         minutes_played=("minutes", "sum"),
         match_count=("match_id", "nunique"),
+        is_goalkeeper=("is_goalkeeper", "any"),
     ).reset_index()
 
     agg["minutes_played"] = np.round(agg["minutes_played"], 1)
@@ -186,7 +196,8 @@ def compute_player_reference_stats(
         kp_df = pd.DataFrame(columns=["player_id", "player_name", "team_name", "key_passes", "assists", "xA"])
     else:
         kp_raw = pd.DataFrame(kp_rows)
-        kp_df = kp_raw.groupby(["player_id", "player_name"]).agg(
+        kp_df = kp_raw.groupby("player_id").agg(
+            player_name=("player_name", "last"),
             team_name=("team_name", "last"),
             key_passes=("key_passes", "sum"),
             assists=("assists", "sum"),
@@ -195,9 +206,10 @@ def compute_player_reference_stats(
 
     # Ghép với số phút thi đấu nếu có
     if minutes_df is not None and not minutes_df.empty:
-        merged = pd.merge(minutes_df, kp_df, on=["player_id", "player_name"], how="left")
+        merged = pd.merge(minutes_df, kp_df, on="player_id", how="left")
+        merged["player_name"] = merged["player_name_x"].combine_first(merged["player_name_y"])
         merged["team_name"] = merged["team_name_x"].combine_first(merged["team_name_y"])
-        merged = merged.drop(columns=["team_name_x", "team_name_y"], errors="ignore")
+        merged = merged.drop(columns=["player_name_x", "player_name_y", "team_name_x", "team_name_y"], errors="ignore")
         merged["key_passes"] = merged["key_passes"].fillna(0).astype(int)
         merged["assists"] = merged["assists"].fillna(0).astype(int)
         merged["xA"] = np.round(merged["xA"].fillna(0.0), 3)
@@ -207,7 +219,7 @@ def compute_player_reference_stats(
         merged["key_passes_per_90"] = np.where(mins >= 90.0, np.round((merged["key_passes"] / mins) * 90.0, 3), 0.0)
         merged["assists_per_90"] = np.where(mins >= 90.0, np.round((merged["assists"] / mins) * 90.0, 3), 0.0)
         merged["xA_per_90"] = np.where(mins >= 90.0, np.round((merged["xA"] / mins) * 90.0, 3), 0.0)
-        return merged.sort_values(by="xA", ascending=False).reset_index(drop=True)
+        return merged.drop_duplicates(subset=["player_id"]).sort_values(by="xA", ascending=False).reset_index(drop=True)
 
-    return kp_df.sort_values(by="xA", ascending=False).reset_index(drop=True)
+    return kp_df.drop_duplicates(subset=["player_id"]).sort_values(by="xA", ascending=False).reset_index(drop=True)
 

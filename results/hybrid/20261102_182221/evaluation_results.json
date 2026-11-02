@@ -1,0 +1,134 @@
+{
+  "step": "Phase 4: Hybrid Centrality Evaluation",
+  "run_id": "20261102_182221",
+  "config": {
+    "traditional": {
+      "aggregate_level": "match_to_season_weighted",
+      "min_minutes_per_match": 30,
+      "weight_by": "pass_count",
+      "distance_by": "inverse_weight",
+      "primary_measure": "betweenness",
+      "combine_measures": "primary_betweenness",
+      "sensitivity_measures": {
+        "degree_in": true,
+        "degree_out": true,
+        "closeness": true,
+        "eigenvector": true
+      }
+    },
+    "xai_importance": {
+      "source_explainer": "pg_explainer",
+      "aggregation": "mean_with_global_shrinkage",
+      "shrinkage_m": 20,
+      "min_possessions": 30,
+      "include_last_edge_ablation": true
+    },
+    "combination": {
+      "normalization": "percentile_rank",
+      "sensitivity_normalization": "zscore",
+      "exclude_goalkeepers": true,
+      "formula": "alpha * centrality_norm + (1 - alpha) * xai_importance_norm",
+      "alpha": 0.7,
+      "alpha_search_range": [
+        0.0,
+        1.0
+      ],
+      "alpha_search_step": 0.05,
+      "alpha_selection_criterion": "spearman_xt_with_reliability_constraint",
+      "split_half_min_reliability_ratio": 0.7
+    },
+    "split_ab": {
+      "strategy": "disjoint_half_matches_per_team",
+      "seed": 42,
+      "split_file": "data/splits/hybrid_AB_split.json"
+    },
+    "validation": {
+      "compare_with_traditional_only": true,
+      "reference_metrics": [
+        "key_passes",
+        "assists",
+        "xA",
+        "xT"
+      ],
+      "correlation": "spearman"
+    }
+  },
+  "optimal_alpha_set_a": 0.7,
+  "target_selection_metric": "xt_per_90",
+  "set_a_matches": 190,
+  "set_b_matches": 190,
+  "n_players_evaluated_set_b": 313,
+  "spearman_correlations_set_b": {
+    "xt_per_90": {
+      "hybrid_centrality": {
+        "spearman": 0.5745,
+        "p_value": 0.0
+      },
+      "pure_centrality": {
+        "spearman": 0.5243,
+        "p_value": 0.0
+      },
+      "pure_xai": {
+        "spearman": 0.0358,
+        "p_value": 0.5277
+      }
+    },
+    "xA_per_90": {
+      "hybrid_centrality": {
+        "spearman": 0.17,
+        "p_value": 0.0025
+      },
+      "pure_centrality": {
+        "spearman": -0.0569,
+        "p_value": 0.3154
+      },
+      "pure_xai": {
+        "spearman": 0.5484,
+        "p_value": 0.0
+      }
+    },
+    "key_passes_per_90": {
+      "hybrid_centrality": {
+        "spearman": 0.304,
+        "p_value": 0.0
+      },
+      "pure_centrality": {
+        "spearman": 0.0568,
+        "p_value": 0.3161
+      },
+      "pure_xai": {
+        "spearman": 0.5768,
+        "p_value": 0.0
+      }
+    },
+    "assists_per_90": {
+      "hybrid_centrality": {
+        "spearman": 0.1423,
+        "p_value": 0.0117
+      },
+      "pure_centrality": {
+        "spearman": -0.0021,
+        "p_value": 0.9706
+      },
+      "pure_xai": {
+        "spearman": 0.3591,
+        "p_value": 0.0
+      }
+    }
+  },
+  "out_of_sample_ols_regression_xt": {
+    "r2_pure_centrality": 0.2418,
+    "r2_full_model": 0.3186,
+    "delta_r2": 0.0768,
+    "ci_lower": 0.0142,
+    "ci_upper": 0.127
+  },
+  "xai_source_file": "results\\xai\\crossfit\\player_importance_oof.parquet",
+  "xai_source_sha256": "c7f25cd15c11949b056a466f3f0213c464d67970943cda64cb885ab6ad584b62",
+  "git": {
+    "branch": "feature/08-xai-completion",
+    "commit_sha": "d897e9b0f6eb5182dfb47635083278374a93214f",
+    "clean_working_tree": false,
+    "is_git_repo": true
+  }
+}
