@@ -66,6 +66,7 @@ class MPNNModel(nn.Module):
         self.num_layers = num_layers
         self.edge_in_dim = edge_in_dim
         self.dropout_p = dropout
+        self.readout_name = readout.lower()
 
         self.convs = nn.ModuleList()
         # Lớp đầu tiên
@@ -79,8 +80,9 @@ class MPNNModel(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
 
         self.readout = GlobalReadout(readout, in_dim=hidden_dim)
+        head_in_dim = hidden_dim * 2 if self.readout_name == "mean_lastedge" else hidden_dim
         self.head = BinaryClassifierHead(
-            in_dim=hidden_dim,
+            in_dim=head_in_dim,
             hidden_dim=head_hidden_dim,
             dropout=dropout,
         )
@@ -115,5 +117,5 @@ class MPNNModel(nn.Module):
         batch: torch.Tensor | None = None,
     ) -> torch.Tensor:
         h = self.get_node_embeddings(x, edge_index, edge_attr)
-        graph_emb = self.readout(h, batch)
+        graph_emb = self.readout(h, batch=batch, edge_index=edge_index, edge_attr=edge_attr)
         return self.head(graph_emb)

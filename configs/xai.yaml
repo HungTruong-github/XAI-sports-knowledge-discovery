@@ -1,37 +1,71 @@
 # ============================================================
 # Bước 7-8 — Cấu hình XAI và đánh giá chất lượng giải thích
-# Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 7-8
+# Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 7-8 và docs/decisions/0006-giao-thuc-xai.md
 # ============================================================
+
+target_class: 1                # D5: luôn giải thích cho lớp 1 (có cú sút)
+min_edges: 4                   # D2: chỉ đánh giá XAI trên đồ thị có từ 4 cạnh trở lên
 
 explainers:
   gnn_explainer:
     enabled: true
-    epochs: 200            # số bước tối ưu mask cho mỗi possession
+    explanation_type: "phenomenon"  # D5: hướng đích theo phenomenon và target=1
+    epochs: 200                    # số bước tối ưu mask cho mỗi possession
     lr: 0.01
   pg_explainer:
     enabled: true
-    epochs: 30             # huấn luyện mạng giải thích chung
+    explanation_type: "phenomenon"
+    epochs: 30                     # D8: huấn luyện 30 epoch
     lr: 0.003
+    train_samples: 500             # D8: 500 đồ thị train stratified (>= 4 cạnh)
+  random_explainer:
+    enabled: true                  # D17: explainer đối chứng ngẫu nhiên
+    n_runs: 5
+  last_edge_explainer:
+    enabled: true                  # Baseline quy tắc: gán 1 cho cạnh cuối cùng
 
-# Ngưỡng cắt để lấy subgraph quan trọng
+# D6: Ngưỡng cắt để lấy subgraph quan trọng
 subgraph:
-  top_k_edges: null        # TODO: chốt sau khi khảo sát đường cong Sparsity-Fidelity
-  edge_mask_threshold: null
+  top_k_rule: "proportional"       # k = max(1, round(top_k_ratio * num_edges))
+  top_k_ratio: 0.3
+  sweep_sparsity_fidelity: true    # quét k từ 1 đến E-1 để vẽ đường cong
 
-# Bộ độ đo đã thống nhất với GV (mục 1.2b)
+# Bộ độ đo đánh giá chất lượng XAI
 metrics:
   fidelity_plus: true
   fidelity_minus: true
   sparsity: true
   stability: true
-  roar: true
+  roar: false                      # D10: đặt false, ghi nhận hạn chế ngoài phạm vi
   insertion_deletion_curve: true
 
+# D7: Kích thước mẫu thực nghiệm
+sampling:
+  seed: 42
+  pilot:
+    n_pos: 75
+    n_neg: 75
+    total: 150
+  official:
+    n_pos: 750
+    n_neg: 750
+    total: 1500
+    stratified_by: ["match_id", "size_bucket"]  # 4 cạnh, 5-6 cạnh, >=7 cạnh
+
+# D9: Đánh giá độ ổn định
 stability:
-  n_repeats: 5             # chạy lại XAI nhiều lần trên cùng possession
-  noise_std: 0.01          # thêm nhiễu nhẹ vào node/edge feature
+  n_samples: 100                   # 100 đồ thị
+  n_repeats: 5                     # 5 lần lặp
+  noise_std: 0.01                  # Gaussian noise 0.01 trên node features
+  metric: "jaccard"
+
+# D11: Cross-fitting cấp cầu thủ cho Bước 9
+cross_fitting:
+  n_folds: 5
+  seed: 42
+  max_graphs_per_match: 40         # lấy ngẫu nhiên tối đa 40 đồ thị/trận (>= 4 cạnh)
 
 # Baseline giải thích ở mức đặc trưng - Tầng 3(b)
 shap_baseline:
   enabled: true
-  target_model: "tabular"  # chạy trên baseline phi đồ thị, không phải GNN
+  target_model: "tabular"
