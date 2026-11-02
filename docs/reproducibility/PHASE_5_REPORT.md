@@ -44,3 +44,4 @@ Bảng tiến độ tại `README.md` đã được cập nhật chính thức v
 # Sinh toàn bộ 7 bộ hình ảnh trực quan hóa học thuật
 python scripts/12_generate_all_figures.py
 ```
+

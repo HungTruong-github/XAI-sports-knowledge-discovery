@@ -140,3 +140,4 @@ Do cận dưới $0.0015 > 0$, **kết quả khẳng định thành phần XAI m
 1. **Về mô hình dự đoán:** Khẳng định MPNN là kiến trúc GNN phù hợp nhất cho dữ liệu mạng chuyền bóng nhờ cơ chế nhúng đặc trưng cạnh đa chiều. Cơ chế gộp `mpnn_lastedge` mở ra hướng tiếp cận triển vọng khi đạt kết quả tiệm cận mô hình học máy phi đồ thị.
 2. **Về phương pháp giải thích:** Cung cấp bằng chứng thực nghiệm độc lập và nghiêm ngặt đầu tiên về tính chất của các phương pháp XAI trên mạng chuyền bóng, chỉ ra vai trò chi phối của hành động cuối cùng trong chuỗi dứt điểm.
 3. **Về chỉ số đề xuất:** Đã đề xuất và kiểm chứng thành công chỉ số **Hybrid Centrality** với giao thức A/B chống rò rỉ mẫu, chứng minh tính vượt trội trong việc tương quan với các chỉ số sáng tạo cơ hội thực tế ($xA/90$, $Key Passes/90$) và mang lại đóng góp gia tăng có ý nghĩa thống kê ($\Delta R^2 > 0$ ở mức 95% tin cậy).
+

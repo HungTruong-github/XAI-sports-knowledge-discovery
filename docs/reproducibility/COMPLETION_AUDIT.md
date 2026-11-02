@@ -81,3 +81,4 @@
 ## 5. KẾT LUẬN KIỂM TOÁN
 
 Toàn bộ 5 giai đoạn công việc đã được hoàn thành 100%, tuân thủ chặt chẽ các nguyên tắc kỹ thuật, đạo đức nghiên cứu và phương pháp luận thống kê. Mã nguồn sạch, không lỗi, không có bất kỳ vi phạm hay rò rỉ dữ liệu nào giữa các tập huấn luyện và kiểm thử. Repository đã sẵn sàng để nghiệm thu và đưa vào báo cáo Khóa luận tốt nghiệp.
+
