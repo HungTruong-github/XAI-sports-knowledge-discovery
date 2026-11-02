@@ -1,0 +1,53 @@
+{
+  "step": "Phase 4: Hybrid Centrality Official Evaluation",
+  "run_id": "20261102_154729",
+  "decisions": {
+    "D12": "unbiased player importance (mean per participation, last-edge ablation)",
+    "D13": "match-to-season weighted passing network, betweenness primary measure",
+    "D14": "percentile rank normalization across qualified players",
+    "D15": "A/B match split (190 Set A, 190 Set B, disjoint halves)",
+    "D16": "Grid search alpha on Set A, evaluate on Set B",
+    "D17": "Exploratory quality gate check"
+  },
+  "optimal_alpha": 0.70,
+  "set_a_matches": 190,
+  "set_b_matches": 190,
+  "n_players_evaluated": 481,
+  "spearman_correlations_set_b": {
+    "xt_per_90": {
+      "hybrid": 0.5925,
+      "centrality": 0.6005,
+      "xai": 0.0308
+    },
+    "xA_per_90": {
+      "hybrid": 0.3885,
+      "centrality": 0.2066,
+      "xai": 0.5340,
+      "gain_over_centrality": 0.1819
+    },
+    "key_passes_per_90": {
+      "hybrid": 0.4433,
+      "centrality": 0.2541,
+      "xai": 0.5448,
+      "gain_over_centrality": 0.1892
+    },
+    "assists_per_90": {
+      "hybrid": 0.3191,
+      "centrality": 0.2076,
+      "xai": 0.3313,
+      "gain_over_centrality": 0.1115
+    }
+  },
+  "ols_regression_delta_r2": {
+    "r2_pure_centrality": 0.2882,
+    "r2_full_model": 0.2996,
+    "delta_r2": 0.0114,
+    "ci_95_bootstrap": [0.0015, 0.0279],
+    "statistically_significant": true
+  },
+  "tables": {
+    "comparison": "results/tables/official/hybrid_centrality_comparison.csv",
+    "top_players": "results/tables/official/hybrid_centrality_top_players.csv"
+  }
+}
+
