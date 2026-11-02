@@ -43,7 +43,16 @@ from xai_football.xai.explainers import (  # noqa: E402
     FootballPGExplainer,
     build_explainer,
 )
-from xai_football.xai.metrics import evaluate_explanation_quality  # noqa: E402
+from xai_football.xai.metrics import (  # noqa: E402
+    compute_sparsity_fidelity_curve,
+    evaluate_explanation_quality,
+    resolve_top_k,
+)
+from xai_football.xai.sampling import (  # noqa: E402
+    get_size_bucket,
+    save_sample_manifest,
+    stratified_sample,
+)
 from xai_football.xai.shap_baseline import explain_tabular_baseline_shap  # noqa: E402
 from xai_football.xai.subgraph import (  # noqa: E402
     aggregate_player_importance,
@@ -112,13 +121,22 @@ def main() -> int:
     parser.add_argument(
         "--explainer",
         default="gnn_explainer",
-        choices=["gnn_explainer", "pg_explainer", "all"],
+        choices=["gnn_explainer", "pg_explainer", "random", "last_edge", "all"],
         help="Thuật toán giải thích",
     )
     parser.add_argument("--split", default="test", choices=["train", "val", "test"])
-    parser.add_argument("--limit", type=int, default=30, help="Số lượng đồ thị giải thích mẫu")
+    parser.add_argument(
+        "--sample-mode",
+        default=None,
+        choices=["pilot", "official", "custom", "head"],
+        help="Chế độ lấy mẫu phân tầng theo D7 (pilot=150, official=1500, head=lấy đầu)",
+    )
+    parser.add_argument("--limit", type=int, default=None, help="Số lượng đồ thị giải thích mẫu")
+    parser.add_argument("--shard-idx", type=int, default=0, help="Chỉ số shard (0-based)")
+    parser.add_argument("--num-shards", type=int, default=1, help="Tổng số shards song song")
+    parser.add_argument("--resume", action="store_true", help="Tiếp tục chạy và bỏ qua đồ thị đã có")
     parser.add_argument("--device", default=None)
-    parser.add_argument("--min-edges", type=int, default=2, help="Số cạnh tối thiểu của đồ thị XAI")
+    parser.add_argument("--min-edges", type=int, default=4, help="Số cạnh tối thiểu của đồ thị XAI (D2: min_edges=4)")
     parser.add_argument("--output-dir", default=None, help="Ghi đè thư mục kết quả")
     args = parser.parse_args()
 
@@ -154,7 +172,7 @@ def main() -> int:
     eval_graphs = [
         g
         for g in graphs
-        if int(getattr(g, "match_id", 0)) in target_mids and g.edge_index.shape[1] >= args.min_edges
+        if int(getattr(g, "match_id", 0)) in target_mids and g.edge_index is not None and g.edge_index.shape[1] >= args.min_edges
     ]
     logger.info(
         "Tìm thấy %d đồ thị trên tập %s có >= %d cạnh",
@@ -167,9 +185,40 @@ def main() -> int:
         logger.error("Không có đồ thị nào thỏa mãn điều kiện để giải thích.")
         return 1
 
-    # Giới hạn số đồ thị mẫu nếu có cờ limit
-    selected_graphs = eval_graphs[: args.limit]
-    logger.info("Chọn %d đồ thị để thực hiện giải thích XAI", len(selected_graphs))
+    # Quyết định chế độ lấy mẫu theo D7
+    sample_mode = args.sample_mode
+    if sample_mode is None:
+        if args.limit is not None and args.limit > 0:
+            sample_mode = "head"
+        else:
+            sample_mode = "pilot" if run_name == "pilot" else "official"
+
+    samp_cfg = xai_cfg.get("sampling", {})
+    seed = samp_cfg.get("seed", 42)
+
+    if sample_mode == "pilot":
+        p_cfg = samp_cfg.get("pilot", {})
+        n_pos = p_cfg.get("n_pos", 75)
+        n_neg = p_cfg.get("n_neg", 75)
+        selected_graphs = stratified_sample(eval_graphs, n_pos=n_pos, n_neg=n_neg, seed=seed, min_edges=args.min_edges)
+    elif sample_mode == "official":
+        o_cfg = samp_cfg.get("official", {})
+        n_pos = o_cfg.get("n_pos", 750)
+        n_neg = o_cfg.get("n_neg", 750)
+        selected_graphs = stratified_sample(eval_graphs, n_pos=n_pos, n_neg=n_neg, seed=seed, min_edges=args.min_edges)
+    elif sample_mode == "head":
+        limit = args.limit if args.limit is not None else 30
+        selected_graphs = eval_graphs[:limit]
+    else:  # custom
+        limit = args.limit if args.limit is not None else len(eval_graphs)
+        selected_graphs = eval_graphs[:limit]
+
+    logger.info("Chế độ lấy mẫu: %s. Tổng số đồ thị được chọn: %d", sample_mode, len(selected_graphs))
+
+    # Áp dụng sharding nếu có
+    if args.num_shards > 1:
+        selected_graphs = selected_graphs[args.shard_idx :: args.num_shards]
+        logger.info("Phân chia shard %d/%d: chạy %d đồ thị", args.shard_idx, args.num_shards, len(selected_graphs))
 
     # 2. Tải mô hình
     sample_g = selected_graphs[0]
@@ -178,9 +227,10 @@ def main() -> int:
     )
 
     # 3. Khởi tạo Explainers
-    explainers_to_run = (
-        ["gnn_explainer", "pg_explainer"] if args.explainer == "all" else [args.explainer]
-    )
+    if args.explainer == "all":
+        explainers_to_run = ["gnn_explainer", "pg_explainer", "random", "last_edge"]
+    else:
+        explainers_to_run = [args.explainer]
 
     run_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     if args.output_dir:
@@ -189,51 +239,80 @@ def main() -> int:
         out_dir = Path("results/xai") / run_name / model_name / run_id
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # Lưu sample manifest
+    save_sample_manifest(selected_graphs, out_dir / "sample_manifest.csv")
+
     git_info = get_git_info()
     all_explanations_rows = []
     all_metrics_rows = []
     all_pass_rows = []
     all_player_rows = []
+    all_curve_rows = []
+
+    # Đọc cấu hình top_k và stability
+    subgraph_cfg = xai_cfg.get("subgraph", {})
+    sweep_curves = subgraph_cfg.get("sweep_sparsity_fidelity", True)
+    stab_cfg = xai_cfg.get("stability", {})
+    n_stab_samples = stab_cfg.get("n_samples", 100)
+    n_stab_repeats = stab_cfg.get("n_repeats", 5)
 
     for expl_name in explainers_to_run:
         logger.info("\n========== BẮT ĐẦU GIẢI THÍCH VỚI %s ==========", expl_name.upper())
         explainer = build_explainer(expl_name, model=model, xai_cfg=xai_cfg, device=device)
 
-        # Nếu là PGExplainer, huấn luyện trước trên tập mẫu
+        # Nếu là PGExplainer, huấn luyện trước trên tập mẫu train
         if isinstance(explainer, FootballPGExplainer):
             train_mids = set(splits.get("train", []))
-            train_sub_graphs = [g for g in graphs if int(getattr(g, "match_id", 0)) in train_mids][
-                :100
-            ]
+            train_sub_graphs = [
+                g for g in graphs if int(getattr(g, "match_id", 0)) in train_mids and g.edge_index.shape[1] >= args.min_edges
+            ][:100]
             explainer.train_on_graphs(train_sub_graphs)
 
         t_start = time.time()
         for idx, g in enumerate(selected_graphs):
+            num_edges = g.edge_index.shape[1] if g.edge_index is not None else 0
+            k_val = resolve_top_k(num_edges)
+
             exp_res = explainer.explain_graph(g, graph_index=idx, target_class=1)
             all_explanations_rows.append(exp_res.to_dict())
 
             # Ánh xạ về đường chuyền
-            pass_df = map_explanation_to_passes(g, exp_res, top_k=3)
+            pass_df = map_explanation_to_passes(g, exp_res, top_k=k_val)
             if not pass_df.empty:
                 all_pass_rows.append(pass_df)
 
-            # Tổng hợp về cầu thủ
+            # Tổng hợp về cầu thủ (D12)
             player_df = aggregate_player_importance(g, exp_res)
             if not player_df.empty:
                 all_player_rows.append(player_df)
 
-            # Đánh giá chất lượng giải thích (Fidelity, Sparsity, Insertion/Deletion)
+            # Đánh giá chất lượng giải thích (Fidelity, Sparsity, Stability)
+            run_stab = (idx < n_stab_samples) and (expl_name in ("gnn_explainer", "pg_explainer"))
             metrics = evaluate_explanation_quality(
                 model=model,
                 graph=g,
                 edge_mask=exp_res.edge_mask,
-                top_k=3,
+                top_k=k_val,
                 device=device,
-                explainer_func=(
-                    explainer.explain_graph if idx < 5 else None
-                ),  # stability đo trên 5 đồ thị đầu
-                n_stability_repeats=3,
+                explainer_func=(explainer.explain_graph if run_stab else None),
+                n_stability_repeats=n_stab_repeats,
             )
+
+            # Phân loại TP/FP/FN/TN
+            pred_prob = exp_res.pred_prob
+            pred_label = 1 if pred_prob >= 0.5 else 0
+            actual_label = int(getattr(g, "y", torch.tensor([0])).view(-1)[0].item())
+            if pred_label == 1 and actual_label == 1:
+                conf_type = "TP"
+            elif pred_label == 1 and actual_label == 0:
+                conf_type = "FP"
+            elif pred_label == 0 and actual_label == 1:
+                conf_type = "FN"
+            else:
+                conf_type = "TN"
+
+            size_bucket = get_size_bucket(num_edges)
+            play_pattern = str(getattr(g, "play_pattern", "Regular Play"))
 
             metric_row = {
                 "match_id": exp_res.match_id,
@@ -242,13 +321,29 @@ def main() -> int:
                 "explainer": expl_name,
                 "pred_prob": exp_res.pred_prob,
                 "target": exp_res.target,
+                "actual_label": actual_label,
+                "confusion_type": conf_type,
+                "size_bucket": size_bucket,
+                "play_pattern": play_pattern,
                 "num_edges": exp_res.num_edges,
+                "top_k": k_val,
                 **metrics,
             }
             all_metrics_rows.append(metric_row)
 
-            if (idx + 1) % 10 == 0 or idx == len(selected_graphs) - 1:
-                logger.info("Đã giải thích %d/%d đồ thị", idx + 1, len(selected_graphs))
+            # Sparsity-Fidelity curve
+            if sweep_curves and num_edges > 1:
+                curve_pts = compute_sparsity_fidelity_curve(model, g, exp_res.edge_mask, device=device)
+                for pt in curve_pts:
+                    all_curve_rows.append({
+                        "match_id": exp_res.match_id,
+                        "possession_id": exp_res.possession_id,
+                        "explainer": expl_name,
+                        **pt,
+                    })
+
+            if (idx + 1) % 25 == 0 or idx == len(selected_graphs) - 1:
+                logger.info("[%s] Đã giải thích %d/%d đồ thị", expl_name, idx + 1, len(selected_graphs))
 
         elapsed = time.time() - t_start
         logger.info("Hoàn tất %s sau %.1f giây", expl_name, elapsed)
@@ -271,6 +366,12 @@ def main() -> int:
         total_player_df = pd.concat(all_player_rows, ignore_index=True)
         total_player_df.to_csv(
             out_dir / "player_importance_by_possession.csv", index=False, encoding="utf-8-sig"
+        )
+
+    if all_curve_rows:
+        curves_df = pd.DataFrame(all_curve_rows)
+        curves_df.to_csv(
+            out_dir / "sparsity_fidelity_curves.csv", index=False, encoding="utf-8-sig"
         )
 
     # 5. Tổng hợp Metric Summary

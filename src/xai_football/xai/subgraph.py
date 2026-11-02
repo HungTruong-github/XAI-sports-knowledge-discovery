@@ -1,10 +1,13 @@
 """Bước 7.2 — Trích xuất Subgraph quan trọng và Ánh xạ điểm XAI về đường chuyền/cầu thủ.
 
-Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 7.2.
+Tham chiếu: configs/xai.yaml, docs/decisions/0002-cong-thuc-hybrid-centrality.md (Quyết định D12).
 Chức năng:
     - Trích xuất tập cạnh quan trọng dựa trên top-k hoặc ngưỡng threshold.
-    - Ánh xạ trực tiếp từ chỉ mục cạnh trong đồ thị về event_id, passer_id, recipient_id gốc.
-    - Tổng hợp điểm importance từ các cạnh liên thuộc về từng cầu thủ (in/out/total).
+    - Ánh xạ trực tiếp từ chỉ mục cạnh trong đồ thị về event_id, passer_id, recipient_id gốc, kèm cờ `is_last_edge`.
+    - Tổng hợp điểm importance từ các cạnh liên thuộc về từng cầu thủ:
+      + Tổng điểm importance (in/out/total).
+      + Trung bình importance trên mỗi lần tham gia (mean_importance).
+      + Biến thể triệt tiêu loại trừ cạnh cuối cùng (no_last_edge) để phục vụ D12.
 """
 
 from __future__ import annotations
@@ -37,7 +40,6 @@ def select_important_edges(
 
     if top_k is not None and top_k > 0:
         k = min(int(top_k), n_edges)
-        # Lấy top k chỉ số lớn nhất
         top_indices = np.argsort(edge_mask)[-k:]
         selected = np.zeros(n_edges, dtype=bool)
         selected[top_indices] = True
@@ -47,7 +49,6 @@ def select_important_edges(
         th = float(threshold)
         return edge_mask >= th
 
-    # Mặc định: chọn các cạnh có điểm >= trung bình
     mean_val = float(edge_mask.mean()) if n_edges > 0 else 0.0
     return edge_mask >= mean_val
 
@@ -100,6 +101,7 @@ def map_explanation_to_passes(
                 "importance": round(float(edge_mask[k]), 4),
                 "rank": ranks[k],
                 "is_important": bool(is_important[k]),
+                "is_last_edge": bool(k == (n_edges - 1)),  # D12: cờ đánh dấu đường chuyền cuối
                 "explainer": explanation.explainer_name,
             }
         )
@@ -112,12 +114,11 @@ def aggregate_player_importance(
     graph: Data,
     explanation: ExplanationResult,
 ) -> pd.DataFrame:
-    """Tổng hợp điểm XAI từ các cạnh liên thuộc về từng cầu thủ trong possession.
+    """Tổng hợp điểm XAI từ các cạnh liên thuộc về từng cầu thủ theo quyết định D12.
 
-    Công thức:
-        - Outgoing importance: Tổng điểm của các đường chuyền cầu thủ thực hiện.
-        - Incoming importance: Tổng điểm của các đường chuyền cầu thủ nhận bóng.
-        - Total importance: Outgoing + Incoming.
+    Bao gồm:
+        - Tổng điểm và trung bình mỗi lần tham gia (chống thiên lệch cho cầu thủ chạm bóng nhiều).
+        - Biến thể loại bỏ cạnh cuối cùng (last-edge ablation) để kiểm tra tính độc lập.
     """
     n_nodes = graph.num_nodes
     n_edges = graph.edge_index.shape[1] if graph.edge_index is not None else 0
@@ -133,24 +134,53 @@ def aggregate_player_importance(
     out_counts = np.zeros(n_nodes, dtype=int)
     in_counts = np.zeros(n_nodes, dtype=int)
 
+    # Điểm loại cạnh cuối
+    out_scores_no_last = np.zeros(n_nodes, dtype=float)
+    in_scores_no_last = np.zeros(n_nodes, dtype=float)
+    out_counts_no_last = np.zeros(n_nodes, dtype=int)
+    in_counts_no_last = np.zeros(n_nodes, dtype=int)
+
     edge_mask = explanation.edge_mask
     if n_edges > 0 and len(edge_mask) == n_edges:
         for k in range(n_edges):
             u = int(graph.edge_index[0, k].item())
             v = int(graph.edge_index[1, k].item())
             val = float(edge_mask[k])
+            is_last = (k == (n_edges - 1))
+
             if u < n_nodes:
                 out_scores[u] += val
                 out_counts[u] += 1
+                if not is_last:
+                    out_scores_no_last[u] += val
+                    out_counts_no_last[u] += 1
+
             if v < n_nodes:
                 in_scores[v] += val
                 in_counts[v] += 1
+                if not is_last:
+                    in_scores_no_last[v] += val
+                    in_counts_no_last[v] += 1
 
     total_scores = out_scores + in_scores
+    participations = out_counts + in_counts
+
+    total_scores_no_last = out_scores_no_last + in_scores_no_last
+    participations_no_last = out_counts_no_last + in_counts_no_last
 
     rows = []
     for i in range(n_nodes):
         pid = int(player_ids[i])
+        n_part = int(participations[i])
+        n_part_no_last = int(participations_no_last[i])
+
+        mean_imp = round(float(total_scores[i] / n_part), 4) if n_part > 0 else 0.0
+        mean_imp_no_last = (
+            round(float(total_scores_no_last[i] / n_part_no_last), 4)
+            if n_part_no_last > 0
+            else 0.0
+        )
+
         rows.append(
             {
                 "match_id": explanation.match_id,
@@ -162,6 +192,10 @@ def aggregate_player_importance(
                 "total_importance": round(float(total_scores[i]), 4),
                 "pass_sent_count": int(out_counts[i]),
                 "pass_received_count": int(in_counts[i]),
+                "participations": n_part,
+                "mean_importance": mean_imp,  # D12: trung bình mỗi lần tham gia
+                "total_importance_no_last": round(float(total_scores_no_last[i]), 4),
+                "mean_importance_no_last": mean_imp_no_last,  # D12: biến thể loại cạnh cuối
                 "explainer": explanation.explainer_name,
             }
         )

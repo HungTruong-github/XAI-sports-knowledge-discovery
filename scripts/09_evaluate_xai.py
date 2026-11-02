@@ -34,6 +34,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 from xai_football.utils.io import load_yaml, save_atomic_csv  # noqa: E402
@@ -216,7 +217,7 @@ def main() -> int:
             run_id,
         )
 
-    # 5. Kiểm tra tệp số liệu tóm tắt xai_metrics_summary.csv
+    # 5. Kiểm tra tệp số liệu tóm tắt xai_metrics_summary.csv và số liệu chi tiết
     summary_file = target_dir / "xai_metrics_summary.csv"
     if not summary_file.exists():
         logger.error("Không tìm thấy tệp số liệu tóm tắt %s", summary_file)
@@ -224,6 +225,51 @@ def main() -> int:
 
     summary_df = pd.read_csv(summary_file)
     logger.info("Đã tải tệp tổng hợp XAI từ: %s (%d dòng)", summary_file, len(summary_df))
+
+    # Đánh giá Cổng kiểm soát D17 nếu có tệp chi tiết xai_metrics_by_graph.csv
+    detailed_file = target_dir / "xai_metrics_by_graph.csv"
+    gate_d17_passed = False
+    gate_d17_info = {}
+    if detailed_file.exists():
+        by_graph_df = pd.read_csv(detailed_file)
+        # Tính delta fidelity: (Fidelity+ - Fidelity-)
+        by_graph_df["delta_fid"] = by_graph_df["fidelity_plus"] - by_graph_df["fidelity_minus"]
+
+        # Tìm random baseline
+        rand_sub = by_graph_df[by_graph_df["explainer"] == "random"]
+        rand_delta_mean = float(rand_sub["delta_fid"].mean()) if not rand_sub.empty else 0.0
+
+        print("\n=== ĐÁNH GIÁ CỔNG KIỂM SOÁT GATE D17 ===")
+        for expl in by_graph_df["explainer"].unique():
+            if expl == "random":
+                continue
+            sub = by_graph_df[by_graph_df["explainer"] == expl]
+            n_samples = len(sub)
+            if n_samples == 0:
+                continue
+
+            # Bootstrap 95% CI cho (Delta_fid_expl - Delta_fid_rand)
+            diffs = []
+            rng = np.random.default_rng(42)
+            arr = sub["delta_fid"].values
+            for _ in range(1000):
+                boot_idx = rng.choice(len(arr), size=len(arr), replace=True)
+                diffs.append(float(np.mean(arr[boot_idx]) - rand_delta_mean))
+            ci_lower = float(np.percentile(diffs, 2.5))
+            ci_upper = float(np.percentile(diffs, 97.5))
+            mean_diff = float(np.mean(diffs))
+
+            is_pass = ci_lower > 0.0
+            print(f"[{expl}] (Fid+ - Fid-) vs Random: Mean={mean_diff:.4f}, 95% CI=[{ci_lower:.4f}, {ci_upper:.4f}] -> {'PASS' if is_pass else 'FAIL'}")
+            gate_d17_info[expl] = {
+                "mean_diff_vs_random": mean_diff,
+                "ci_lower": ci_lower,
+                "ci_upper": ci_upper,
+                "gate_d17_pass": is_pass,
+            }
+            if is_pass:
+                gate_d17_passed = True
+        logger.info("Kết quả kiểm tra Cổng Gate D17: %s", "ĐẠT (PASS)" if gate_d17_passed else "KHÔNG ĐẠT (FAIL)")
 
     # Gắn metadata nguồn gốc vào DataFrame
     summary_df["run_id"] = run_id

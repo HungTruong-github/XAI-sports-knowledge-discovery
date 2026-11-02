@@ -1,7 +1,7 @@
 r"""Bước 8 — Đánh giá chất lượng giải thích (XAI Evaluation Metrics).
 
-Tham chiếu: configs/xai.yaml và docs/Quy_trinh_XAI_Football.md, mục 8.
-Bộ độ đo đã thống nhất với GV (mục 1.2b phản hồi):
+Tham chiếu: configs/xai.yaml và docs/decisions/0006-giao-thuc-xai.md (Quyết định D5, D6, D9, D10).
+Bộ độ đo đã thống nhất:
     1. Fidelity+ (Sufficiency / Mức độ sụt giảm xác suất khi LOẠI BỎ subgraph quan trọng):
        Fid+ = P(y=1 | G) - P(y=1 | G \ S)
        Giá trị càng cao -> Subgraph bị loại bỏ thực sự là thành phần quyết định dự đoán của mô hình.
@@ -17,15 +17,15 @@ Bộ độ đo đã thống nhất với GV (mục 1.2b phản hồi):
     4. Stability / Robustness (Tính bền vững trước nhiễu đầu vào):
        Jaccard similarity của tập cạnh quan trọng top-k khi thêm nhiễu Gaussian nhẹ vào đặc trưng đỉnh:
        Jaccard(S_gốc, S_nhiễu) = |S_gốc ∩ S_nhiễu| / |S_gốc ∪ S_nhiễu|
-       Miền giá trị [0, 1]. Càng cao -> Lời giải thích ổn định, không bị dao động bởi nhiễu nhỏ.
 
-    5. Insertion / Deletion Curve (Đường cong bổ sung / loại trừ tuần tự):
-       - Deletion AUC: Diện tích dưới đường cong xác suất khi lần lượt xóa các cạnh từ quan trọng nhất -> ít quan trọng nhất. (Càng thấp -> Xóa đúng cạnh quan trọng làm giảm dự đoán nhanh).
-       - Insertion AUC: Diện tích dưới đường cong xác suất khi lần lượt thêm các cạnh từ quan trọng nhất vào đồ thị rỗng. (Càng cao -> Thêm cạnh quan trọng làm tăng dự đoán nhanh).
+    5. Insertion / Deletion Curve (Đường cong bổ sung / loại trừ tuần tự).
 
     6. ROAR (Remove and Retrain):
-       - Định nghĩa vận hành chuẩn: Cần huấn luyện lại toàn bộ mô hình (retrain) trên tập dữ liệu đã bị xóa top-k cạnh quan trọng nhất để chống hiện tượng OOD (Out-of-Distribution).
-       - Ràng buộc: Huấn luyện lại trên 45.047 đồ thị rất tốn kém tài nguyên, được cung cấp dưới dạng interface phương pháp luận và kiểm định trên đồ thị mẫu; không đánh dấu hoàn tất toàn diện nếu chưa chạy huấn luyện lại thực tế.
+       - D10: Đặt false theo thiết kế, xai_metrics_by_graph.csv ghi nhận "not_run" kèm lý do.
+
+LƯU Ý PHƯƠNG PHÁP:
+    - Mọi can thiệp xóa cạnh (Fidelity) giữ nguyên đặc trưng đỉnh (kể cả touch_count)
+      để cô lập tác động của cấu trúc cạnh mà không tạo ra hiệu ứng Out-of-Distribution cho đỉnh.
 """
 
 from __future__ import annotations
@@ -41,9 +41,16 @@ from torch_geometric.data import Data
 from xai_football.xai.subgraph import select_important_edges
 
 
+def resolve_top_k(num_edges: int, top_k: int | None = None, top_k_ratio: float = 0.3) -> int:
+    """Xác định k theo quyết định D6: k = max(1, round(top_k_ratio * num_edges))."""
+    if top_k is not None and top_k > 0:
+        return min(int(top_k), num_edges)
+    return max(1, int(round(top_k_ratio * num_edges)))
+
+
 @torch.no_grad()
 def _predict_graph_prob(model: nn.Module, data: Data, device: torch.device) -> float:
-    """Dự đoán xác suất nhị phân cho một đồ thị Data đơn lẻ."""
+    """Dự đoán xác suất nhị phân cho một đồ thị Data đơn lẻ (lớp 1 - có cú sút)."""
     model.eval()
     data = data.to(device)
     num_nodes = data.x.shape[0]
@@ -65,6 +72,7 @@ def compute_fidelity_plus(
     r"""Tính Fidelity+ (mức giảm xác suất khi xóa các cạnh quan trọng S).
 
     Công thức: Fid+ = P(y=1 | G) - P(y=1 | G \ S).
+    LƯU Ý: Can thiệp xóa cạnh giữ nguyên đặc trưng đỉnh (kể cả touch_count).
     """
     dev = torch.device(device)
     n_edges = graph.edge_index.shape[1] if graph.edge_index is not None else 0
@@ -73,11 +81,11 @@ def compute_fidelity_plus(
 
     orig_prob = _predict_graph_prob(model, graph, dev)
 
-    is_imp = select_important_edges(edge_mask, top_k=top_k, threshold=threshold)
+    effective_k = resolve_top_k(n_edges, top_k) if threshold is None else None
+    is_imp = select_important_edges(edge_mask, top_k=effective_k, threshold=threshold)
     keep_indices = np.where(~is_imp)[0]
 
     if len(keep_indices) == 0:
-        # Nếu xóa hết cạnh -> đồ thị không còn cạnh
         new_edge_index = torch.zeros((2, 0), dtype=torch.long, device=dev)
         new_edge_attr = (
             torch.zeros((0, graph.edge_attr.shape[1]), dtype=graph.edge_attr.dtype, device=dev)
@@ -113,6 +121,7 @@ def compute_fidelity_minus(
     """Tính Fidelity- (mức giảm xác suất khi CHỈ GIỮ các cạnh quan trọng S).
 
     Công thức: Fid- = P(y=1 | G) - P(y=1 | G[S]).
+    LƯU Ý: Can thiệp xóa cạnh giữ nguyên đặc trưng đỉnh (kể cả touch_count).
     """
     dev = torch.device(device)
     n_edges = graph.edge_index.shape[1] if graph.edge_index is not None else 0
@@ -121,7 +130,8 @@ def compute_fidelity_minus(
 
     orig_prob = _predict_graph_prob(model, graph, dev)
 
-    is_imp = select_important_edges(edge_mask, top_k=top_k, threshold=threshold)
+    effective_k = resolve_top_k(n_edges, top_k) if threshold is None else None
+    is_imp = select_important_edges(edge_mask, top_k=effective_k, threshold=threshold)
     keep_indices = np.where(is_imp)[0]
 
     if len(keep_indices) == 0:
@@ -162,7 +172,8 @@ def compute_sparsity(
     if n_edges == 0:
         return 1.0
 
-    is_imp = select_important_edges(edge_mask, top_k=top_k, threshold=threshold)
+    effective_k = resolve_top_k(n_edges, top_k) if threshold is None else None
+    is_imp = select_important_edges(edge_mask, top_k=effective_k, threshold=threshold)
     n_selected = int(np.sum(is_imp))
     sparsity = 1.0 - (n_selected / n_edges)
     return round(float(sparsity), 4)
@@ -186,14 +197,15 @@ def compute_stability(
     if n_edges == 0:
         return 1.0
 
-    base_set = set(np.where(select_important_edges(base_mask, top_k=top_k, threshold=threshold))[0])
+    effective_k = resolve_top_k(n_edges, top_k) if threshold is None else None
+    base_set = set(np.where(select_important_edges(base_mask, top_k=effective_k, threshold=threshold))[0])
     if not base_set:
         return 1.0
 
     rng = np.random.default_rng(seed)
     jaccards = []
 
-    for rep in range(n_repeats):
+    for _ in range(n_repeats):
         g_noisy = copy.copy(graph)
         noise = torch.tensor(
             rng.normal(0, noise_std, size=graph.x.shape),
@@ -206,7 +218,7 @@ def compute_stability(
         res_noisy = explainer_func(g_noisy)
         noisy_mask = res_noisy.edge_mask if hasattr(res_noisy, "edge_mask") else res_noisy
         noisy_set = set(
-            np.where(select_important_edges(noisy_mask, top_k=top_k, threshold=threshold))[0]
+            np.where(select_important_edges(noisy_mask, top_k=effective_k, threshold=threshold))[0]
         )
 
         intersection = len(base_set.intersection(noisy_set))
@@ -224,17 +236,12 @@ def compute_insertion_deletion_curves(
     steps: int = 10,
     device: torch.device | str = "cpu",
 ) -> dict[str, float]:
-    """Tính đường cong và AUC cho Deletion Curve và Insertion Curve.
-
-    - Deletion Curve: Xóa dần các cạnh theo thứ tự giảm dần của importance.
-    - Insertion Curve: Thêm dần các cạnh theo thứ tự giảm dần của importance vào đồ thị rỗng.
-    """
+    """Tính đường cong và AUC cho Deletion Curve và Insertion Curve."""
     dev = torch.device(device)
     n_edges = graph.edge_index.shape[1] if graph.edge_index is not None else 0
     if n_edges == 0:
         return {"deletion_auc": 0.0, "insertion_auc": 0.0}
 
-    # Sắp xếp chỉ số cạnh từ quan trọng nhất đến ít quan trọng nhất
     sorted_edge_indices = np.argsort(-edge_mask).tolist()
 
     # 1. Deletion curve
@@ -304,6 +311,34 @@ def compute_insertion_deletion_curves(
     }
 
 
+def compute_sparsity_fidelity_curve(
+    model: nn.Module,
+    graph: Data,
+    edge_mask: np.ndarray,
+    device: torch.device | str = "cpu",
+) -> list[dict[str, Any]]:
+    """D6: Quét k từ 1 đến E-1 để vẽ đường cong Sparsity–Fidelity."""
+    n_edges = graph.edge_index.shape[1] if graph.edge_index is not None else 0
+    if n_edges <= 1:
+        return []
+
+    results = []
+    for k in range(1, n_edges):
+        f_plus = compute_fidelity_plus(model, graph, edge_mask, top_k=k, device=device)
+        f_minus = compute_fidelity_minus(model, graph, edge_mask, top_k=k, device=device)
+        sp = compute_sparsity(edge_mask, top_k=k)
+        results.append(
+            {
+                "k": k,
+                "n_edges": n_edges,
+                "sparsity": sp,
+                "fidelity_plus": f_plus,
+                "fidelity_minus": f_minus,
+            }
+        )
+    return results
+
+
 def evaluate_explanation_quality(
     model: nn.Module,
     graph: Data,
@@ -312,7 +347,7 @@ def evaluate_explanation_quality(
     threshold: float | None = None,
     device: torch.device | str = "cpu",
     explainer_func: Any = None,
-    n_stability_repeats: int = 3,
+    n_stability_repeats: int = 5,
     noise_std: float = 0.01,
 ) -> dict[str, Any]:
     """Tổng hợp đầy đủ bộ độ đo đánh giá chất lượng của một lời giải thích XAI."""
@@ -346,5 +381,5 @@ def evaluate_explanation_quality(
         "stability": stability,
         "deletion_auc": curves["deletion_auc"],
         "insertion_auc": curves["insertion_auc"],
-        "roar": "Deferred (Requires full retraining across all graphs)",
+        "roar": "not_run",  # D10: ghi nhận not_run
     }
