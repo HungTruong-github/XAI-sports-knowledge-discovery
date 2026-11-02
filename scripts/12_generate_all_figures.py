@@ -161,13 +161,10 @@ def plot_sparsity_fidelity_curves() -> None:
 
 
 def plot_alpha_optimization() -> None:
-    csv_path = Path("results/hybrid/20261102_154729/alpha_curve.csv")
-    if not csv_path.exists():
-        # Tìm tệp bất kỳ trong results/hybrid
-        cands = list(Path("results/hybrid").glob("**/alpha_curve.csv"))
-        if not cands:
-            return
-        csv_path = cands[0]
+    cands = sorted(Path("results/hybrid").glob("**/alpha_curve.csv"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not cands:
+        return
+    csv_path = cands[0]
 
     df = pd.read_csv(csv_path)
 
@@ -204,10 +201,10 @@ def plot_alpha_optimization() -> None:
 
 
 def plot_hybrid_vs_centrality_scatter() -> None:
+    cands = sorted(Path("results/hybrid").glob("**/player_hybrid_rankings.csv"), key=lambda p: p.stat().st_mtime, reverse=True)
     csv_path = Path("results/tables/official/hybrid_centrality_top_players.csv")
-    full_csv = Path("results/hybrid/20261102_154729/player_hybrid_rankings.csv")
-    if full_csv.exists():
-        df = pd.read_csv(full_csv)
+    if cands:
+        df = pd.read_csv(cands[0])
     elif csv_path.exists():
         df = pd.read_csv(csv_path)
     else:
@@ -267,10 +264,14 @@ def plot_hybrid_vs_centrality_scatter() -> None:
 
 
 def plot_ranking_shift() -> None:
+    cands = sorted(Path("results/hybrid").glob("**/player_hybrid_rankings.csv"), key=lambda p: p.stat().st_mtime, reverse=True)
     csv_path = Path("results/tables/official/hybrid_centrality_top_players.csv")
-    if not csv_path.exists():
+    if cands:
+        df = pd.read_csv(cands[0]).head(12)
+    elif csv_path.exists():
+        df = pd.read_csv(csv_path).head(12)
+    else:
         return
-    df = pd.read_csv(csv_path).head(12)
 
     fig, ax = plt.subplots(figsize=(8.5, 6))
 

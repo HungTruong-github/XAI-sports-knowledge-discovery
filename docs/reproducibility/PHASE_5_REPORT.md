@@ -15,7 +15,7 @@
 2. `08_xai_fidelity_comparison.png` / `.svg`: Đối sánh Fidelity+, Fidelity- và kiểm định Cổng chất lượng Gate D17 giữa 4 thuật toán giải thích (`gnn_explainer`, `pg_explainer`, `random`, `last_edge`).
 3. `08_xai_sparsity_fidelity_curves.png` / `.svg`: Đường cong quan hệ giữa độ thưa mặt nạ (Sparsity) và độ trung thực (Fidelity+ / Fidelity-).
 4. `09_hybrid_alpha_optimization.png` / `.svg`: Đường cong quét tham số $\alpha \in [0.0, 1.0]$ trên tập Set A với điểm cực trị $\alpha^* = 0.70$ tối đa hóa tương quan với Expected Threat ($xT/90$).
-5. `09_hybrid_vs_centrality_scatter.png` / `.svg`: Biểu đồ phân tán trên 481 cầu thủ tập Set B giữa Betweenness Centrality và Hybrid Centrality, tô màu theo $xT/90$ và kích thước điểm theo số lượng đường chuyền quyết định (Key Passes), có gắn nhãn các ngôi sao hàng đầu.
+5. `09_hybrid_vs_centrality_scatter.png` / `.svg`: Biểu đồ phân tán trên 313 cầu thủ ngoài khung gỗ tập Set B giữa Betweenness Centrality và Hybrid Centrality, tô màu theo $xT/90$ và kích thước điểm theo số lượng đường chuyền quyết định (Key Passes), có gắn nhãn các ngôi sao hàng đầu.
 6. `10_top_players_ranking_shift.png` / `.svg`: Biểu đồ Dumbbell thể hiện sự chuyển dịch thứ bậc Percentile Rank giữa Centrality truyền thống và Hybrid Centrality của Top 12 cầu thủ.
 7. `10_case_study_pitch_plots.png` / `.svg`: Trực quan hóa sân bóng 2D ($120 \times 80$) cho 6 trường hợp chuỗi chuyền bóng thực tế dẫn tới dứt điểm của Mesut Özil, Dimitri Payet, Christian Eriksen, Santi Cazorla, Cesc Fàbregas, và Troy Deeney, với màu sắc và độ dày mũi tên thể hiện điểm quan trọng XAI.
 

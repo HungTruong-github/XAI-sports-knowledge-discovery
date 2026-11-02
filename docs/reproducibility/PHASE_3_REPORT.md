@@ -9,8 +9,8 @@
 
 ## 1. Thiết kế thực nghiệm và Đối sánh 4 Phương pháp XAI
 
-Thực nghiệm được thực hiện trên tập Test độc lập (57 trận, 3,860 đồ thị hợp lệ có $\ge 4$ cạnh theo Quyết định D2):
-- Phương thức lấy mẫu: Stratified Sampling theo Quyết định D7 (cân bằng 75 possession có cú sút và 75 possession không có cú sút, seed = 42).
+Thực nghiệm được thực hiện trên tập Test độc lập (57 trận, 3.860 đồ thị hợp lệ có $\ge 4$ cạnh theo Quyết định D2):
+- Phương thức lấy mẫu: Stratified Sampling theo Quyết định D7 trên toàn bộ 57 trận test. Trong 3.860 đồ thị hợp lệ có đúng 611 đồ thị dương (có cú sút) và 3.249 đồ thị âm; do đó kích thước mẫu cân bằng tối đa chính thức là **1.222 đồ thị** (611 dương, 611 âm, seed = 42).
 - Các thuật toán giải thích:
   1. `gnn_explainer`: Tối ưu hóa mặt nạ cạnh theo cơ chế tối đa thông tin tương hỗ (phenomenon mode, target class = 1).
   2. `pg_explainer`: Mạng tham số hóa MLP học phân phối mặt nạ cạnh có trọng số, tối ưu hóa trên tập huấn luyện (target class = 1).
@@ -22,26 +22,30 @@ Thực nghiệm được thực hiện trên tập Test độc lập (57 trận,
 
 ## 2. Kết quả đối sánh chi tiết và Đánh giá Cổng kiểm soát Gate D17
 
-Nguồn dữ liệu: `results/tables/official/xai_comparison.csv`
+Nguồn dữ liệu: `results/tables/official/xai_comparison.csv` và `results/tables/official/xai_comparison_manifest.json`  
+Trạng thái xác thực: **`OFFICIAL_VERIFIED`** (1.222 đồ thị trên 57 trận test)
 
 | Thuật toán | Số đồ thị | Fidelity+ (mean ± std) | Fidelity- (mean ± std) | $\Delta\text{Fidelity}$ | Sparsity | Stability | Deletion AUC | Insertion AUC | Trạng thái Gate D17 |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| `gnn_explainer` | 150 | 0.0105 ± 0.1313 | -0.0496 ± 0.2556 | +0.0601 | 0.6987 | 0.2912 | 0.4481 | 0.5043 | **FAIL** (CI vắt qua 0) |
-| `pg_explainer` | 150 | -0.0078 ± 0.1168 | -0.0352 ± 0.2527 | +0.0274 | 0.6987 | **0.9900** | 0.5206 | 0.4216 | **FAIL** (CI vắt qua 0) |
-| `random` | 150 | 0.0077 ± 0.1671 | -0.0349 ± 0.2363 | +0.0426 | 0.6987 | — | 0.4735 | 0.4730 | Baseline |
-| `last_edge` | 150 | **0.1490 ± 0.2343** | **-0.1419 ± 0.1372** | **+0.2909** | 0.6987 | — | **0.4238** | **0.5127** | **PASS** (CI hoàn toàn > 0) |
+| `gnn_explainer` | 1,222 | 0.0492 ± 0.1563 | -0.1116 ± 0.2296 | +0.1608 | 0.6939 | 0.2851 | 0.4041 | 0.4901 | **PASS** (CI hoàn toàn > 0) |
+| `pg_explainer` | 1,222 | -0.0125 ± 0.1266 | -0.0493 ± 0.2429 | +0.0368 | 0.6939 | **0.9872** | 0.4892 | 0.4009 | **FAIL** (CI vắt qua 0) |
+| `random` | 1,222 | 0.0000 ± 0.1518 | -0.0496 ± 0.2219 | +0.0496 | 0.6939 | — | 0.4451 | 0.4447 | Baseline |
+| `last_edge` | 1,222 | **0.1237 ± 0.2329** | **-0.1542 ± 0.1407** | **+0.2779** | 0.6939 | — | **0.4054** | **0.4800** | **PASS** (CI hoàn toàn > 0) |
 
-### Kiểm định thống kê Bootstrap 95% CI cho Gate D17:
-- Tiêu chí D17: Chênh lệch $\Delta\text{Fidelity}_{\text{expl}} - \Delta\text{Fidelity}_{\text{rand}}$ phải có khoảng tin cậy 95% bootstrap (1,000 resamples) nằm hoàn toàn phía trên 0.
-- Kết quả kiểm định:
-  - `gnn_explainer`: Mean = $+0.0169$, 95% CI = $[-0.0262, +0.0593]$ $\rightarrow$ **FAIL**.
-  - `pg_explainer`: Mean = $-0.0143$, 95% CI = $[-0.0597, +0.0263]$ $\rightarrow$ **FAIL**.
-  - `last_edge`: Mean = **$+0.2486$**, 95% CI = **$[+0.2095, +0.2883]$** $\rightarrow$ **PASS**.
+### Kiểm định thống kê Paired Clustered Bootstrap theo `match_id` cho Gate D17:
+- **Phương pháp kiểm định:** Lấy mẫu lại 1.000 lần có hoàn lại theo cụm trận đấu (`cluster_by: match_id`, 57 cụm trận). Trên từng đồ thị được lấy mẫu, tính trực tiếp hiệu số theo cặp:
+  $$\Delta_i = (\Delta\text{Fid}_{i, \text{expl}} - \Delta\text{Fid}_{i, \text{rand}})$$
+- **Tiêu chí Gate D17:** Khoảng tin cậy 95% cụm của $\text{Mean}(\Delta_i)$ phải nằm hoàn toàn phía trên 0.
+- **Kết quả kiểm định:**
+  - `gnn_explainer`: Paired Mean = **$+0.1111$**, 95% Cluster CI = **$[+0.0939, +0.1286]$** $\rightarrow$ **PASS**.
+  - `pg_explainer`: Paired Mean = **$-0.0128$**, 95% Cluster CI = **$[-0.0306, +0.0049]$** $\rightarrow$ **FAIL**.
+  - `last_edge`: Paired Mean = **$+0.2282$**, 95% Cluster CI = **$[+0.2077, +0.2502]$** $\rightarrow$ **PASS**.
+- **Kết luận Cổng Gate D17:** **ĐẠT (PASS)**. Cả `last_edge` và `gnn_explainer` đều vượt qua Random Baseline có ý nghĩa thống kê ở mức tin cậy 95% khi xét cụm trận đấu.
 
 ### Phân tích ý nghĩa khoa học (RQ2):
-1. **Tính chất nhạy cảm của pha dứt điểm:** Trong bài toán dự đoán possession có cú sút từ mạng chuyền bóng, hành động then chốt nhất là đường chuyền cuối cùng (đưa bóng vào vị trí dứt điểm). Khi cô lập hoặc loại bỏ đường chuyền này (`last_edge`), mô hình lập tức sụt giảm độ tự tin mạnh nhất ($\text{Fidelity}^+ = 0.1490$), trong khi việc giữ lại nó bảo toàn tối đa dự đoán ($\text{Fidelity}^- = -0.1419$).
-2. **Hạn chế của phương pháp perturbation tổng quát:** Đồ thị possession trong bóng đá có quy mô nhỏ (trung bình 4–12 đường chuyền). Các thuật toán tối ưu nhiễu cạnh cục bộ như GNNExplainer và PGExplainer dễ làm thay đổi cấu trúc liên thông của chuỗi bóng tương tự như nhiễu ngẫu nhiên, dẫn đến việc không vượt qua được random baseline ở mức ý nghĩa thống kê 95%.
-3. **Độ ổn định (Stability):** PGExplainer thể hiện tính ổn định vượt trội ($0.9900$) so với GNNExplainer ($0.2912$), chứng minh mạng tham số hóa tránh được tính ngẫu hứng trong quá trình tối ưu riêng lẻ từng đồ thị.
+1. **Sức mạnh vượt trội của cấu trúc pha bóng cuối (`last_edge`):** Đạt mức tăng $\Delta\text{Fidelity}$ lên tới $+0.2282$ so với ngẫu nhiên. Điều này tái khẳng định trong mạng chuyền bóng, hành động then chốt đưa bóng vào khu vực dứt điểm chi phối dự đoán của mô hình.
+2. **Hiệu năng của GNNExplainer trên mẫu lớn:** Khi mở rộng lên quy mô toàn bộ 1.222 đồ thị, GNNExplainer thể hiện năng lực tối ưu mặt nạ cạnh vượt trội rõ rệt so với Random Baseline ($+0.1111$ chênh lệch $\Delta\text{Fid}$, CI $[0.0939, 0.1286]$ hoàn toàn tách rời 0).
+3. **Độ ổn định (Stability):** PGExplainer tiếp tục thể hiện tính ổn định gần như tuyệt đối (**0.9872** so với 0.2851 của GNNExplainer), do mạng nơ-ron tham số hóa học được biểu diễn trọng số chung thay vì tối ưu hóa lặp lại dễ rơi vào cực tiểu cục bộ khác nhau của GNNExplainer.
 
 ---
 
@@ -69,15 +73,16 @@ Nguồn dữ liệu: `results/tables/official/xai_comparison.csv`
 
 ## 4. Danh mục Artifacts đã lưu
 
-1. **Bảng đối sánh XAI chính thức:**
+1. **Bảng đối sánh XAI và Manifest chính thức:**
    - `results/tables/official/xai_comparison.csv`
-2. **Dữ liệu Pilot XAI 150 đồ thị:**
-   - `results/xai/pilot/mpnn/pilot_150/xai_run_manifest.json`
-   - `results/xai/pilot/mpnn/pilot_150/sample_manifest.csv`
-   - `results/xai/pilot/mpnn/pilot_150/xai_metrics_by_graph.csv`
-   - `results/xai/pilot/mpnn/pilot_150/xai_metrics_summary.csv`
-   - `results/xai/pilot/mpnn/pilot_150/sparsity_fidelity_curves.csv`
-   - `results/xai/pilot/mpnn/pilot_150/shap_feature_importance.csv`
+   - `results/tables/official/xai_comparison_manifest.json`
+2. **Dữ liệu thực nghiệm XAI chính thức (1.222 đồ thị trên 57 trận test):**
+   - `results/xai/official/mpnn/official_test/xai_run_manifest.json`
+   - `results/xai/official/mpnn/official_test/sample_manifest.csv`
+   - `results/xai/official/mpnn/official_test/xai_metrics_by_graph.csv`
+   - `results/xai/official/mpnn/official_test/xai_metrics_summary.csv`
+   - `results/xai/official/mpnn/official_test/sparsity_fidelity_curves.csv`
+   - `results/xai/official/mpnn/official_test/shap_feature_importance.csv`
 3. **Mô hình Cross-Fitting Checkpoints & Manifest:**
    - `models/crossfit/crossfit_train_manifest.json`
    - `models/crossfit/fold_1/best_model.pt` ... `models/crossfit/fold_5/best_model.pt`
@@ -92,11 +97,11 @@ Nguồn dữ liệu: `results/tables/official/xai_comparison.csv`
 ## 5. Lệnh tái lập (Reproducibility Commands)
 
 ```bash
-# 1. Chạy pilot XAI 150 đồ thị với 4 explainers và SHAP baseline
-python scripts/08_explain.py --config configs/data.yaml --model-name mpnn --explainer all --sample-mode pilot --output-dir results/xai/pilot/mpnn/pilot_150
+# 1. Chạy thực nghiệm XAI chính thức 1.222 đồ thị (test split) với 4 explainers và SHAP baseline
+python scripts/08_explain.py --config configs/data.yaml --model-name mpnn --explainer all --sample-mode official --output-dir results/xai/official/mpnn/official_test
 
-# 2. Đánh giá Cổng kiểm soát Gate D17 và xuất bảng đối sánh
-python scripts/09_evaluate_xai.py --xai-dir results/xai/pilot/mpnn/pilot_150 --allow-historical
+# 2. Đánh giá Cổng kiểm soát Gate D17 với Paired Clustered Bootstrap và xuất bảng đối sánh chính thức
+python scripts/09_evaluate_xai.py --xai-dir results/xai/official/mpnn/official_test
 
 # 3. Huấn luyện Cross-Fitting 5-fold
 python scripts/06d_crossfit_train.py --fold all --epochs 10

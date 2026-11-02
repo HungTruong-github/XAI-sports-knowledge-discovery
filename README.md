@@ -98,9 +98,9 @@ Branch hiện tại: `Clean`
 | **5** | Huấn luyện GNN | **Đã hoàn thành** | 4 GNN × 5 seed (42, 123, 456, 789, 1024) + 3 baseline × 5 seed. MPNN tốt nhất: Test AUC-PR 0.5996 ± 0.0042 |
 | **6** | Đánh giá & Đối sánh | **Đã hoàn thành** | MPNN AUC-PR 0.5996; RF 0.6198, ANN 0.6117. Xem `results/tables/official/significance_tests.csv` |
 | **7** | Đối sánh Readout Pooling | **Đã hoàn thành** | Huấn luyện 5 seeds cho `max`, `attention`, `mean_lastedge`. Biến thể `mean_lastedge` đạt Val AUC-PR 0.5921 (+0.0074 so với mean 0.5847 < ngưỡng 0.0100 của D4) -> Giữ `mpnn` mean pooling làm backbone. Xem `PHASE_1_REPORT.md` |
-| **8** | Đối sánh XAI & Gate D17 | **Đã hoàn thành** | Đối sánh 4 explainers trên 150 test graphs. Gate D17 (Bootstrap 95% CI): GNNExplainer FAIL, PGExplainer FAIL (Stability 0.9900), Last-edge Heuristic PASS (+0.2486, 95% CI [0.2095, 0.2883]). Xem `PHASE_3_REPORT.md` |
-| **9** | Cross-Fitting & Hybrid Centrality | **Đã hoàn thành** | Cross-fitting 5-fold (11.400 out-of-fold explanations, 71.126 bản ghi player importance). Tối ưu α* = 0.70 trên Set A (190 trận). Đánh giá độc lập trên Set B (190 trận, 481 cầu thủ). Xem `PHASE_4_REPORT.md` |
-| **10**| Kiểm chứng & Khóa luận | **Đã hoàn thành** | Độc lập Set B: Tương quan Spearman xA/90 (+0.1819), Key Passes/90 (+0.1892). Hồi quy OLS xT/90 ΔR² = +0.0114 (95% Bootstrap CI [0.0015, 0.0279] > 0). Xuất 7 bộ biểu đồ chính thức và hoàn thiện `docs/thesis/ket_qua_va_thao_luan.md` |
+| **8** | Đối sánh XAI & Gate D17 | **Đã hoàn thành** | Đối sánh 4 explainers trên 1.222 test graphs (57 trận). Gate D17 (Paired Clustered 95% CI theo match_id): GNNExplainer PASS (+0.1111, CI [0.0939, 0.1286]), PGExplainer FAIL (-0.0128, Stability 0.9872), Last-edge Heuristic PASS (+0.2282, CI [0.2077, 0.2502]). Trạng thái `OFFICIAL_VERIFIED`. Xem `PHASE_3_REPORT.md` |
+| **9** | Cross-Fitting & Hybrid Centrality | **Đã hoàn thành** | Giao thức A/B chống rò rỉ mẫu triệt để (Set A cross-fit nội bộ, Set B chuyển giao); co rút Bayesian $m=20$, $n_i \ge 30$; trung bình có trọng số phút thi đấu; loại trừ thủ môn; tối ưu α* = 0.70 trên Set A (190 trận). Xem `PHASE_4_REPORT.md` |
+| **10**| Kiểm chứng & Khóa luận | **Đã hoàn thành** | Đánh giá ngoài mẫu Out-of-Sample trên Set B (190 trận, 313 cầu thủ): Tương quan Spearman xA/90 (+0.2269), Key Passes/90 (+0.2472). Hồi quy OLS xT/90 ngoài mẫu: $\Delta R^2_{\text{OOS}} = +0.0768$ (95% Bootstrap CI [0.0142, 0.1270] > 0). Xuất 7 bộ biểu đồ chính thức và hoàn thiện `docs/thesis/ket_qua_va_thao_luan.md` |
 
 ---
 

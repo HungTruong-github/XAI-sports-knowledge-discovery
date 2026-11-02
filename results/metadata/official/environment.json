@@ -23,7 +23,7 @@
   "cuda_device_name": "CPU only",
   "git": {
     "branch": "feature/08-xai-completion",
-    "commit_sha": "c4a700e7efc9534e4179d6ec7e06eff490a563e5",
+    "commit_sha": "d897e9b0f6eb5182dfb47635083278374a93214f",
     "clean_working_tree": false
   },
   "config_hashes": {
