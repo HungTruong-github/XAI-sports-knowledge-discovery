@@ -33,7 +33,7 @@
 | **6** | Đánh giá & Đối sánh mô hình | MPNN Test AUC-PR: 0.5996; RF: 0.6198; ANN: 0.6117 | **PASS** (Statistical significance) |
 | **7** | Khảo sát Readout Pooling MPNN | 3 biến thể: `max`, `attention`, `mean_lastedge` (5 seeds). MPNN mean pooling được giữ làm backbone chính thức theo D4 | **PASS** (D4 executed) |
 | **8** | Đối sánh XAI & Cổng Gate D17 | 4 explainers trên 1.222 test graphs (57 trận). Gate D17 Paired Clustered 95% CI vs Random: Last-edge PASS (+0.2282, CI [0.2077, 0.2502]), GNNExplainer PASS (+0.1111, CI [0.0939, 0.1286]), PGExplainer FAIL (-0.0128). Trạng thái canonical: `OFFICIAL_VERIFIED` | **PASS** (Scientifically honest & robust) |
-| **9** | Cross-Fitting & Hybrid Centrality | Giao thức A/B sạch rò rỉ triệt để (Set A nội bộ cross-fit, Set B chuyển giao); co rút Bayesian $m=20$, $n_i \ge 30$; trung bình có trọng số phút thi đấu; loại trừ thủ môn; tối ưu α* = 0.70 trên Set A; đánh giá Out-of-sample trên Set B (313 cầu thủ): $\Delta R^2_{\text{OOS}} = +0.0768$ (95% CI [0.0142, 0.1270]) | **PASS** (Leak-free out-of-sample protocol) |
+| **9** | Cross-Fitting & Hybrid Centrality | Giao thức A/B sạch rò rỉ triệt để (Set A nội bộ cross-fit, Set B chuyển giao); co rút Bayesian $m=20$, $n_i \ge 30$; trung bình có trọng số phút thi đấu; loại trừ thủ môn; tối ưu α* = 0.65 trên Set A; đánh giá Out-of-sample trên Set B (314 cầu thủ): $\Delta R^2_{\text{OOS}} = +0.0764$ (95% CI [0.0120, 0.1265]); bổ sung trích xuất StatsBomb key_pass_id chính thức, lọc trước percentile, phân tích độ nhạy và bảng xếp hạng Creative Contribution | **PASS** (Leak-free out-of-sample protocol) |
 | **10**| Trực quan hóa & Khóa luận | 7 bộ biểu đồ PNG/SVG; chương khóa luận `docs/thesis/ket_qua_va_thao_luan.md` | **PASS** (Comprehensive) |
 
 ---
@@ -53,19 +53,23 @@
 - **Ý nghĩa khoa học:** Trong đồ thị bóng đá ngắn (4–12 đường chuyền), hành động dứt điểm cuối cùng đóng vai trò chi phối áp đảo ($\text{Fidelity}^+ = 0.1237$, $\text{Fidelity}^- = -0.1542$). Về độ ổn định, PGExplainer đạt **0.9872**, vượt trội so với GNNExplainer (0.2851), rất phù hợp cho trích xuất quy mô lớn.
 
 ### RQ3: Đóng góp của chỉ số Hybrid Centrality
-- **Tối ưu hóa tham số kết hợp trên Set A (190 trận):** Quá trình Grid Search với ràng buộc độ tin cậy chia đôi xác định tỷ trọng tối ưu là **$\alpha^* = 0.70$** (Spearman $xT/90 = 0.6257$, $r_{\text{rel}} = 0.7198 \ge 0.70 \times r_{\text{max}}$).
-- **Kiểm định độc lập Out-of-Sample trên Set B (190 trận độc lập, 313 cầu thủ ngoài khung gỗ):**
+- **Tối ưu hóa tham số kết hợp trên Set A (190 trận):** Quá trình Grid Search với ràng buộc độ tin cậy chia đôi xác định tỷ trọng tối ưu là **$\alpha^* = 0.65$** (Spearman $xT/90 = 0.5691$, thỏa mãn ràng buộc độ tin cậy chia đôi).
+- **Kiểm định độc lập Out-of-Sample trên Set B (190 trận độc lập, 314 cầu thủ ngoài khung gỗ, lọc $\ge 90$ phút trước khi tính percentile):**
   - Tương quan Spearman với các chỉ số sáng tạo cơ hội thực tế tăng vọt so với Betweenness Centrality thuần túy:
-    - $xA/90$ (Expected Assists): **$0.1700$ vs $-0.0569$** (tăng **$+0.2269$**, đảo chiều tương quan từ âm sang dương có ý nghĩa).
-    - $Key Passes/90$: **$0.3040$ vs $0.0568$** (tăng **$+0.2472$**).
-    - $Assists/90$: **$0.1423$ vs $-0.0021$** (tăng **$+0.1444$**).
-    - $xT/90$ (Expected Threat): **$0.5745$ vs $0.5243$** (tăng **$+0.0502$**).
+    - $xA/90$ (Expected Assists chính thức): **$0.2436$ vs $-0.0554$** (tăng **$+0.2991$**, đảo chiều tương quan từ âm sang dương có ý nghĩa thống kê cao).
+    - $Key Passes/90$ (Key Passes chính thức StatsBomb): **$0.3527$ vs $0.0367$** (tăng **$+0.3161$**).
+    - $Assists/90$: **$0.2096$ vs $0.0287$** (tăng **$+0.1809$**).
+    - $xT/90$ (Expected Threat): **$0.5730$ vs $0.5237$** (tăng **$+0.0493$**).
   - Hồi quy OLS đa biến ước lượng trên Set A và kiểm định ngoài mẫu (Out-of-Sample) trên Set B:
-    - $R^2_{\text{base, OOS}}$ (chỉ dùng Betweenness): $0.2418$.
-    - $R^2_{\text{full, OOS}}$ (Betweenness + XAI): $0.3186$.
-    - Độ tăng giải thích ngoài mẫu: **$\Delta R^2_{\text{OOS}} = +0.0768$** (tăng $7.68$ điểm phần trăm).
-    - Khoảng tin cậy **95% Bootstrap CI = $[0.0142, 0.1270]$ hoàn toàn nằm trên 0**.
-- **Ý nghĩa chuyên môn:** Santi Cazorla ($0.9638$) và Mesut Özil ($0.9500$) dẫn đầu bảng xếp hạng toàn giải. Các cầu thủ sáng tạo dạt cánh như Dimitri Payet ($0.8298$) và Christian Eriksen ($0.8125$) được nâng hạng xứng đáng nhờ điểm XAI cao, trong khi các tiền vệ mỏ neo/phòng ngự (Danny Drinkwater, Yann M'Vila, Cesc Fàbregas) được cân bằng chính xác giữa vai trò điều phối nền tảng và tính hiệu quả dứt điểm. Toàn bộ thủ môn đã được loại bỏ chính xác.
+    - $R^2_{\text{base, OOS}}$ (chỉ dùng Betweenness): $0.2409$.
+    - $R^2_{\text{full, OOS}}$ (Betweenness + XAI): $0.3173$.
+    - Độ tăng giải thích ngoài mẫu: **$\Delta R^2_{\text{OOS}} = +0.0764$** (tăng $7.64$ điểm phần trăm).
+    - Khoảng tin cậy **95% Bootstrap CI = $[0.0120, 0.1265]$ hoàn toàn nằm trên 0**.
+- **Ý nghĩa chuyên môn và Tách bạch hai vai trò chiến thuật:**
+  - **Hybrid Centrality ($\alpha^* = 0.65$):** Đo lường năng lực luân chuyển và trung chuyển bóng toàn đội ($xT/90$), dẫn đầu bởi Santi Cazorla ($0.9637$), Mesut Özil ($0.9498$), Aaron Ramsey ($0.9034$), Darren Fletcher ($0.8807$), Cesc Fàbregas ($0.8792$).
+  - **Creative Contribution Index:** Đo lường năng lực kết liễu và tạo đột biến dứt điểm trực tiếp ($Key Passes/90$ và $xA/90$), dẫn đầu bởi Mesut Özil (#1), Dimitri Payet (#2), Santi Cazorla (#3), David Silva (#4), Dušan Tadić (#5), Gerard Deulofeu (#6), Christian Eriksen (#7), Kevin De Bruyne (#8).
+  - **Phân tích độ nhạy thời lượng:** Khi nâng ngưỡng lên $\ge 450$ phút và $\ge 900$ phút, bảng xếp hạng ngày càng vững chắc, Mesut Özil dẫn đầu toàn diện toàn giải (0.9536 tại $\ge 900$m), đồng thời tương quan $xT/90$ tăng lên $0.6554$ và $KP/90$ tăng lên $0.4931$.
+- **Minh bạch về Gate D17:** PGExplainer đạt độ ổn định 0.9872 cho suy luận diện rộng nhưng chưa vượt qua Gate D17 trên tập test, do đó Hybrid Centrality đóng vai trò là một minh chứng phương pháp luận mang tính thăm dò (exploratory methodological proof-of-concept).
 
 ---
 

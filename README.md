@@ -99,8 +99,8 @@ Branch hiện tại: `Clean`
 | **6** | Đánh giá & Đối sánh | **Đã hoàn thành** | MPNN AUC-PR 0.5996; RF 0.6198, ANN 0.6117. Xem `results/tables/official/significance_tests.csv` |
 | **7** | Đối sánh Readout Pooling | **Đã hoàn thành** | Huấn luyện 5 seeds cho `max`, `attention`, `mean_lastedge`. Biến thể `mean_lastedge` đạt Val AUC-PR 0.5921 (+0.0074 so với mean 0.5847 < ngưỡng 0.0100 của D4) -> Giữ `mpnn` mean pooling làm backbone. Xem `PHASE_1_REPORT.md` |
 | **8** | Đối sánh XAI & Gate D17 | **Đã hoàn thành** | Đối sánh 4 explainers trên 1.222 test graphs (57 trận). Gate D17 (Paired Clustered 95% CI theo match_id): GNNExplainer PASS (+0.1111, CI [0.0939, 0.1286]), PGExplainer FAIL (-0.0128, Stability 0.9872), Last-edge Heuristic PASS (+0.2282, CI [0.2077, 0.2502]). Trạng thái `OFFICIAL_VERIFIED`. Xem `PHASE_3_REPORT.md` |
-| **9** | Cross-Fitting & Hybrid Centrality | **Đã hoàn thành** | Giao thức A/B chống rò rỉ mẫu triệt để (Set A cross-fit nội bộ, Set B chuyển giao); co rút Bayesian $m=20$, $n_i \ge 30$; trung bình có trọng số phút thi đấu; loại trừ thủ môn; tối ưu α* = 0.70 trên Set A (190 trận). Xem `PHASE_4_REPORT.md` |
-| **10**| Kiểm chứng & Khóa luận | **Đã hoàn thành** | Đánh giá ngoài mẫu Out-of-Sample trên Set B (190 trận, 313 cầu thủ): Tương quan Spearman xA/90 (+0.2269), Key Passes/90 (+0.2472). Hồi quy OLS xT/90 ngoài mẫu: $\Delta R^2_{\text{OOS}} = +0.0768$ (95% Bootstrap CI [0.0142, 0.1270] > 0). Xuất 7 bộ biểu đồ chính thức và hoàn thiện `docs/thesis/ket_qua_va_thao_luan.md` |
+| **9** | Cross-Fitting & Hybrid Centrality | **Đã hoàn thành** | Giao thức A/B chống rò rỉ mẫu triệt để (Set A cross-fit nội bộ, Set B chuyển giao); co rút Bayesian $m=20$, $n_i \ge 30$; trung bình có trọng số phút thi đấu; loại trừ thủ môn; tối ưu α* = 0.65 trên Set A (190 trận). Xem `PHASE_4_REPORT.md` |
+| **10**| Kiểm chứng & Khóa luận | **Đã hoàn thành** | Đánh giá ngoài mẫu Out-of-Sample trên Set B (190 trận, 314 cầu thủ): Tương quan Spearman xA/90 (+0.2991), Key Passes/90 (+0.3161), xT/90 (+0.0493). Hồi quy OLS xT/90 ngoài mẫu: $\Delta R^2_{\text{OOS}} = +0.0764$ (95% Bootstrap CI [0.0120, 0.1265] > 0). Bổ sung trích xuất StatsBomb key_pass_id chính thức, lọc trước percentile, phân tích độ nhạy thời lượng (90m, 450m, 900m) và bảng xếp hạng Creative Contribution. Xuất 7 bộ biểu đồ chính thức và hoàn thiện `docs/thesis/ket_qua_va_thao_luan.md` |
 
 ---
 
@@ -109,7 +109,7 @@ Branch hiện tại: `Clean`
 Tất cả các quyết định nghiên cứu được hoàn thiện và chuẩn hóa đầy đủ tại `docs/decisions/`:
 
 - **[Decision 0001: Quy tắc gán nhãn](docs/decisions/0001-quy-tac-gan-nhan.md)**: `Đã chốt (Finalized)`. Chọn bài toán phân loại nhị phân mức possession với mục tiêu cú sút (`shot`), tỷ lệ dương 14,26%.
-- **[Decision 0002: Công thức Hybrid Centrality](docs/decisions/0002-cong-thuc-hybrid-centrality.md)**: `Đã chốt (Finalized)`. Chốt công thức kết hợp tuyến tính với chuẩn hóa Percentile Rank và tham số α* = 0.70.
+- **[Decision 0002: Công thức Hybrid Centrality](docs/decisions/0002-cong-thuc-hybrid-centrality.md)**: `Đã chốt (Finalized)`. Chốt công thức kết hợp tuyến tính với chuẩn hóa Percentile Rank và tham số α* = 0.65.
 - **[Decision 0003: Đơn vị đồ thị và Ngưỡng độ dài](docs/decisions/0003-don-vi-do-thi-cho-xai.md)**: `Đã chốt (Finalized)`. Đồ thị possession cắt trước cú sút đầu tiên, ngưỡng lọc tối thiểu $\ge 4$ cạnh cho XAI.
 - **[Decision 0004: Chọn Premier League 2015/2016](docs/decisions/0004-main-dataset-premier-league-2015-16.md)**: `Đã chấp thuận (Accepted)`. 380 trận đấu hoàn chỉnh.
 - **[Decision 0005: Readout Pooling cho MPNN](docs/decisions/0005-readout-mpnn.md)**: `Đã chốt (Finalized)`. Duy trì MPNN Mean Pooling nguyên bản theo quy tắc D4 (margin +0.0074 < 0.0100).

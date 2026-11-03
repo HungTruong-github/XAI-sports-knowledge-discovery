@@ -87,58 +87,111 @@ $$\text{HC}_i(\alpha) = \alpha \cdot \text{Rank}(\text{Centrality}_i) + (1 - \al
 Trong đó:
 - $\text{Centrality}_i$ là Betweenness Centrality trên mạng chuyền bóng cấp trận (lọc cầu thủ thi đấu $\ge 30$ phút/trận) và gộp theo mùa bằng trung bình có trọng số số phút thi đấu (Quyết định D13).
 - $\text{XAI}_i$ là điểm quan trọng trích xuất out-of-fold có áp dụng co rút toàn cục (*Global Shrinkage* $m = 20$) và lọc tối thiểu $\ge 30$ lần tham gia possession (Quyết định D12).
-- Cả hai thành phần được chuẩn hóa thứ hạng phân vị trên đoạn $[0, 1]$ (Quyết định D14) và loại bỏ hoàn toàn các thủ môn khỏi bảng xếp hạng.
-- Tỷ lệ per-90 của các chỉ số tham chiếu được chuẩn hóa độc lập theo số phút thi đấu nội bộ của từng tập ($minutes_A$ cho Set A, $minutes_B$ cho Set B) để tránh pha loãng mẫu số.
+- Cả hai thành phần được lọc điều kiện (loại bỏ thủ môn và lọc thời lượng thi đấu $\ge 90$ phút) **trước khi** tính thứ hạng phân vị trên đoạn $[0, 1]$ (Quyết định D14) nhằm tránh làm lệch phân phối bách phân vị.
+- Tỷ lệ per-90 của các chỉ số tham chiếu được chuẩn hóa độc lập theo số phút thi đấu nội bộ của từng tập ($minutes_A$ cho Set A, $minutes_B$ cho Set B) để tránh pha loãng mẫu số (Quyết định D15).
+- Các chỉ số tham chiếu Key Passes, Kiến tạo ($Assists$), và $xA$ được trích xuất trực tiếp từ liên kết chính thức `shot.key_pass_id` và `shot.statsbomb_xg` của dữ liệu sự kiện StatsBomb gốc.
 
 Quá trình quét tham số $\alpha \in [0.0, 1.0]$ trên tập Set A với độ đo mục tiêu là mối tương quan với Expected Threat ($xT/90$), kết hợp ràng buộc độ tin cậy chia đôi (*split-half reliability constraint* $r_{\text{rel}} \ge 0.70 \times r_{\text{max}}$), đã xác định giá trị tối ưu:
-$$\alpha^* = 0.70 \quad (\rho = 0.6257, \text{Ràng buộc tin cậy đạt})$$
+$$\alpha^* = 0.65 \quad (\rho = 0.5691, \text{Ràng buộc tin cậy đạt})$$
 
 ### 4.4.2. Đánh giá Out-of-Sample độc lập trên tập Set B (190 trận độc lập, 314 cầu thủ đủ điều kiện)
-Tại $\alpha^* = 0.70$ cố định từ Set A, chỉ số Hybrid Centrality được tính toán và kiểm định độc lập out-of-sample trên Set B:
+Tại $\alpha^* = 0.65$ cố định từ Set A, chỉ số Hybrid Centrality được tính toán và kiểm định độc lập out-of-sample trên Set B ($N = 314$ outfield players thi đấu $\ge 90$ phút):
 
 **Bảng 4.4: Tương quan Spearman của Hybrid Centrality với các chỉ số bóng đá tham chiếu trên Set B (Đánh giá độc lập Out-of-Sample)**
 
-| Chỉ số bóng đá tham chiếu | Hybrid Centrality ($\alpha^* = 0.70$) | Betweenness thuần | Điểm XAI thuần | Mức tăng so với Centrality | Mức ý nghĩa ($p$-value) |
+| Chỉ số bóng đá tham chiếu | Hybrid Centrality ($\alpha^* = 0.65$) | Betweenness thuần | Điểm XAI thuần | Mức tăng so với Centrality | Mức ý nghĩa ($p$-value) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **$xT/90$** (Expected Threat) | **0.5745** | 0.5243 | 0.0358 | **+0.0502** | $p < 0.0001$ |
-| **$xA/90$** (Expected Assists) | **0.1700** | -0.0569 | 0.5484 | **+0.2269** | $p = 0.0025$ |
-| **$Key Passes/90$** | **0.3040** | 0.0568 | 0.5768 | **+0.2472** | $p < 0.0001$ |
-| **$Assists/90$** | **0.1423** | -0.0021 | 0.3591 | **+0.1444** | $p = 0.0117$ |
+| **$xT/90$** (Expected Threat) | **0.5730** | 0.5237 | 0.0364 | **+0.0493** | $p < 0.0001$ |
+| **$xA/90$** (Expected Assists) | **0.2436** | -0.0554 | 0.5713 | **+0.2991** | $p < 0.0001$ |
+| **$Key Passes/90$** | **0.3527** | 0.0367 | 0.5889 | **+0.3161** | $p < 0.0001$ |
+| **$Assists/90$** | **0.2096** | 0.0287 | 0.3466 | **+0.1809** | $p = 0.0002$ |
 
 *Nguồn: `results/tables/official/hybrid_centrality_comparison.csv`*
 
 ### 4.4.3. Kiểm định đóng góp gia tăng bằng Hồi quy OLS Out-of-Sample ($\Delta R^2$)
 Mô hình hồi quy tuyến tính OLS giải thích chỉ số $xT/90$ được huấn luyện trên tập Set A và kiểm định out-of-sample trên tập Set B:
-- **Mô hình thuần Centrality (Out-of-sample):** $R^2 = 0.2418$.
-- **Mô hình kết hợp Centrality + XAI (Out-of-sample):** $R^2 = 0.3186$.
-- **Độ tăng biến thiên giải thích ngoài mẫu:** $\Delta R^2 = +0.0768$ (tương đương tăng $7.68$ điểm phần trăm).
-- **Khoảng tin cậy 95% Bootstrap trên Set B (1.000 mẫu lại):** **$[0.0142, 0.1270]$**.
+- **Mô hình thuần Centrality (Out-of-sample):** $R^2 = 0.2409$.
+- **Mô hình kết hợp Centrality + XAI (Out-of-sample):** $R^2 = 0.3173$.
+- **Độ tăng biến thiên giải thích ngoài mẫu:** $\Delta R^2 = +0.0764$ (tương đương tăng $7.64$ điểm phần trăm).
+- **Khoảng tin cậy 95% Bootstrap trên Set B (1.000 mẫu lại):** **$[0.0120, 0.1265]$**.
 
-Do cận dưới khoảng tin cậy $0.0142 > 0$, **kết quả khẳng định thành phần XAI mang lại giá trị gia tăng thực sự và có ý nghĩa thống kê** đối với việc giải thích năng lực tạo nguy hiểm khung thành của cầu thủ, hoàn toàn loại trừ rủi ro rò rỉ dữ liệu hoặc over-fitting.
+Do cận dưới khoảng tin cậy $0.0120 > 0$, **kết quả khẳng định thành phần XAI mang lại giá trị gia tăng thực sự và có ý nghĩa thống kê** đối với việc giải thích năng lực tạo nguy hiểm khung thành của cầu thủ, hoàn toàn loại trừ rủi ro rò rỉ dữ liệu hoặc over-fitting.
 
 ### 4.4.4. Bảng xếp hạng Top Cầu thủ và Phân tích trường hợp chuyên môn
 
-**Bảng 4.5: Top 10 Cầu thủ dẫn đầu bảng xếp hạng Hybrid Centrality Ngoại hạng Anh mùa giải 2015/16 (Tập kiểm định Set B)**
+**Bảng 4.5: Top 15 Cầu thủ dẫn đầu bảng xếp hạng Hybrid Centrality Ngoại hạng Anh mùa giải 2015/16 (Tập kiểm định Set B, ngưỡng $\ge 90$ phút)**
 
-| Hạng | Cầu thủ | Đội bóng | Phút thi đấu (Set B) | Hybrid Centrality | Rank Centrality | Rank XAI | Key Passes | Kiến tạo | $xA/90$ | $xT/90$ |
-| :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| 1 | **Santi Cazorla** | Arsenal | 492.7 | **0.9638** | 0.9647 | 0.9615 | 23 | 2 | 0.481 | 0.5721 |
-| 2 | **Mesut Özil** | Arsenal | 1,318.6 | **0.9500** | 0.9519 | 0.9455 | 70 | 9 | 0.507 | 0.4691 |
-| 3 | **Aaron Ramsey** | Arsenal | 990.0 | **0.9151** | 0.9872 | 0.7468 | 17 | 1 | 0.126 | 0.3578 |
-| 4 | **Cesc Fàbregas** | Chelsea | 1,350.4 | **0.8962** | 1.0000 | 0.6538 | 46 | 8 | 0.338 | 0.3962 |
-| 5 | **Darren Fletcher**| West Brom | 1,620.3 | **0.8869** | 0.9263 | 0.7949 | 15 | 1 | 0.068 | 0.1696 |
-| 6 | **James Morrison** | West Brom | 840.3 | **0.8853** | 0.9679 | 0.6923 | 17 | 2 | 0.146 | 0.1959 |
-| 7 | **Ross Barkley** | Everton | 1,825.6 | **0.8750** | 0.9423 | 0.7179 | 47 | 6 | 0.211 | 0.2149 |
-| 8 | **Yann M'Vila** | Sunderland | 1,170.0 | **0.8744** | 0.9936 | 0.5962 | 21 | 0 | 0.088 | 0.1562 |
-| 9 | **Mark Noble** | West Ham | 1,533.9 | **0.8590** | 0.9840 | 0.5673 | 30 | 3 | 0.111 | 0.2067 |
-| 10 | **Wes Hoolahan** | Norwich | 855.2 | **0.8522** | 0.9455 | 0.6346 | 17 | 2 | 0.136 | 0.2077 |
+| Hạng | Cầu thủ | Đội bóng | Phút thi đấu | Hybrid Centrality | Rank Centrality | Rank XAI | Key Passes | KP/90 | $xA/90$ | $xT/90$ | Kiến tạo |
+| :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 1 | **Santi Cazorla** | Arsenal | 492.7 | **0.9637** | 0.9649 | 0.9617 | 20 | 3.653 | 0.372 | 0.5721 | 2 |
+| 2 | **Mesut Özil** | Arsenal | 1,318.6 | **0.9498** | 0.9521 | 0.9457 | 62 | 4.232 | 0.436 | 0.4691 | 9 |
+| 3 | **Aaron Ramsey** | Arsenal | 990.0 | **0.9034** | 0.9872 | 0.7476 | 16 | 1.455 | 0.123 | 0.3578 | 1 |
+| 4 | **Darren Fletcher** | West Brom | 1,620.3 | **0.8807** | 0.9265 | 0.7955 | 10 | 0.555 | 0.057 | 0.1696 | 1 |
+| 5 | **Cesc Fàbregas** | Chelsea | 1,350.4 | **0.8792** | 1.0000 | 0.6550 | 36 | 2.399 | 0.275 | 0.3962 | 5 |
+| 6 | **James Morrison** | West Brom | 840.3 | **0.8719** | 0.9681 | 0.6933 | 14 | 1.499 | 0.123 | 0.1959 | 2 |
+| 7 | **Ross Barkley** | Everton | 1,825.6 | **0.8642** | 0.9425 | 0.7188 | 40 | 1.972 | 0.199 | 0.2149 | 6 |
+| 8 | **Yann M'Vila** | Sunderland | 1,170.0 | **0.8550** | 0.9936 | 0.5974 | 17 | 1.308 | 0.070 | 0.1562 | 0 |
+| 9 | **Mark Noble** | West Ham | 1,533.9 | **0.8387** | 0.9840 | 0.5687 | 25 | 1.467 | 0.098 | 0.2067 | 3 |
+| 10 | **Wes Hoolahan** | Norwich | 855.2 | **0.8372** | 0.9457 | 0.6358 | 13 | 1.368 | 0.117 | 0.2077 | 2 |
+| 11 | **Ryan Mason** | Tottenham | 361.2 | **0.8356** | 0.9776 | 0.5719 | 6 | 1.495 | 0.086 | 0.2012 | 0 |
+| 12 | **Idrissa Gueye** | Aston Villa | 1,386.8 | **0.8267** | 0.9105 | 0.6709 | 15 | 0.973 | 0.046 | 0.1226 | 0 |
+| 13 | **Dimitri Payet** | West Ham | 1,310.0 | **0.8256** | 0.8435 | 0.7923 | 69 | 4.740 | 0.394 | 0.3814 | 4 |
+| 14 | **Christian Eriksen**| Tottenham | 1,427.8 | **0.8134** | 0.7955 | 0.8466 | 64 | 4.034 | 0.273 | 0.3391 | 4 |
+| 15 | **Troy Deeney** | Watford | 1,951.7 | **0.8128** | 0.7636 | 0.9042 | 34 | 1.568 | 0.246 | 0.1290 | 4 |
 
 *Nguồn: `results/tables/official/hybrid_centrality_top_players.csv`*
 
+### 4.4.5. Phân tích độ nhạy theo thời lượng thi đấu (Sensitivity Analysis)
+Để kiểm tra tính vững chắc của bảng xếp hạng và loại trừ ảnh hưởng của cỡ mẫu nhỏ (các cầu thủ ra sân ít phút như Ryan Mason 361m), thực nghiệm phân tích độ nhạy đã được thực hiện tại 3 ngưỡng thời lượng: 90 phút (toàn bộ cầu thủ), 450 phút (~5 trận trọn vẹn), và 900 phút (~10 trận - cầu thủ đá chính nửa mùa của Set B):
+
+**Bảng 4.6: Phân tích độ nhạy của Hybrid Centrality theo các ngưỡng thời lượng thi đấu**
+
+| Ngưỡng số phút | Số cầu thủ ($N$) | $\rho(xT/90)$ | Mức tăng $xT$ | $\rho(Key Passes/90)$ | $\rho(xA/90)$ | $\rho(Assists/90)$ | Top 5 Cầu thủ dẫn đầu |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| $\ge \mathbf{90}$ phút | 314 | 0.5730 | +0.0493 | 0.3527 | 0.2436 | 0.2096 | Cazorla, Özil, Ramsey, Fletcher, Fàbregas |
+| $\ge \mathbf{450}$ phút | 289 | 0.5836 | +0.0490 | 0.3566 | 0.2613 | 0.2278 | Cazorla, Özil, Ramsey, Fletcher, Fàbregas |
+| $\ge \mathbf{900}$ phút | 167 | 0.6554 | +0.0718 | 0.4931 | 0.3798 | 0.2806 | **Özil**, Ramsey, Fàbregas, Fletcher, Barkley |
+
+*Nguồn: `results/tables/official/ranking_sensitivity_by_minutes.csv`*
+
+**Nhận xét:**
+1. Khi nâng ngưỡng lên $\ge 450$ phút, các trường hợp mẫu nhỏ như Ryan Mason tự động bị sàng lọc, trong khi bộ khung Top 5 vẫn giữ nguyên sự ổn định tuyệt đối (Cazorla, Özil, Ramsey, Fletcher, Fàbregas), và Dimitri Payet (#11), Christian Eriksen (#13) vươn lên thứ hạng vững chắc.
+2. Khi nâng ngưỡng lên $\ge 900$ phút (cầu thủ trụ cột thi đấu chính thức), Mesut Özil vươn lên dẫn đầu toàn giải ($\text{HC} = 0.9536$) do Cazorla (492m) không đủ số phút thi đấu. Đồng thời, hệ số tương quan với các chỉ số tham chiếu bóng đá tăng vọt: $\rho(xT/90)$ đạt **0.6554**, $\rho(KP/90)$ đạt **0.4931**, và $\rho(xA/90)$ đạt **0.3798**.
+
+### 4.4.6. Phân biệt hai vai trò chiến thuật: Mạng luân chuyển bóng vs Sáng tạo cơ hội trực tiếp
+Một câu hỏi chiến thuật quan trọng đặt ra là: *Vì sao cầu thủ có số lượng Key Passes rất cao như Dimitri Payet (69 KP) hay Christian Eriksen (64 KP) lại xếp sau các cầu thủ có ít Key Passes hơn như Darren Fletcher (10 KP) hay Aaron Ramsey (16 KP) trên bảng xếp hạng Hybrid Centrality?*
+
+Câu trả lời nằm ở sự khác biệt cốt lõi giữa hai triết lý đánh giá chiến thuật:
+- **Hybrid Centrality ($\alpha^* = 0.65$):** Tối ưu hóa cho năng lực **Network Distribution & Threat Enabling** (vừa giữ nhịp luân chuyển trục dọc, vừa đưa bóng vào các khu vực đe dọa $xT/90$). Chỉ số này tôn vinh các tiền vệ điều tiết / trạm trung chuyển (metronomes / deep-lying playmakers) kết nối toàn đội.
+- **Creative Contribution Index:** Tối ưu hóa cho năng lực **Direct Chance Creation / Playmaking** ($50\%$ phân vị $Key Passes/90$ kết hợp $50\%$ phân vị $xA/90$). Chỉ số này tôn vinh các chân chuyền quyết định kết liễu hàng thủ đối phương.
+
+**Bảng 4.7: Bảng xếp hạng Creative Contribution (Chỉ số Sáng tạo cơ hội) và vị trí đối chiếu trên Hybrid Centrality**
+
+| Hạng Creative | Cầu thủ | Đội bóng | Phút | Creative Score | Key Passes | KP/90 | $xA/90$ | Kiến tạo | Vị trí Hybrid Centrality |
+| :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 1 | **Mesut Özil** | Arsenal | 1,318.6 | **0.9968** | 62 | 4.232 | 0.436 | 9 | **#2** |
+| 2 | **Dimitri Payet** | West Ham | 1,310.0 | **0.9968** | 69 | 4.740 | 0.394 | 4 | **#13** |
+| 3 | **Santi Cazorla** | Arsenal | 492.7 | **0.9904** | 20 | 3.653 | 0.372 | 2 | **#1** |
+| 4 | **David Silva** | Man City | 820.6 | **0.9857** | 31 | 3.400 | 0.362 | 6 | **#19** |
+| 5 | **Dušan Tadić** | Southampton | 990.7 | **0.9841** | 38 | 3.452 | 0.350 | 6 | **#165** |
+| 6 | **Gerard Deulofeu**| Everton | 895.2 | **0.9809** | 24 | 2.413 | 0.462 | 8 | **#293** |
+| 7 | **Christian Eriksen**| Tottenham | 1,427.8 | **0.9793** | 64 | 4.034 | 0.273 | 4 | **#14** |
+| 8 | **Kevin De Bruyne**| Man City | 764.4 | **0.9777** | 21 | 2.473 | 0.355 | 5 | **#77** |
+| 9 | **Erik Lamela** | Tottenham | 1,289.0 | **0.9745** | 38 | 2.653 | 0.283 | 4 | **#211** |
+| 10 | **Cesc Fàbregas** | Chelsea | 1,350.4 | **0.9634** | 36 | 2.399 | 0.275 | 5 | **#5** |
+
+*Nguồn: `results/tables/official/creative_contribution_top_players.csv`*
+
 **Bình luận chuyên môn sâu:**
-- **Santi Cazorla và Mesut Özil (Arsenal):** Chiếm trọn 2 vị trí dẫn đầu toàn giải. Cazorla là tiền vệ trung tâm lùi sâu luân chuyển bóng then chốt ($xT/90 = 0.5721$), trong khi Özil là nhạc trưởng sáng tạo cơ hội số một ($70$ Key Passes, $9$ kiến tạo). Cả hai đều đạt thứ hạng phân vị Centrality và XAI trên $0.80$, phản ánh trọn vẹn triết lý kiểm soát bóng và phối hợp nhuyễn của Arsenal mùa giải 2015/16.
-- **Loại bỏ hoàn toàn thủ môn:** Toàn bộ các thủ môn (như Petr Čech, Thibaut Courtois) đã được loại bỏ chính xác theo quy tắc chuyên môn (`exclude_goalkeepers: true`), giúp bảng xếp hạng tập trung tuyệt đối vào các vị trí trực tiếp tham gia tổ chức tấn công ngoài sân cỏ.
-- **Sự dung hòa giữa vai trò điều phối và sát thương:** Các tiền vệ trụ/lùi sâu như Yann M'Vila, Aaron Ramsey, Cesc Fàbregas sở hữu Network Centrality áp đảo ($> 0.99$), nhưng điểm XAI đóng góp vào cú sút ở mức vừa phải ($0.64$–$0.73$). Ngược lại, các cầu thủ tấn công cơ động như James Morrison và Ryan Mason có Centrality thấp hơn ($0.85$–$0.89$) nhưng điểm XAI rất cao ($0.87$–$0.90$). Chỉ số Hybrid Centrality $\alpha^* = 0.70$ đã điều hòa một cách khoa học: vừa coi trọng vị trí trung tâm trong dòng luân chuyển bóng, vừa tưởng thưởng xứng đáng cho tính hiệu quả tạo cơ hội dứt điểm.
+- **Nhóm Nhạc trưởng Toàn diện (Dual Titans):** **Mesut Özil**, **Santi Cazorla** và **Cesc Fàbregas** là những cầu thủ hiếm hoi ngự trị ở đỉnh cao của cả hai bảng xếp hạng. Họ vừa là trạm trung chuyển điều tiết bóng của toàn đội (Rank Centrality $> 0.95$), vừa trực tiếp tạo ra lượng cơ hội dứt điểm đột biến (Creative Score $> 0.96$).
+- **Nhóm Chân chuyền Đột biến ở 1/3 sân cuối (Final-Third Creators):** **Dimitri Payet**, **David Silva**, **Dušan Tadić**, **Gerard Deulofeu**, và **Kevin De Bruyne** sở hữu các chỉ số Key Passes và $xA/90$ thuộc top đầu giải đấu. Tuy nhiên, họ thi đấu tự do ở hành lang cánh hoặc sát vòng cấm, ít tham gia vào mạng lưới kiểm soát bóng phòng ngự/giữa sân nên Betweenness Centrality ở mức trung bình. Họ xếp hạng cực cao ở Creative Contribution (#1–#8) dù vị trí Hybrid Centrality thấp hơn.
+- **Nhóm Mỏ neo / Điều phối Tuyến giữa (Midfield Metronomes):** **Darren Fletcher**, **Aaron Ramsey**, **Yann M'Vila**, và **Mark Noble** là xương sống phân phối bóng cho các đội bóng. Họ duy trì nhịp độ chuyền bóng trục dọc (Hybrid Centrality Top 10), tạo nền tảng cho đồng đội tuyến trên dứt điểm dù không trực tiếp tung ra nhiều Key Passes.
+
+### 4.4.7. Thảo luận phương pháp luận về Cổng Gate D17 và Tính thăm dò của PGExplainer
+Cần nhấn mạnh một cách trung thực và tường minh về mặt khoa học:
+1. Thuật toán **PGExplainer** được lựa chọn để trích xuất điểm quan trọng cầu thủ trên toàn bộ 380 trận đấu nhờ ưu điểm vượt trội về độ ổn định (Stability đạt **0.9872**, so với 0.2851 của GNNExplainer) và tốc độ suy luận nhanh thông qua mạng nơ-ron tham số hóa.
+2. Tuy nhiên, tại Cổng kiểm soát chất lượng **Gate D17** trên tập Test 1.222 đồ thị, PGExplainer chưa đạt yêu cầu nghiêm ngặt ($\text{Fidelity}^+ < \text{Fidelity}^-$, khoảng tin cậy $[-0.0306, 0.0049]$ vắt qua 0). Trong khi đó, heuristic `last_edge` và `gnn_explainer` vượt qua Gate D17 nhưng lại hạn chế về tính bao quát hoặc chi phí tính toán.
+3. Do đó, việc xây dựng chỉ số Hybrid Centrality dựa trên điểm số của PGExplainer trong nghiên cứu này đóng vai trò là một **minh chứng phương pháp luận mang tính thăm dò (exploratory methodological proof-of-concept)**. Nghiên cứu đã chứng minh thành công khung lý thuyết: *khi kết hợp độ đo trung tâm mạng với mức độ quan trọng từ XAI có áp dụng co rút Bayesian và phân chia A/B out-of-sample, chỉ số mới mang lại giá trị gia tăng thực sự về mặt thống kê ($\Delta R^2 > 0$)*. Khi các mô hình Explainer thỏa mãn đồng thời cả Gate D17 lẫn độ ổn định cao ra đời, khung phương pháp luận đề xuất hoàn toàn sẵn sàng tiếp nhận mà không cần thay đổi cấu trúc toán học.
 
 ---
 
