@@ -406,7 +406,9 @@ def optimize_alpha_on_set_a(
     alphas = np.arange(0.0, 1.0 + alpha_step / 2.0, alpha_step)
 
     if has_split_halves:
-        common_pids = set(half_a1_df["player_id"]).intersection(set(half_a2_df["player_id"]))
+        # Lọc nghiêm ngặt tập cầu thủ của 2 nửa split-half đồng nhất với quần thể Set A (D16)
+        valid_pids = set(merged["player_id"])
+        common_pids = set(half_a1_df["player_id"]).intersection(set(half_a2_df["player_id"])).intersection(valid_pids)
         if len(common_pids) >= 10:
             h1 = half_a1_df[half_a1_df["player_id"].isin(common_pids)].sort_values("player_id").copy()
             h2 = half_a2_df[half_a2_df["player_id"].isin(common_pids)].sort_values("player_id").copy()

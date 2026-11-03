@@ -19,7 +19,7 @@ traditional:
 
 # Thành phần 2 - điểm quan trọng từ XAI (D12)
 xai_importance:
-  source_explainer: "pg_explainer"             # Sử dụng PGExplainer với tính ổn định cao 0.9900
+  source_explainer: "pg_explainer"             # Sử dụng PGExplainer với tính ổn định cao 0.9872
   aggregation: "mean_with_global_shrinkage"    # Trung bình importance có co về trung bình toàn cục
   shrinkage_m: 20                              # Tham số co m = 20 lần tham gia
   min_possessions: 30                          # Ngưỡng lọc tối thiểu 30 lần tham gia
@@ -31,7 +31,7 @@ combination:
   sensitivity_normalization: "zscore"
   exclude_goalkeepers: true                    # Loại thủ môn khỏi bảng xếp hạng
   formula: "alpha * centrality_norm + (1 - alpha) * xai_importance_norm"
-  alpha: 0.70                                  # Tối ưu hóa trên tập Set A theo D16 (alpha* = 0.70)
+  alpha: 0.65                                  # Tối ưu hóa trên tập Set A theo D16 (alpha* = 0.65)
   alpha_search_range: [0.0, 1.0]
   alpha_search_step: 0.05
   alpha_selection_criterion: "spearman_xt_with_reliability_constraint"

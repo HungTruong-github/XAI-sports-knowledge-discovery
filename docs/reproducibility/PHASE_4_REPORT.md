@@ -53,6 +53,23 @@ Nguồn dữ liệu: `results/tables/official/hybrid_centrality_comparison.csv`
 | **$Key Passes/90$** | **0.3527** | 0.0367 | 0.5889 | **+0.3161** | $p < 0.0001$ |
 | **$Assists/90$** | **0.2096** | 0.0287 | 0.3466 | **+0.1809** | $p = 0.0002$ |
 
+### 3.1. Đối sánh đa biến thể kiểm chứng đối chứng (Ablation Baselines) trên Set B:
+
+Nguồn dữ liệu: `results/tables/official/hybrid_centrality_baselines_comparison.csv`
+
+| Biến thể kiểm chứng | $\rho(xT/90)$ | $\rho(xA/90)$ | $\rho(Key Passes/90)$ | $\rho(Assists/90)$ |
+| :--- | :---: | :---: | :---: | :---: |
+| Pure Centrality (Betweenness, $\alpha = 1.0$) | 0.5237 | -0.0554 | 0.0367 | 0.0287 |
+| Pure XAI (PGExplainer Full, $\alpha = 0.0$) | 0.0364 | 0.5713 | 0.5889 | 0.3466 |
+| Pure XAI Control (No Last Edge, $\alpha = 0.0$) | 0.1337 | 0.1461 | 0.1451 | 0.1103 |
+| **Hybrid Centrality (Full, $\alpha^* = 0.65$)** | **0.5730** | **0.2436** | **0.3527** | **0.2096** |
+| Hybrid Control (No Last Edge, $\alpha = 0.65$) | 0.5729 | 0.2435 | 0.3526 | 0.2095 |
+
+**Nhận định cơ chế nhãn chia sẻ và kiểm chứng đối chứng:**
+- Điểm XAI thuần có tương quan rất cao với $Key Passes/90$ ($0.5889$) và $xA/90$ ($0.5713$) do mô hình GNN dự đoán possession có cú sút hay không, mà cú sút bắt nguồn trực tiếp từ key passes (nhãn chia sẻ tự nhiên).
+- Khi loại bỏ cạnh cuối cùng (`No Last Edge`), tương quan với Key Passes giảm mạnh từ $0.5889$ xuống $0.1451$, chứng minh điểm XAI thực sự phân bổ trọng số lớn cho pha dọn cỗ quyết định, đồng thời tương quan với $xT/90$ tăng từ $0.0364$ lên $0.1337$ (nắm bắt cấu trúc tịnh tiến bóng trước đó).
+- Hybrid Centrality ($\alpha^* = 0.65$) dung hòa xuất sắc hai thái cực: giữ vững năng lực đại diện luân chuyển bóng ($xT/90 = 0.5730$) đồng thời phản ánh rõ nét đóng góp tạo cơ hội ($Key Passes/90 = 0.3527$).
+
 ### Phân tích hồi quy OLS ngoài mẫu (Out-of-Sample) và Mức tăng giải thích ($\Delta R^2_{\text{OOS}}$):
 - Quy trình kiểm định độc lập triệt để: Mô hình OLS được ước lượng trọng số trên **Set A**, sau đó cố định hệ số và đánh giá dự báo ngoài mẫu trực tiếp trên **Set B** với $N = 314$ cầu thủ:
   - Mô hình nền tảng (chỉ dùng Betweenness Centrality): $R^2_{\text{base, OOS}} = 0.2409$.
@@ -128,8 +145,8 @@ Nguồn dữ liệu: `results/tables/official/creative_contribution_top_players.
 ## 5. Thảo luận phương pháp luận: Cổng Gate D17 và Tính thăm dò của PGExplainer
 
 1. **Lý do sử dụng PGExplainer cho quy mô toàn mùa:** PGExplainer có độ ổn định vượt trội (Stability **0.9872** so với 0.2851 của GNNExplainer) và tốc độ suy luận nhanh bằng mạng nơ-ron tham số hóa.
-2. **Minh bạch về Gate D17:** Trên tập Test 1.222 đồ thị, PGExplainer chưa vượt qua Gate D17 (Fidelity+ < Fidelity-).
-3. **Ý nghĩa khoa học:** Chỉ số Hybrid Centrality dựa trên PGExplainer đóng vai trò là một **minh chứng phương pháp luận mang tính thăm dò (exploratory methodological proof-of-concept)**, khẳng định khung lý thuyết kết hợp XAI và Network Centrality đem lại giá trị gia tăng thực sự về mặt thống kê ($\Delta R^2 > 0$). Khi có Explainer mới vừa thỏa mãn Gate D17 vừa có độ ổn định cao, hệ thống hoàn toàn sẵn sàng tích hợp mà không cần thay đổi công thức toán học.
+2. **Minh bạch về Gate D17:** Trên tập Test 1.222 đồ thị, PGExplainer chưa vượt qua Gate D17 do $\Delta\text{Fidelity}$ của nó (+0.0368) thấp hơn mức ngẫu nhiên Random (+0.0496), và khoảng tin cậy phân cụm theo cặp 95% Bootstrap CI $[-0.0306, +0.0049]$ vắt qua 0.
+3. **Ý nghĩa khoa học:** Chỉ số Hybrid Centrality dựa trên PGExplainer đóng vai trò là một **minh chứng phương pháp luận mang tính thăm dò (exploratory methodological proof-of-concept)**, khẳng định khung lý thuyết kết hợp XAI và Network Centrality đem lại giá trị gia tăng thực sự về mặt thống kê ($\Delta R^2 = +0.0764$, 95% Bootstrap CI $[0.0120, 0.1265]$, hoàn toàn không sử dụng kẹp `max(0, ...)`). Khi có Explainer mới vừa thỏa mãn Gate D17 vừa có độ ổn định cao, hệ thống hoàn toàn sẵn sàng tích hợp mà không cần thay đổi công thức toán học.
 
 ---
 
@@ -143,6 +160,7 @@ Nguồn dữ liệu: `results/tables/official/creative_contribution_top_players.
 
 2. **Bảng kết quả chính thức:**
    - `results/tables/official/hybrid_centrality_comparison.csv`
+   - `results/tables/official/hybrid_centrality_baselines_comparison.csv`
    - `results/tables/official/hybrid_centrality_top_players.csv`
    - `results/tables/official/ranking_sensitivity_by_minutes.csv`
    - `results/tables/official/creative_contribution_top_players.csv`

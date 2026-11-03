@@ -46,9 +46,9 @@ Nhằm tìm hiểu xem cơ chế gộp biểu diễn đồ thị có thể nâng
 *Nguồn: `results/tables/official/readout_comparison.csv`*
 
 **Thảo luận khoa học về RQ1:**
-1. **Ưu thế tuyệt đối của MPNN trong nhóm GNN:** MPNN vượt trội hoàn toàn so với GCN (+0.1470 AUC-PR), GATv2 (+0.1376) và GraphSAGE (+0.0837). Nguyên nhân chính là do MPNN tận dụng triệt để 12 chiều đặc trưng cạnh (tọa độ không gian, góc chuyền, cự ly, áp lực đối phương), trong khi GCN và GraphSAGE chỉ truyền tải thông điệp dựa trên cấu trúc liên kết đỉnh.
-2. **So sánh trung thực với Tabular Baselines:** Random Forest (0.6198) và ANN (0.6117) vẫn đạt AUC-PR nhỉnh hơn MPNN (0.5996). Điều này được giải thích bởi sự khác biệt về bản chất biểu diễn: mô hình dạng bảng trực tiếp nhận các đặc trưng tổng hợp toàn cục (vị trí kết thúc chuỗi bóng, tốc độ tiến triển bóng tổng thể), trong khi GNN phải tự học biểu diễn này thông qua thông điệp lan truyền từng bước.
-3. **Thực thi Quyết định D4:** Biến thể `mpnn_lastedge` đạt Validation AUC-PR cao nhất (0.5921), vượt trội baseline +0.0074. Tuy nhiên, mức cải thiện này chưa đạt ngưỡng tối thiểu 0.0100 đã đăng ký trước. Theo đúng nguyên tắc khoa học, **mô hình MPNN Mean Pooling nguyên bản tiếp tục được duy trì làm mô hình backbone chính thức**. Đáng chú ý, ở seed 1024, `mpnn_lastedge` đạt Test AUC-PR lên tới **0.6107**, tiệm cận trực tiếp hiệu năng của mô hình ANN phi đồ thị (0.6117).
+1. **Ưu thế của MPNN trong nhóm GNN và vai trò của đặc trưng cạnh:** MPNN vượt trội đáng kể so với GCN (+0.1470 AUC-PR), GATv2 (+0.1376) và GraphSAGE (+0.0837). Nguyên nhân cốt lõi là MPNN tận dụng triệt để 12 chiều đặc trưng cạnh biểu diễn thuộc tính không gian và động học của từng đường chuyền (tọa độ gốc và đích, cự ly, góc chuyền, độ lệch góc, thời lượng đường chuyền, cự ly tịnh tiến dọc sân, chỉ báo vùng 1/3 cuối sân, chỉ báo chuyền về và thời gian tích lũy trong pha bóng). Trong khi đó, các biến thể baseline như GCN và GraphSAGE không tiếp nhận thuộc tính cạnh mà chỉ truyền tin dựa trên ma trận kề và đặc trưng đỉnh, còn kiến trúc GATv2 trong thử nghiệm chưa cấu hình tiếp nhận đặc trưng cạnh đa chiều (`edge_dim=12`). Điều này chỉ ra rằng hiệu năng vượt trội của MPNN so với các họ GNN khác trong bài toán bóng đá chủ yếu bắt nguồn từ việc mô hình hóa các thuộc tính hình học và động lực học trên từng đường chuyền hơn là độ sâu lan truyền thuần túy.
+2. **So sánh khách quan với Tabular Baselines:** Random Forest (0.6198) và ANN (0.6117) đạt AUC-PR trung bình nhỉnh hơn MPNN (0.5996). Tuy nhiên, theo kiểm định hậu nghiệm phi tham số Holm-Bonferroni (với hiệu chỉnh Bonferroni-Dunn), sự khác biệt này không đạt mức ý nghĩa thống kê ($p_{\text{Holm}} \approx 0.27$). Hiệu năng của MPNN là tương đương (on par) với các mô hình học máy dạng bảng mạnh nhất, nhưng MPNN sở hữu lợi thế cốt lõi mà mô hình phi đồ thị không có: khả năng trích xuất mức độ quan trọng có cấu trúc của từng đường chuyền và từng cầu thủ thông qua các thuật toán XAI trên đồ thị.
+3. **Thực thi Quyết định D4:** Biến thể `mpnn_lastedge` đạt Validation AUC-PR trung bình 5 seeds là 0.5921, cao hơn baseline MPNN mean (0.5847) là +0.0074. Tuy nhiên, mức cải thiện này chưa đạt ngưỡng tối thiểu 0.0100 đã đăng ký trước trong kế hoạch nghiên cứu. Theo đúng nguyên tắc khoa học và tiêu chí chọn mô hình trên tập validation, **mô hình MPNN Mean Pooling nguyên bản tiếp tục được duy trì làm kiến trúc backbone chính thức** cho toàn bộ các giai đoạn XAI tiếp theo.
 
 ---
 
@@ -75,7 +75,7 @@ Chất lượng giải thích của 4 thuật toán (`gnn_explainer`, `pg_explai
 **Thảo luận khoa học về RQ2:**
 1. **Kiểm định Paired Clustered Bootstrap theo trận đấu:** Để giải quyết triệt để tương quan phụ thuộc giữa các tình huống bóng trong cùng trận đấu, Gate D17 áp dụng phương pháp lấy mẫu lại phân cụm theo `match_id` (57 cụm trận, 1.000 lần resample) và tính trực tiếp hiệu số theo cặp $\Delta\text{Fid}_{\text{expl}} - \Delta\text{Fid}_{\text{rand}}$ trên từng đồ thị. Kết quả chứng minh cả heuristic `last_edge` ($+0.2282$, CI $[0.2077, 0.2502]$) lẫn `gnn_explainer` ($+0.1111$, CI $[0.0939, 0.1286]$) đều vượt qua Cổng kiểm soát Gate D17 với mức ý nghĩa thống kê cao.
 2. **Vai trò then chốt của đường chuyền quyết định:** Heuristic `last_edge` tiếp tục đạt hiệu năng giải thích cao nhất ($\Delta\text{Fidelity} = +0.2779$). Khi đường chuyền cuối cùng bị loại bỏ, xác suất dự đoán cú sút giảm mạnh nhất ($\text{Fidelity}^+ = 0.1237$), trong khi chỉ giữ lại đường chuyền này giúp duy trì tối đa độ tự tin dự đoán ($\text{Fidelity}^- = -0.1542$).
-3. **Độ ổn định và tốc độ suy luận của PGExplainer:** Mặc dù PGExplainer chưa vượt qua Gate D17 trên tập test, phương pháp này sở hữu độ ổn định gần như tuyệt đối (**0.9872** so với 0.2851 của GNNExplainer) cùng tốc độ suy luận nhanh hơn gấp nhiều lần. Nhờ đó, PGExplainer là lựa chọn thích hợp cho việc suy luận diện rộng trong quy trình Cross-Fitting.
+3. **Độ ổn định, tốc độ suy luận và lý do PGExplainer trượt Gate D17:** PGExplainer sở hữu độ ổn định qua các lần chạy gần như tuyệt đối (**0.9872** so với 0.2851 của GNNExplainer) cùng tốc độ suy luận nhanh gấp hàng trăm lần nhờ mạng nơ-ron tham số hóa. Tuy nhiên, PGExplainer không vượt qua Cổng kiểm soát Gate D17 vì $\Delta\text{Fidelity}$ của mô hình chỉ đạt $+0.0368$, thấp hơn baseline ngẫu nhiên Random ($+0.0496$), và khoảng tin cậy phân cụm theo cặp 95% Bootstrap CI $[-0.0306, +0.0049]$ vắt qua giá trị 0. Điều này chỉ ra rằng mặt nạ giải thích của PGExplainer chưa phân biệt được các cạnh then chốt tốt hơn việc lựa chọn cạnh ngẫu nhiên ở cấp độ từng tình huống possession đơn lẻ.
 
 ---
 
@@ -108,14 +108,31 @@ Tại $\alpha^* = 0.65$ cố định từ Set A, chỉ số Hybrid Centrality đ
 
 *Nguồn: `results/tables/official/hybrid_centrality_comparison.csv`*
 
+**Bảng 4.4b: Đối sánh đa biến thể kiểm chứng đối chứng (Ablation Baselines) trên Set B**
+
+| Biến thể kiểm chứng | $\rho(xT/90)$ | $\rho(xA/90)$ | $\rho(Key Passes/90)$ | $\rho(Assists/90)$ |
+| :--- | :---: | :---: | :---: | :---: |
+| Pure Centrality (Betweenness, $\alpha = 1.0$) | 0.5237 | -0.0554 | 0.0367 | 0.0287 |
+| Pure XAI (PGExplainer Full, $\alpha = 0.0$) | 0.0364 | 0.5713 | 0.5889 | 0.3466 |
+| Pure XAI Control (No Last Edge, $\alpha = 0.0$) | 0.1337 | 0.1461 | 0.1451 | 0.1103 |
+| **Hybrid Centrality (Full, $\alpha^* = 0.65$)** | **0.5730** | **0.2436** | **0.3527** | **0.2096** |
+| Hybrid Control (No Last Edge, $\alpha = 0.65$) | 0.5729 | 0.2435 | 0.3526 | 0.2095 |
+
+*Nguồn: `results/tables/official/hybrid_centrality_baselines_comparison.csv`*
+
+**Thảo luận về cơ chế nhãn chia sẻ và kiểm chứng đối chứng (Ablation Analysis):**
+1. **Cơ chế nhãn chia sẻ (Label Sharing):** Điểm XAI thuần có tương quan rất cao với $Key Passes/90$ ($0.5889$) và $xA/90$ ($0.5713$). Điều này hoàn toàn tự nhiên vì mô hình GNN được huấn luyện để dự đoán possession có cú sút hay không, và trong bóng đá, các đường chuyền quyết định (Key Passes) chính là tiền đề trực tiếp tạo ra cú sút. Cầu thủ thường xuyên thực hiện đường chuyền dứt điểm sẽ nhận điểm gán quan trọng cao từ mô hình.
+2. **Kiểm chứng loại bỏ cạnh cuối (No Last Edge Ablation):** Khi loại bỏ đường chuyền cuối cùng khỏi mỗi pha bóng, tương quan của XAI thuần với $Key Passes/90$ giảm mạnh từ $0.5889$ xuống $0.1451$, nhưng tương quan với năng lực tịnh tiến bóng $xT/90$ lại tăng từ $0.0364$ lên $0.1337$. Điều này chứng minh điểm XAI không chỉ nắm bắt đường chuyền dọn cỗ cuối cùng mà còn nắm bắt được cấu trúc phối hợp triển khai bóng (build-up progression) ở các khâu trước đó.
+3. **Cân bằng tối ưu của Hybrid Centrality:** Centrality thuần túy có tương quan $xT/90$ tốt ($0.5237$) nhưng hoàn toàn mất liên hệ với khả năng tạo cơ hội dứt điểm ($\rho \approx 0.03$). Ngược lại, XAI thuần túy chỉ tập trung vào khâu kết thúc. Chỉ số kết hợp Hybrid Centrality tại $\alpha^* = 0.65$ đạt sự cân bằng lý tưởng: vừa nâng cao năng lực đại diện cho luân chuyển bóng trục dọc ($xT/90$ tăng lên $0.5730$), vừa gia tăng đáng kể khả năng phản ánh đóng góp sáng tạo cơ hội thực tế ($Key Passes/90$ đạt $0.3527$, $xA/90$ đạt $0.2436$).
+
 ### 4.4.3. Kiểm định đóng góp gia tăng bằng Hồi quy OLS Out-of-Sample ($\Delta R^2$)
 Mô hình hồi quy tuyến tính OLS giải thích chỉ số $xT/90$ được huấn luyện trên tập Set A và kiểm định out-of-sample trên tập Set B:
 - **Mô hình thuần Centrality (Out-of-sample):** $R^2 = 0.2409$.
 - **Mô hình kết hợp Centrality + XAI (Out-of-sample):** $R^2 = 0.3173$.
 - **Độ tăng biến thiên giải thích ngoài mẫu:** $\Delta R^2 = +0.0764$ (tương đương tăng $7.64$ điểm phần trăm).
-- **Khoảng tin cậy 95% Bootstrap trên Set B (1.000 mẫu lại):** **$[0.0120, 0.1265]$**.
+- **Khoảng tin cậy 95% Bootstrap không kẹp trên Set B (1.000 mẫu lại):** **$[0.0120, 0.1265]$**.
 
-Do cận dưới khoảng tin cậy $0.0120 > 0$, **kết quả khẳng định thành phần XAI mang lại giá trị gia tăng thực sự và có ý nghĩa thống kê** đối với việc giải thích năng lực tạo nguy hiểm khung thành của cầu thủ, hoàn toàn loại trừ rủi ro rò rỉ dữ liệu hoặc over-fitting.
+Do cận dưới khoảng tin cậy $0.0120 > 0$ (hoàn toàn được tính toán từ phân phối sai số tự do, không sử dụng bất kỳ hàm kẹp `max(0, ...)` nào), **kết quả khẳng định thành phần XAI mang lại giá trị gia tăng thực sự và có ý nghĩa thống kê** đối với việc giải thích năng lực tạo nguy hiểm khung thành của cầu thủ, hoàn toàn loại trừ rủi ro rò rỉ dữ liệu hoặc over-fitting.
 
 ### 4.4.4. Bảng xếp hạng Top Cầu thủ và Phân tích trường hợp chuyên môn
 
@@ -190,14 +207,14 @@ Câu trả lời nằm ở sự khác biệt cốt lõi giữa hai triết lý �
 ### 4.4.7. Thảo luận phương pháp luận về Cổng Gate D17 và Tính thăm dò của PGExplainer
 Cần nhấn mạnh một cách trung thực và tường minh về mặt khoa học:
 1. Thuật toán **PGExplainer** được lựa chọn để trích xuất điểm quan trọng cầu thủ trên toàn bộ 380 trận đấu nhờ ưu điểm vượt trội về độ ổn định (Stability đạt **0.9872**, so với 0.2851 của GNNExplainer) và tốc độ suy luận nhanh thông qua mạng nơ-ron tham số hóa.
-2. Tuy nhiên, tại Cổng kiểm soát chất lượng **Gate D17** trên tập Test 1.222 đồ thị, PGExplainer chưa đạt yêu cầu nghiêm ngặt ($\text{Fidelity}^+ < \text{Fidelity}^-$, khoảng tin cậy $[-0.0306, 0.0049]$ vắt qua 0). Trong khi đó, heuristic `last_edge` và `gnn_explainer` vượt qua Gate D17 nhưng lại hạn chế về tính bao quát hoặc chi phí tính toán.
+2. Tuy nhiên, tại Cổng kiểm soát chất lượng **Gate D17** trên tập Test 1.222 đồ thị, PGExplainer chưa đạt yêu cầu nghiêm ngặt do $\Delta\text{Fidelity}$ của nó (+0.0368) thấp hơn mức ngẫu nhiên Random (+0.0496), và khoảng tin cậy phân cụm theo cặp 95% Bootstrap CI $[-0.0306, +0.0049]$ vắt qua 0. Trong khi đó, heuristic `last_edge` và `gnn_explainer` vượt qua Gate D17 nhưng lại hạn chế về tính bao quát hoặc chi phí tính toán khi chạy trên quy mô toàn mùa giải.
 3. Do đó, việc xây dựng chỉ số Hybrid Centrality dựa trên điểm số của PGExplainer trong nghiên cứu này đóng vai trò là một **minh chứng phương pháp luận mang tính thăm dò (exploratory methodological proof-of-concept)**. Nghiên cứu đã chứng minh thành công khung lý thuyết: *khi kết hợp độ đo trung tâm mạng với mức độ quan trọng từ XAI có áp dụng co rút Bayesian và phân chia A/B out-of-sample, chỉ số mới mang lại giá trị gia tăng thực sự về mặt thống kê ($\Delta R^2 > 0$)*. Khi các mô hình Explainer thỏa mãn đồng thời cả Gate D17 lẫn độ ổn định cao ra đời, khung phương pháp luận đề xuất hoàn toàn sẵn sàng tiếp nhận mà không cần thay đổi cấu trúc toán học.
 
 ---
 
 ## 4.5. TỔNG KẾT VÀ ĐÓNG GÓP KHOA HỌC
 
-1. **Về mô hình dự đoán:** Khẳng định MPNN là kiến trúc GNN phù hợp nhất cho dữ liệu mạng chuyền bóng nhờ cơ chế nhúng đặc trưng cạnh đa chiều. Cơ chế gộp `mpnn_lastedge` mở ra hướng tiếp cận triển vọng khi đạt kết quả tiệm cận mô hình học máy phi đồ thị.
-2. **Về phương pháp giải thích:** Cung cấp bằng chứng thực nghiệm độc lập và nghiêm ngặt đầu tiên về tính chất của các phương pháp XAI trên mạng chuyền bóng, chỉ ra vai trò chi phối của hành động cuối cùng trong chuỗi dứt điểm.
-3. **Về chỉ số đề xuất:** Đã đề xuất và kiểm chứng thành công chỉ số **Hybrid Centrality** với giao thức A/B chống rò rỉ mẫu, chứng minh tính vượt trội trong việc tương quan với các chỉ số sáng tạo cơ hội thực tế ($xA/90$, $Key Passes/90$) và mang lại đóng góp gia tăng có ý nghĩa thống kê ($\Delta R^2 > 0$ ở mức 95% tin cậy).
+1. **Về mô hình dự đoán:** Khẳng định MPNN là kiến trúc GNN phù hợp nhất cho dữ liệu mạng chuyền bóng nhờ cơ chế nhúng đặc trưng cạnh đa chiều. Hiệu năng của MPNN tương đương (on par) với các baseline học máy phi đồ thị mạnh nhất ($p_{\text{Holm}} \approx 0.27$).
+2. **Về phương pháp giải thích:** Cung cấp đánh giá thực nghiệm độc lập và nghiêm ngặt về tính chất của các phương pháp XAI trên mạng chuyền bóng, phân tích rõ ràng vai trò chi phối của hành động cuối cùng trong chuỗi dứt điểm và kiểm định Gate D17 phân cụm theo trận đấu.
+3. **Về chỉ số đề xuất:** Đã đề xuất và kiểm chứng thành công chỉ số **Hybrid Centrality** với giao thức A/B chống rò rỉ mẫu, chứng minh tính vượt trội trong việc cân bằng giữa khả năng giữ nhịp luân chuyển bóng ($xT/90$) và phản ánh đóng góp sáng tạo cơ hội thực tế ($xA/90$, $Key Passes/90$), mang lại đóng góp gia tăng có ý nghĩa thống kê ($\Delta R^2 = +0.0764$, 95% Bootstrap CI $[0.0120, 0.1265]$).
 

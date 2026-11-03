@@ -104,9 +104,9 @@ def compute_out_of_sample_ols_delta_r2(
     ss_res_base = float(np.sum((y_te - y_pred_base) ** 2))
     ss_res_full = float(np.sum((y_te - y_pred_full) ** 2))
 
-    r2_base_oos = max(0.0, float(1.0 - ss_res_base / ss_tot))
-    r2_full_oos = max(0.0, float(1.0 - ss_res_full / ss_tot))
-    delta_r2 = max(0.0, r2_full_oos - r2_base_oos)
+    r2_base_oos = float(1.0 - ss_res_base / ss_tot)
+    r2_full_oos = float(1.0 - ss_res_full / ss_tot)
+    delta_r2 = float(r2_full_oos - r2_base_oos)
 
     # 3. Bootstrap 95% CI trên tập kiểm định Set B
     rng = np.random.default_rng(42)
@@ -120,9 +120,9 @@ def compute_out_of_sample_ols_delta_r2(
             continue
         res_b_base = float(np.sum((y_b - y_pred_base[idx]) ** 2))
         res_b_full = float(np.sum((y_b - y_pred_full[idx]) ** 2))
-        r2_b_base = max(0.0, float(1.0 - res_b_base / tot_b))
-        r2_b_full = max(0.0, float(1.0 - res_b_full / tot_b))
-        deltas.append(max(0.0, r2_b_full - r2_b_base))
+        r2_b_base = float(1.0 - res_b_base / tot_b)
+        r2_b_full = float(1.0 - res_b_full / tot_b)
+        deltas.append(float(r2_b_full - r2_b_base))
 
     ci_l = float(np.percentile(deltas, 2.5)) if deltas else 0.0
     ci_u = float(np.percentile(deltas, 97.5)) if deltas else 0.0
@@ -296,9 +296,14 @@ def main() -> int:
     xai_h1 = apply_xai_shrinkage(xai_raw_h1, shrinkage_m=shrinkage_m, min_possessions=max(10, min_possessions // 2))
     xai_h2 = apply_xai_shrinkage(xai_raw_h2, shrinkage_m=shrinkage_m, min_possessions=max(10, min_possessions // 2))
 
-    # Ghép cho 2 nửa split-half Set A
+    # Ghép cho 2 nửa split-half Set A và bổ sung thông tin số phút thi đấu từ Set A
     half_a1_df = pd.merge(cent_a1, xai_h1, on="player_id", how="inner").drop_duplicates(subset=["player_id"])
     half_a2_df = pd.merge(cent_a2, xai_h2, on="player_id", how="inner").drop_duplicates(subset=["player_id"])
+    if minutes_a is not None and not minutes_a.empty:
+        cols_to_use = [c for c in ["player_id", "minutes_played", "is_goalkeeper"] if c in minutes_a.columns]
+        m_sub = minutes_a[cols_to_use].drop_duplicates("player_id")
+        half_a1_df = pd.merge(half_a1_df, m_sub, on="player_id", how="left")
+        half_a2_df = pd.merge(half_a2_df, m_sub, on="player_id", how="left")
 
     # Tạo thư mục xuất kết quả
     run_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -377,6 +382,39 @@ def main() -> int:
 
     comp_df = pd.DataFrame(comparison_rows)
     comp_df.to_csv(out_dir / "hybrid_centrality_comparison.csv", index=False, encoding="utf-8-sig")
+
+    # Đánh giá biến thể đối chứng Ablation: No-Last-Edge (loại cạnh cuối cùng)
+    hc_b_no_last = compute_hybrid_centrality(
+        centrality_df=cent_b,
+        xai_player_df=xai_b,
+        alpha=best_alpha,
+        centrality_col="betweenness",
+        xai_col="mean_importance_no_last",
+        exclude_goalkeepers=exclude_gks,
+        lineups_dir=args.lineups_dir,
+        minutes_df=minutes_b,
+        min_minutes=90.0,
+    )
+    eval_no_last = pd.merge(hc_b_no_last, ref_b_clean, on="player_id", how="inner").drop_duplicates(subset=["player_id"]).reset_index(drop=True)
+
+    # Lập bảng đối sánh đa biến thể kiểm chứng (Baselines & Ablations Comparison)
+    baseline_variants = [
+        ("Pure Centrality (Betweenness, alpha=1.0)", eval_merged["rank_centrality"]),
+        ("Pure XAI (PGExplainer Full, alpha=0.0)", eval_merged["rank_xai"]),
+        ("Pure XAI Control (No Last Edge, alpha=0.0)", eval_no_last["rank_xai"]),
+        (f"Hybrid Centrality (Full, alpha={best_alpha:.2f})", eval_merged["hybrid_centrality"]),
+        (f"Hybrid Control (No Last Edge, alpha={best_alpha:.2f})", eval_no_last["hybrid_centrality"]),
+    ]
+    base_comp_rows = []
+    for var_name, series_val in baseline_variants:
+        row_dict = {"variant": var_name}
+        for m in metrics:
+            if m in eval_merged.columns:
+                corr_v, _ = spearmanr(series_val, eval_merged[m])
+                row_dict[m] = round(float(corr_v), 4)
+        base_comp_rows.append(row_dict)
+    base_comp_df = pd.DataFrame(base_comp_rows)
+    base_comp_df.to_csv(out_dir / "hybrid_centrality_baselines_comparison.csv", index=False, encoding="utf-8-sig")
 
     # 9. Out-of-sample OLS Regression: Fit trên Set A, Evaluate trên Set B
     hc_a = compute_hybrid_centrality(
@@ -497,7 +535,7 @@ def main() -> int:
         "clean_working_tree": True,
         "d17_note": (
             "Gate D17 Note: PGExplainer achieved high cross-run stability (0.9872) for large-scale inference, "
-            "but its Fidelity+ on the possession test set was lower than Fidelity-, not meeting strict Gate D17 criteria. "
+            "but its Delta Fidelity (+0.0368) was lower than the Random baseline (+0.0496), failing strict Gate D17 criteria. "
             "Consequently, this player-level Hybrid Centrality evaluation serves as an exploratory methodological "
             "proof-of-concept demonstrating how GNN-XAI can be integrated with network centrality once a Gate D17-compliant explainer is available."
         ),
@@ -526,6 +564,7 @@ def main() -> int:
         "git": get_git_info(),
         "tables": {
             "comparison": "results/tables/official/hybrid_centrality_comparison.csv",
+            "baselines_comparison": "results/tables/official/hybrid_centrality_baselines_comparison.csv",
             "top_players": "results/tables/official/hybrid_centrality_top_players.csv",
             "sensitivity": "results/tables/official/ranking_sensitivity_by_minutes.csv",
             "creative_contribution": "results/tables/official/creative_contribution_top_players.csv",
@@ -539,6 +578,7 @@ def main() -> int:
         official_dir = Path("results/tables/official")
         official_dir.mkdir(parents=True, exist_ok=True)
         comp_df.to_csv(official_dir / "hybrid_centrality_comparison.csv", index=False, encoding="utf-8-sig")
+        base_comp_df.to_csv(official_dir / "hybrid_centrality_baselines_comparison.csv", index=False, encoding="utf-8-sig")
         player_rankings.to_csv(official_dir / "hybrid_centrality_top_players.csv", index=False, encoding="utf-8-sig")
         sens_df.to_csv(official_dir / "ranking_sensitivity_by_minutes.csv", index=False, encoding="utf-8-sig")
         creative_top.to_csv(official_dir / "creative_contribution_top_players.csv", index=False, encoding="utf-8-sig")

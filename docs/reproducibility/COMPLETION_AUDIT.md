@@ -76,7 +76,7 @@
 ## 4. TỔNG KẾT DANH MỤC DECISION RECORDS ĐÃ CHỐT
 
 1. `0001-quy-tac-gan-nhan.md`: Chốt bài toán phân loại nhị phân cấp possession với mục tiêu cú sút (`shot`), tỷ lệ dương 14,26% trên 380 trận.
-2. `0002-cong-thuc-hybrid-centrality.md`: Chốt công thức kết hợp tuyến tính với chuẩn hóa Percentile Rank và tham số tối ưu $\alpha^* = 0.70$.
+2. `0002-cong-thuc-hybrid-centrality.md`: Chốt công thức kết hợp tuyến tính với chuẩn hóa Percentile Rank và tham số tối ưu $\alpha^* = 0.65$.
 3. `0003-don-vi-do-thi-cho-xai.md`: Chốt đồ thị possession cắt trước cú sút đầu tiên; ngưỡng tối thiểu $\ge 4$ cạnh cho phân tích XAI.
 4. `0004-main-dataset-premier-league-2015-16.md`: Chấp thuận sử dụng trọn vẹn 380 trận StatsBomb Ngoại hạng Anh 2015/16.
 5. `0005-readout-mpnn.md`: Thực thi quy tắc D4: Giữ nguyên MPNN mean pooling làm backbone chính thức (margin +0.0074 < 0.0100).
