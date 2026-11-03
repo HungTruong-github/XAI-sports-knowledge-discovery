@@ -286,8 +286,18 @@ def compute_hybrid_centrality(
     xai_col: str = "mean_importance",
     exclude_goalkeepers: bool = True,
     lineups_dir: str | Path | None = None,
+    min_minutes: float = 90.0,
+    minutes_df: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
-    """Tính chỉ số Hybrid Centrality kết hợp giữa Network Centrality và XAI (D12, D14)."""
+    """Tính chỉ số Hybrid Centrality kết hợp giữa Network Centrality và XAI (D12, D14).
+
+    Quy trình chuẩn hóa chuẩn mực:
+    1. Ghép centrality và XAI theo duy nhất player_id.
+    2. Lọc cầu thủ đủ điều kiện (loại thủ môn và lọc minutes_played >= min_minutes)
+       TRƯỚC KHI tính Percentile Rank để đảm bảo không bị méo mó phân phối phân vị.
+    3. Chuẩn hóa Percentile Rank trên đoạn [0, 1] trên tập cầu thủ đã lọc.
+    4. Kết hợp tuyến tính: HC = alpha * Rank_Centrality + (1 - alpha) * Rank_XAI.
+    """
     cent = centrality_df.drop_duplicates(subset=["player_id"]).copy()
     xai = xai_player_df.drop_duplicates(subset=["player_id"]).copy()
 
@@ -295,14 +305,27 @@ def compute_hybrid_centrality(
     if merged.empty:
         return pd.DataFrame()
 
-    # Loại bỏ thủ môn nếu được yêu cầu
+    # Ghép thông tin số phút và thủ môn nếu có
+    if minutes_df is not None and not minutes_df.empty:
+        cols_to_use = [c for c in ["player_id", "player_name", "team_name", "minutes_played", "is_goalkeeper"] if c in minutes_df.columns]
+        m_sub = minutes_df[cols_to_use].drop_duplicates("player_id")
+        merged = pd.merge(merged, m_sub, on="player_id", how="left")
+
+    # Loại bỏ thủ môn TRƯỚC KHI tính percentile nếu được yêu cầu
     if exclude_goalkeepers:
         if "is_goalkeeper" not in merged.columns and lineups_dir is not None and Path(lineups_dir).exists():
             gk_df = compute_player_minutes(lineups_dir)[["player_id", "is_goalkeeper"]].drop_duplicates("player_id")
             merged = pd.merge(merged, gk_df, on="player_id", how="left")
 
         if "is_goalkeeper" in merged.columns:
-            merged = merged[~merged["is_goalkeeper"].fillna(False)]
+            merged = merged[~merged["is_goalkeeper"].fillna(False)].copy()
+
+    # Lọc số phút thi đấu tối thiểu TRƯỚC KHI tính percentile
+    if min_minutes > 0.0 and "minutes_played" in merged.columns:
+        merged = merged[merged["minutes_played"] >= min_minutes].copy()
+
+    if merged.empty:
+        return pd.DataFrame()
 
     c_vals = merged[centrality_col].fillna(0.0)
     x_vals = merged[xai_col].fillna(0.0)
@@ -325,12 +348,17 @@ def optimize_alpha_on_set_a(
     alpha_step: float = 0.05,
     target_metric: str = "xt_per_90",
     split_half_min_reliability_ratio: float = 0.70,
+    min_minutes: float = 90.0,
+    exclude_goalkeepers: bool = True,
+    lineups_dir: str | Path | None = None,
     half_a1_df: pd.DataFrame | None = None,
     half_a2_df: pd.DataFrame | None = None,
+    minutes_df: pd.DataFrame | None = None,
 ) -> tuple[float, pd.DataFrame]:
     """Quét grid search alpha in [0, 1] trên Set A để tìm alpha* tối ưu (Quyết định D16).
 
-    Có áp dụng ràng buộc độ tin cậy chia đôi (split-half reliability constraint):
+    Có áp dụng lọc thủ môn và phút thi đấu trước khi tính percentile,
+    và ràng buộc độ tin cậy chia đôi (split-half reliability constraint):
         r_rel(alpha) >= split_half_min_reliability_ratio * max_alpha(r_rel(alpha))
     """
     merged_base = pd.merge(
@@ -346,9 +374,22 @@ def optimize_alpha_on_set_a(
         how="inner",
     )
 
-    # Lọc cầu thủ có >= 90 phút thi đấu
-    if "minutes_played" in merged.columns:
-        merged = merged[merged["minutes_played"] >= 90.0]
+    if minutes_df is not None and not minutes_df.empty and "minutes_played" not in merged.columns:
+        cols_to_use = [c for c in ["player_id", "minutes_played", "is_goalkeeper"] if c in minutes_df.columns]
+        m_sub = minutes_df[cols_to_use].drop_duplicates("player_id")
+        merged = pd.merge(merged, m_sub, on="player_id", how="left")
+
+    # Loại bỏ thủ môn nhất quán trước khi tính percentile
+    if exclude_goalkeepers:
+        if "is_goalkeeper" not in merged.columns and lineups_dir is not None and Path(lineups_dir).exists():
+            gk_df = compute_player_minutes(lineups_dir)[["player_id", "is_goalkeeper"]].drop_duplicates("player_id")
+            merged = pd.merge(merged, gk_df, on="player_id", how="left")
+        if "is_goalkeeper" in merged.columns:
+            merged = merged[~merged["is_goalkeeper"].fillna(False)].copy()
+
+    # Lọc cầu thủ có >= min_minutes phút thi đấu TRƯỚC KHI tính percentile
+    if min_minutes > 0.0 and "minutes_played" in merged.columns:
+        merged = merged[merged["minutes_played"] >= min_minutes].copy()
 
     if len(merged) < 10 or target_metric not in merged.columns:
         logger.warning("Không đủ dữ liệu trên Set A để tối ưu alpha! Trả về mặc định 0.5")
@@ -367,8 +408,13 @@ def optimize_alpha_on_set_a(
     if has_split_halves:
         common_pids = set(half_a1_df["player_id"]).intersection(set(half_a2_df["player_id"]))
         if len(common_pids) >= 10:
-            h1 = half_a1_df[half_a1_df["player_id"].isin(common_pids)].sort_values("player_id")
-            h2 = half_a2_df[half_a2_df["player_id"].isin(common_pids)].sort_values("player_id")
+            h1 = half_a1_df[half_a1_df["player_id"].isin(common_pids)].sort_values("player_id").copy()
+            h2 = half_a2_df[half_a2_df["player_id"].isin(common_pids)].sort_values("player_id").copy()
+
+            if exclude_goalkeepers and "is_goalkeeper" in h1.columns:
+                h1 = h1[~h1["is_goalkeeper"].fillna(False)]
+                h2 = h2[~h2["is_goalkeeper"].fillna(False)]
+
             h1_c = percentile_rank(h1["betweenness"].fillna(0.0))
             h1_x = percentile_rank(h1["mean_importance"].fillna(0.0))
             h2_c = percentile_rank(h2["betweenness"].fillna(0.0))

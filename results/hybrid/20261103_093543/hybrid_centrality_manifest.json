@@ -1,0 +1,146 @@
+{
+  "step": "Phase 4: Hybrid Centrality Official Evaluation (Leak-free Out-of-Sample Protocol)",
+  "run_id": "20261103_093543",
+  "clean_working_tree": true,
+  "d17_note": "Gate D17 Note: PGExplainer achieved high cross-run stability (0.9872) for large-scale inference, but its Fidelity+ on the possession test set was lower than Fidelity-, not meeting strict Gate D17 criteria. Consequently, this player-level Hybrid Centrality evaluation serves as an exploratory methodological proof-of-concept demonstrating how GNN-XAI can be integrated with network centrality once a Gate D17-compliant explainer is available.",
+  "decisions": {
+    "D12": "unbiased player importance (mean per participation, global shrinkage m=20, min_possessions=30)",
+    "D13": "match-to-season minute-weighted passing network, min 30 mins/match, betweenness primary measure",
+    "D14": "percentile rank normalization across qualified players (filtered min_minutes and goalkeepers pre-ranking)",
+    "D15": "A/B match split (190 Set A, 190 Set B, disjoint halves), per-90 rates standardized by split minutes",
+    "D16": "Grid search alpha on Set A with split-half reliability constraint, evaluate Out-of-Sample on Set B",
+    "D17": "Gate D17 exploratory validation of PGExplainer in downstream metric formulation"
+  },
+  "optimal_alpha": 0.65,
+  "set_a_matches": 190,
+  "set_b_matches": 190,
+  "n_players_evaluated_set_b": 314,
+  "spearman_correlations_set_b": {
+    "xt_per_90": {
+      "hybrid_centrality": {
+        "spearman": 0.573,
+        "p_value": 0.0
+      },
+      "pure_centrality": {
+        "spearman": 0.5237,
+        "p_value": 0.0
+      },
+      "pure_xai": {
+        "spearman": 0.0364,
+        "p_value": 0.52
+      },
+      "gain_over_centrality": 0.0493
+    },
+    "xA_per_90": {
+      "hybrid_centrality": {
+        "spearman": 0.2436,
+        "p_value": 0.0
+      },
+      "pure_centrality": {
+        "spearman": -0.0554,
+        "p_value": 0.3275
+      },
+      "pure_xai": {
+        "spearman": 0.5713,
+        "p_value": 0.0
+      },
+      "gain_over_centrality": 0.2991
+    },
+    "key_passes_per_90": {
+      "hybrid_centrality": {
+        "spearman": 0.3527,
+        "p_value": 0.0
+      },
+      "pure_centrality": {
+        "spearman": 0.0367,
+        "p_value": 0.5173
+      },
+      "pure_xai": {
+        "spearman": 0.5889,
+        "p_value": 0.0
+      },
+      "gain_over_centrality": 0.3161
+    },
+    "assists_per_90": {
+      "hybrid_centrality": {
+        "spearman": 0.2096,
+        "p_value": 0.0002
+      },
+      "pure_centrality": {
+        "spearman": 0.0287,
+        "p_value": 0.6126
+      },
+      "pure_xai": {
+        "spearman": 0.3466,
+        "p_value": 0.0
+      },
+      "gain_over_centrality": 0.1809
+    }
+  },
+  "out_of_sample_ols_regression_xt": {
+    "r2_pure_centrality": 0.2409,
+    "r2_full_model": 0.3173,
+    "delta_r2": 0.0764,
+    "ci_95_bootstrap": [
+      0.012,
+      0.1265
+    ],
+    "statistically_significant": true
+  },
+  "sensitivity_analysis": {
+    "threshold_90m": {
+      "n_players": 314,
+      "spearman_xt90": 0.573,
+      "gain_xt90": 0.0493,
+      "top_5_players": [
+        "Santiago Cazorla González",
+        "Mesut Özil",
+        "Aaron Ramsey",
+        "Darren Fletcher",
+        "Francesc Fàbregas i Soler"
+      ]
+    },
+    "threshold_450m": {
+      "n_players": 289,
+      "spearman_xt90": 0.5836,
+      "gain_xt90": 0.049,
+      "top_5_players": [
+        "Santiago Cazorla González",
+        "Mesut Özil",
+        "Aaron Ramsey",
+        "Darren Fletcher",
+        "Francesc Fàbregas i Soler"
+      ]
+    },
+    "threshold_900m": {
+      "n_players": 167,
+      "spearman_xt90": 0.6554,
+      "gain_xt90": 0.0718,
+      "top_5_players": [
+        "Mesut Özil",
+        "Aaron Ramsey",
+        "Francesc Fàbregas i Soler",
+        "Darren Fletcher",
+        "Ross Barkley"
+      ]
+    }
+  },
+  "xai_provenance": {
+    "set_a_file": "results\\xai\\hybrid\\player_importance_set_a.parquet",
+    "set_a_sha256": "1221dfa7a87f3a54dd334707da148bb078254ab4d1007f7c0f27c2cc22571eb8",
+    "set_b_file": "results\\xai\\hybrid\\player_importance_set_b.parquet",
+    "set_b_sha256": "8964e002cc286ab2408608a84bd64b85b4acd1324bb857e1cb20ee309b6b6cc7"
+  },
+  "git": {
+    "branch": "feature/08-xai-completion",
+    "commit_sha": "26cda2757b5c8720c94140e45727491b96fda824",
+    "clean_working_tree": false,
+    "is_git_repo": true
+  },
+  "tables": {
+    "comparison": "results/tables/official/hybrid_centrality_comparison.csv",
+    "top_players": "results/tables/official/hybrid_centrality_top_players.csv",
+    "sensitivity": "results/tables/official/ranking_sensitivity_by_minutes.csv",
+    "creative_contribution": "results/tables/official/creative_contribution_top_players.csv"
+  }
+}

@@ -46,6 +46,12 @@ class ExpectedThreatModel:
         r, c = self.coord_to_cell(x, y)
         return r * self.n_cols + c
 
+    def coords_to_indices(self, xs: np.ndarray, ys: np.ndarray) -> np.ndarray:
+        """Chuyển đổi vector tọa độ (x, y) sang vector chỉ số 1D phẳng (vectorized)."""
+        cols = np.clip(np.floor(xs / self.cell_w), 0, self.n_cols - 1).astype(int)
+        rows = np.clip(np.floor(ys / self.cell_h), 0, self.n_rows - 1).astype(int)
+        return rows * self.n_cols + cols
+
     def fit(self, events_df: pd.DataFrame, match_ids: set[int] | None = None) -> ExpectedThreatModel:
         """Huấn luyện mô hình xT bằng quy hoạch động Bellman trên dữ liệu sự kiện.
 
@@ -63,43 +69,47 @@ class ExpectedThreatModel:
         goal_counts = np.zeros(self.n_cells, dtype=float)
         move_matrix = np.zeros((self.n_cells, self.n_cells), dtype=float)
 
-        # 1. Thu thập các hành động Shot
+        # 1. Thu thập các hành động Shot (vectorized)
         shots = df[df["event_type"] == "Shot"]
-        for _, s in shots.iterrows():
-            sx = s.get("x")
-            sy = s.get("y")
-            if pd.isna(sx) or pd.isna(sy):
-                continue
-            idx = self.coord_to_index(float(sx), float(sy))
-            total_actions[idx] += 1.0
-            shot_counts[idx] += 1.0
-            if s.get("shot_outcome") == "Goal":
-                goal_counts[idx] += 1.0
+        valid_shots = shots[shots["x"].notna() & shots["y"].notna()]
+        if not valid_shots.empty:
+            s_idx = self.coords_to_indices(
+                valid_shots["x"].to_numpy(dtype=float),
+                valid_shots["y"].to_numpy(dtype=float),
+            )
+            np.add.at(total_actions, s_idx, 1.0)
+            np.add.at(shot_counts, s_idx, 1.0)
+            is_goal = (valid_shots["shot_outcome"] == "Goal").to_numpy(dtype=bool)
+            np.add.at(goal_counts, s_idx[is_goal], 1.0)
 
-        # 2. Thu thập các hành động di chuyển bóng (Passes & Carries thành công)
-        # Passes thành công: pass_outcome is null
-        passes = df[(df["event_type"] == "Pass") & (df["pass_outcome"].isna())]
-        for _, p in passes.iterrows():
-            x1, y1 = p.get("x"), p.get("y")
-            x2, y2 = p.get("pass_end_x"), p.get("pass_end_y")
-            if pd.isna(x1) or pd.isna(y1) or pd.isna(x2) or pd.isna(y2):
-                continue
-            u = self.coord_to_index(float(x1), float(y1))
-            v = self.coord_to_index(float(x2), float(y2))
-            total_actions[u] += 1.0
-            move_matrix[u, v] += 1.0
-
-        # Carries:
-        carries = df[df["event_type"] == "Carry"]
-        for _, c in carries.iterrows():
-            x1, y1 = c.get("x"), c.get("y")
-            x2, y2 = c.get("pass_end_x"), c.get("pass_end_y")
-            if pd.isna(x1) or pd.isna(y1) or pd.isna(x2) or pd.isna(y2):
-                continue
-            u = self.coord_to_index(float(x1), float(y1))
-            v = self.coord_to_index(float(x2), float(y2))
-            total_actions[u] += 1.0
-            move_matrix[u, v] += 1.0
+        # 2. Thu thập các hành động di chuyển bóng (Passes & Carries thành công, vectorized)
+        p_mask = (
+            (df["event_type"] == "Pass")
+            & df["pass_outcome"].isna()
+            & df["x"].notna()
+            & df["y"].notna()
+            & df["pass_end_x"].notna()
+            & df["pass_end_y"].notna()
+        )
+        c_mask = (
+            (df["event_type"] == "Carry")
+            & df["x"].notna()
+            & df["y"].notna()
+            & df["pass_end_x"].notna()
+            & df["pass_end_y"].notna()
+        )
+        moves = df[p_mask | c_mask]
+        if not moves.empty:
+            u_idx = self.coords_to_indices(
+                moves["x"].to_numpy(dtype=float),
+                moves["y"].to_numpy(dtype=float),
+            )
+            v_idx = self.coords_to_indices(
+                moves["pass_end_x"].to_numpy(dtype=float),
+                moves["pass_end_y"].to_numpy(dtype=float),
+            )
+            np.add.at(total_actions, u_idx, 1.0)
+            np.add.at(move_matrix, (u_idx, v_idx), 1.0)
 
         # 3. Tính toán xác suất chuyển trạng thái
         shot_prob = np.zeros(self.n_cells, dtype=float)
@@ -166,18 +176,23 @@ class ExpectedThreatModel:
         if actions.empty:
             return pd.DataFrame()
 
-        start_vals = []
-        end_vals = []
-        for _, row in actions.iterrows():
-            v_start = self.get_value(float(row["x"]), float(row["y"]))
-            v_end = self.get_value(float(row["pass_end_x"]), float(row["pass_end_y"]))
-            start_vals.append(v_start)
-            end_vals.append(v_end)
+        u_idx = self.coords_to_indices(
+            actions["x"].to_numpy(dtype=float),
+            actions["y"].to_numpy(dtype=float),
+        )
+        v_idx = self.coords_to_indices(
+            actions["pass_end_x"].to_numpy(dtype=float),
+            actions["pass_end_y"].to_numpy(dtype=float),
+        )
 
-        actions["xt_start"] = start_vals
-        actions["xt_end"] = end_vals
+        v_flat = self.grid_values.flatten()
+        v_start = v_flat[u_idx]
+        v_end = v_flat[v_idx]
+
+        actions["xt_start"] = v_start
+        actions["xt_end"] = v_end
         # Delta xT dương (chỉ tính đóng góp tích cực tạo nguy hiểm)
-        actions["delta_xt"] = np.maximum(0.0, np.array(end_vals) - np.array(start_vals))
+        actions["delta_xt"] = np.maximum(0.0, v_end - v_start)
 
         return actions
 

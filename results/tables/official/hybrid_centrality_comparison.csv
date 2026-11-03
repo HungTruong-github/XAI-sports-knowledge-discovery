@@ -1,5 +1,5 @@
-metric,hybrid_centrality_spearman,hybrid_p_value,pure_centrality_spearman,centrality_p_value,pure_xai_spearman,xai_p_value,gain_over_centrality
-xt_per_90,0.5745,0.0000,0.5243,0.0000,0.0358,0.5284,+0.0502
-xA_per_90,0.1700,0.0025,-0.0569,0.3150,0.5484,0.0000,+0.2269
-key_passes_per_90,0.3040,0.0000,0.0568,0.3159,0.5768,0.0000,+0.2472
-assists_per_90,0.1423,0.0117,-0.0021,0.9705,0.3591,0.0000,+0.1444
+﻿metric,hybrid_centrality_spearman,hybrid_p_value,pure_centrality_spearman,centrality_p_value,pure_xai_spearman,xai_p_value,gain_over_centrality
+xt_per_90,0.5730,0.0000,0.5237,0.0000,0.0364,0.5200,+0.0493
+xA_per_90,0.2436,0.0000,-0.0554,0.3275,0.5713,0.0000,+0.2991
+key_passes_per_90,0.3527,0.0000,0.0367,0.5173,0.5889,0.0000,+0.3161
+assists_per_90,0.2096,0.0002,0.0287,0.6126,0.3466,0.0000,+0.1809
