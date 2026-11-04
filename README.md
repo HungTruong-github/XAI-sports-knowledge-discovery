@@ -5,7 +5,7 @@
 Hướng nghiên cứu cụ thể: *Mạng chuyền bóng và phân tích chiến thuật bóng đá bằng Graph Neural Network (GNN) kết hợp XAI.*
 
 Repository: `https://github.com/HungTruong-github/XAI-sports-knowledge-discovery`  
-Branch hiện tại: `Clean`
+Branch hiện tại: `feature/08-xai-completion`
 
 ---
 
@@ -100,7 +100,7 @@ Branch hiện tại: `Clean`
 | **7** | Đối sánh Readout Pooling | **Đã hoàn thành** | Huấn luyện 5 seeds cho `max`, `attention`, `mean_lastedge`. Biến thể `mean_lastedge` đạt Val AUC-PR 0.5921 (+0.0074 so với mean 0.5847 < ngưỡng 0.0100 của D4) -> Giữ `mpnn` mean pooling làm backbone. Xem `PHASE_1_REPORT.md` |
 | **8** | Đối sánh XAI & Gate D17 | **Đã hoàn thành** | Đối sánh 4 explainers trên 1.222 test graphs (57 trận). Gate D17 (Paired Clustered 95% CI theo match_id): GNNExplainer PASS (+0.1111, CI [0.0939, 0.1286]), PGExplainer FAIL (-0.0128, Stability 0.9872), Last-edge Heuristic PASS (+0.2282, CI [0.2077, 0.2502]). Trạng thái `OFFICIAL_VERIFIED`. Xem `PHASE_3_REPORT.md` |
 | **9** | Cross-Fitting & Hybrid Centrality | **Đã hoàn thành** | Giao thức A/B chống rò rỉ mẫu triệt để (Set A cross-fit nội bộ, Set B chuyển giao); co rút Bayesian $m=20$, $n_i \ge 30$; trung bình có trọng số phút thi đấu; loại trừ thủ môn; tối ưu α* = 0.65 trên Set A (190 trận). Xem `PHASE_4_REPORT.md` |
-| **10**| Kiểm chứng & Khóa luận | **Đã hoàn thành** | Đánh giá ngoài mẫu Out-of-Sample trên Set B (190 trận, 314 cầu thủ): Tương quan Spearman xA/90 (+0.2991), Key Passes/90 (+0.3161), xT/90 (+0.0493). Hồi quy OLS xT/90 ngoài mẫu: $\Delta R^2_{\text{OOS}} = +0.0764$ (95% Bootstrap CI [0.0120, 0.1265] > 0). Bổ sung trích xuất StatsBomb key_pass_id chính thức, lọc trước percentile, phân tích độ nhạy thời lượng (90m, 450m, 900m) và bảng xếp hạng Creative Contribution. Xuất 7 bộ biểu đồ chính thức và hoàn thiện `docs/thesis/ket_qua_va_thao_luan.md` |
+| **10**| Kiểm chứng & Khóa luận | **Đã hoàn thành** | Đánh giá ngoài mẫu Out-of-Sample trên Set B (190 trận, 314 cầu thủ): Tương quan Spearman của Hybrid Centrality đạt xT/90 = 0.5730 (tăng +0.0493 so với Betweenness thuần), Key Passes/90 = 0.3527 (tăng +0.3161), xA/90 = 0.2436 (tăng +0.2991), Assists/90 = 0.2096 (tăng +0.1809). Hồi quy OLS xT/90 ngoài mẫu: $\Delta R^2_{\text{OOS}} = +0.0764$ (95% Bootstrap CI [0.0120, 0.1265] > 0, unclipped). Bổ sung trích xuất StatsBomb key_pass_id chính thức, lọc trước percentile, phân tích độ nhạy thời lượng (90m, 450m, 900m) và bảng xếp hạng Creative Contribution. Xuất 7 bộ biểu đồ chính thức và hoàn thiện `docs/thesis/ket_qua_va_thao_luan.md` |
 
 ---
 

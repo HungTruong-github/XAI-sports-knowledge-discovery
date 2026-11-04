@@ -65,6 +65,8 @@ data/external/**
 *.npz
 # ...trừ các file nhỏ nằm trong results/ dùng cho báo cáo, data/splits/ và outputs/
 !results/**/*.csv
+!results/xai/hybrid/*.parquet
+!results/xai/crossfit/player_importance_oof.parquet
 !data/splits/**/*.csv
 !data/splits/*.csv
 !outputs/**/*.csv

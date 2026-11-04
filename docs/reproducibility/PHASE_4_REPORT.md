@@ -34,10 +34,10 @@
 Nguồn dữ liệu: `results/tables/official/alpha_curve.csv` hoặc `results/hybrid/<run_id>/alpha_curve.csv`
 
 Quá trình quét tham số $\alpha \in [0.0, 1.0]$ (bước nhảy $0.05$) với mục tiêu tối đa hóa tương quan Spearman với chỉ số đe dọa khung thành ($xT/90$), kết hợp ràng buộc độ tin cậy split-half ($r_{\text{rel}} \ge 0.70 \times r_{\text{max}}$):
-- $\alpha = 0.00$ (Thuần XAI Importance): Tương quan Spearman với $xT/90$ = $0.1656$ ($p = 0.0022$).
-- $\alpha = 0.50$: Tương quan Spearman với $xT/90$ = $0.5530$ ($p < 0.0001$).
-- $\alpha = 0.65$: Đạt điểm tối ưu $\rho = 0.5691$ ($p < 0.0001$), độ tin cậy split-half thỏa mãn ràng buộc độ tin cậy.
-- $\alpha = 1.00$ (Thuần Betweenness Centrality): Tương quan Spearman với $xT/90$ = $0.5198$ ($p < 0.0001$).
+- $\alpha = 0.00$ (Thuần XAI Importance): Tương quan Spearman với $xT/90$ = $0.0641$ ($p = 0.2547$).
+- $\alpha = 0.50$: Tương quan Spearman với $xT/90$ = $0.4929$ ($p < 0.0001$).
+- $\alpha = 0.65$: Đạt điểm tối ưu $\rho = 0.5691$ ($p < 0.0001$), độ tin cậy split-half đạt $0.6522$ (thỏa mãn ràng buộc độ tin cậy $\ge 0.70 \times r_{\text{max}} = 0.5365$).
+- $\alpha = 1.00$ (Thuần Betweenness Centrality): Tương quan Spearman với $xT/90$ = $0.5045$ ($p < 0.0001$).
 - **Giá trị tối ưu được chốt:** $\alpha^* = 0.65$. Điểm số này cân bằng khoa học giữa cấu trúc luân chuyển bóng (65%) và đóng góp tạo cơ hội dứt điểm từ XAI (35%).
 
 ---
