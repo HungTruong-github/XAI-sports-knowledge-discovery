@@ -1,0 +1,9 @@
+# MPNN với Max Readout
+name: "mpnn_max"
+type: "gnn"
+num_layers: 3
+hidden_dim: 64
+dropout: 0.3
+edge_dim: null
+readout: "max"
+head_hidden_dim: 32

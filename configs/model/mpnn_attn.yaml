@@ -1,0 +1,9 @@
+# MPNN với Attention Readout
+name: "mpnn_attn"
+type: "gnn"
+num_layers: 3
+hidden_dim: 64
+dropout: 0.3
+edge_dim: null
+readout: "attention"
+head_hidden_dim: 32

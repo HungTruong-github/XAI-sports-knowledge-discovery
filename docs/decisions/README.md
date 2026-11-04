@@ -25,7 +25,9 @@ Ghi lại tại đây để:
 
 | # | Quyết định | Trạng thái | Chặn bước nào |
 |---|---|---|---|
-| [0001](0001-quy-tac-gan-nhan.md) | Quy tắc gán nhãn possession | Chưa quyết định | Bước 3 trở đi |
-| [0002](0002-cong-thuc-hybrid-centrality.md) | Công thức Hybrid Centrality | Chưa quyết định | Bước 9 |
-| [0003](0003-don-vi-do-thi-cho-xai.md) | Đơn vị đồ thị và ngưỡng lọc độ dài possession cho XAI | Chưa quyết định | Bước 7 trở đi |
+| [0001](0001-quy-tac-gan-nhan.md) | Quy tắc gán nhãn possession (D1) | Đã chốt (2026-11-02) | Bước 3 trở đi |
+| [0002](0002-cong-thuc-hybrid-centrality.md) | Công thức Hybrid Centrality (D12–D17) | Đã chốt (2026-11-02) | Bước 9 |
+| [0003](0003-don-vi-do-thi-cho-xai.md) | Đơn vị đồ thị và ngưỡng lọc độ dài possession cho XAI (D2) | Đã chốt (2026-11-02) | Bước 7 trở đi |
 | [0004](0004-main-dataset-premier-league-2015-16.md) | Main dataset — Premier League 2015/16 | Đã chốt (Accepted) | Bước 1 trở đi |
+| [0005](0005-readout-mpnn.md) | Lựa chọn cơ chế Readout cho mô hình MPNN (D4) | Đã chốt (2026-11-02) | Bước 5, 7 |
+| [0006](0006-giao-thuc-xai.md) | Giao thức thực nghiệm và đánh giá chất lượng XAI (D3, D5–D11, D17) | Đã chốt (2026-11-02) | Bước 7, 8 |

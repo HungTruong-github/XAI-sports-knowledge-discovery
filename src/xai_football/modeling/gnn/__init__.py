@@ -49,7 +49,7 @@ def build_gnn_model(
 
     if name == "gcn":
         return GCNModel(node_in_dim=node_in_dim, **kwargs)
-    elif name == "mpnn":
+    elif name == "mpnn" or name.startswith("mpnn_") or name.startswith("mpnn"):
         return MPNNModel(node_in_dim=node_in_dim, edge_in_dim=edge_in_dim, **kwargs)
     elif name in ("gat", "gatv2"):
         return GATv2Model(node_in_dim=node_in_dim, **kwargs)

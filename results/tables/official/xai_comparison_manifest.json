@@ -1,0 +1,49 @@
+{
+  "task": "Official XAI Comparison and Gate D17 Cluster Bootstrap Audit",
+  "run_id": "20261102_181703",
+  "provenance_status": "OFFICIAL_VERIFIED",
+  "sample_mode": "official",
+  "split": "test",
+  "n_graphs_total": 1222,
+  "n_pos_graphs": 611,
+  "n_neg_graphs": 611,
+  "n_matches_covered": 57,
+  "min_edges": 4,
+  "model_name": "mpnn",
+  "model_checkpoint": "models/official/mpnn_best.pt",
+  "model_checkpoint_sha256": "afe94d38981644af1d00002e46a93c5ab64cd4819e7ed91cddc7db449ffdb70b",
+  "gate_d17_evaluation": {
+    "bootstrap_method": "paired_clustered_by_match_id",
+    "n_bootstraps": 1000,
+    "seed": 42,
+    "cluster_col": "match_id",
+    "n_matches_clustered": 57,
+    "n_graphs_paired": 1222,
+    "results": {
+      "gnn_explainer": {
+        "mean_paired_diff": 0.1111,
+        "ci_lower": 0.0939,
+        "ci_upper": 0.1286,
+        "gate_d17_pass": true
+      },
+      "pg_explainer": {
+        "mean_paired_diff": -0.0128,
+        "ci_lower": -0.0306,
+        "ci_upper": 0.0049,
+        "gate_d17_pass": false
+      },
+      "last_edge": {
+        "mean_paired_diff": 0.2282,
+        "ci_lower": 0.2077,
+        "ci_upper": 0.2502,
+        "gate_d17_pass": true
+      }
+    },
+    "overall_gate_status": "PASS"
+  },
+  "git": {
+    "branch": "feature/08-xai-completion",
+    "commit_sha": "d897e9b0f6eb5182dfb47635083278374a93214f"
+  }
+}
+

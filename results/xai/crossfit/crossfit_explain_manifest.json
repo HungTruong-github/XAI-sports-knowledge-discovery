@@ -1,0 +1,43 @@
+{
+  "step": "Phase 3: Out-of-Fold Cross-fitting XAI",
+  "explainer": "pg_explainer",
+  "n_total_explanations": 11400,
+  "folds": {
+    "fold_1": {
+      "checkpoint": "models\\crossfit\\fold_1\\best_model.pt",
+      "checkpoint_sha256": "1182d8f325205bfc6822322fa2452e625c1a002f7cf298b9d52c6c174ad3f163",
+      "n_graphs_explained": 2280,
+      "n_matches": 76
+    },
+    "fold_2": {
+      "checkpoint": "models\\crossfit\\fold_2\\best_model.pt",
+      "checkpoint_sha256": "26af7632cc543b083acca64b922fa71ebdfb3bac71e6e7edca20f891608e7667",
+      "n_graphs_explained": 2280,
+      "n_matches": 76
+    },
+    "fold_3": {
+      "checkpoint": "models\\crossfit\\fold_3\\best_model.pt",
+      "checkpoint_sha256": "b92e9d3c61d5a92362d74074558c62e7571efe04184fe0cdc3f9fd93f609959c",
+      "n_graphs_explained": 2280,
+      "n_matches": 76
+    },
+    "fold_4": {
+      "checkpoint": "models\\crossfit\\fold_4\\best_model.pt",
+      "checkpoint_sha256": "236e4d44be79237edbcf91e8da55f0e519a44db7af49f03f93eb45e955c6e7ef",
+      "n_graphs_explained": 2280,
+      "n_matches": 76
+    },
+    "fold_5": {
+      "checkpoint": "models\\crossfit\\fold_5\\best_model.pt",
+      "checkpoint_sha256": "852e466399f79452e550b524ccdeb7203c40aa9558ae06362fd5443c3a451671",
+      "n_graphs_explained": 2280,
+      "n_matches": 76
+    }
+  },
+  "git": {
+    "branch": "feature/08-xai-completion",
+    "commit_sha": "655829fcce670b1d71f5a43db889ef1bf20e11d0",
+    "clean_working_tree": false,
+    "is_git_repo": true
+  }
+}

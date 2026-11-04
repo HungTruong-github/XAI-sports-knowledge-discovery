@@ -1,0 +1,9 @@
+# MPNN với Mean + Last Edge Readout
+name: "mpnn_lastedge"
+type: "gnn"
+num_layers: 3
+hidden_dim: 64
+dropout: 0.3
+edge_dim: null
+readout: "mean_lastedge"
+head_hidden_dim: 32

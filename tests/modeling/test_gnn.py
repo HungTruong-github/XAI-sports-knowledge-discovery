@@ -23,6 +23,7 @@ def dummy_graph_batch():
     x1 = torch.randn(3, 8)
     e1 = torch.tensor([[0, 1], [1, 2]], dtype=torch.long)
     ea1 = torch.randn(2, 12)
+    ea1[:, 10] = torch.tensor([0.0, 1.0])
     y1 = torch.tensor([1], dtype=torch.long)
     g1 = Data(x=x1, edge_index=e1, edge_attr=ea1, y=y1, match_id=101)
 
@@ -30,6 +31,7 @@ def dummy_graph_batch():
     x2 = torch.randn(4, 8)
     e2 = torch.tensor([[0, 1, 2], [1, 2, 3]], dtype=torch.long)
     ea2 = torch.randn(3, 12)
+    ea2[:, 10] = torch.tensor([0.0, 0.5, 1.0])
     y2 = torch.tensor([0], dtype=torch.long)
     g2 = Data(x=x2, edge_index=e2, edge_attr=ea2, y=y2, match_id=102)
 
@@ -46,6 +48,36 @@ def test_readout_and_head(dummy_graph_batch):
     head = BinaryClassifierHead(in_dim=8, hidden_dim=16)
     logits = head(emb)
     assert logits.shape == (2,)
+
+
+def test_readout_mean_lastedge(dummy_graph_batch):
+    batch, _ = dummy_graph_batch
+    readout = GlobalReadout("mean_lastedge", in_dim=8)
+
+    # Edge attribute has 12 dimensions, dimension 10 is order_in_possession
+    # Dummy batch already has edge_attr [5, 12], let's set increasing order for dim 10
+    batch.edge_attr[:2, 10] = torch.tensor([0.0, 1.0])
+    batch.edge_attr[2:, 10] = torch.tensor([0.0, 0.5, 1.0])
+
+    emb = readout(batch.x, batch.batch, edge_index=batch.edge_index, edge_attr=batch.edge_attr)
+    assert emb.shape == (2, 16)  # 8 (mean) + 8 (lastedge) = 16
+
+    # Test assertion on non-decreasing order: reverse order to trigger assertion
+    bad_edge_attr = batch.edge_attr.clone()
+    bad_edge_attr[:2, 10] = torch.tensor([1.0, 0.0])  # decreasing!
+    with pytest.raises(AssertionError, match="không tăng dần"):
+        readout(batch.x, batch.batch, edge_index=batch.edge_index, edge_attr=bad_edge_attr)
+
+
+@pytest.mark.parametrize("readout_type", ["mean", "attention", "max", "mean_lastedge"])
+def test_mpnn_readout_variants(dummy_graph_batch, readout_type):
+    batch, _ = dummy_graph_batch
+    cfg = {"name": f"mpnn_{readout_type}", "readout": readout_type, "hidden_dim": 32, "num_layers": 2}
+    model = build_gnn_model(cfg, node_in_dim=8, edge_in_dim=12)
+
+    logits = model(batch.x, batch.edge_index, batch.edge_attr, batch.batch)
+    assert logits.shape == (2,)
+
 
 
 @pytest.mark.parametrize("model_name", ["gcn", "gatv2", "graphsage", "mpnn"])

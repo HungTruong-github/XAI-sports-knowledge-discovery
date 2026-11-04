@@ -1,0 +1,89 @@
+{
+  "run_id": "20261102_110137",
+  "run_name": "official",
+  "model_name": "mpnn",
+  "model_checkpoint": "models\\official\\mpnn_best.pt",
+  "model_checkpoint_sha256": "afe94d38981644af1d00002e46a93c5ab64cd4819e7ed91cddc7db449ffdb70b",
+  "decision_0001_status": "provisional (possession-level shot classification)",
+  "explainers": [
+    "gnn_explainer",
+    "pg_explainer",
+    "random",
+    "last_edge"
+  ],
+  "n_graphs_explained": 150,
+  "split": "test",
+  "git": {
+    "branch": "feature/08-xai-completion",
+    "commit_sha": "655829fcce670b1d71f5a43db889ef1bf20e11d0",
+    "clean_working_tree": false,
+    "is_git_repo": true
+  },
+  "metrics_summary": [
+    {
+      "explainer": "gnn_explainer",
+      "n_graphs": 150,
+      "fidelity_plus_mean": 0.0105,
+      "fidelity_plus_std": 0.1313,
+      "fidelity_minus_mean": -0.0496,
+      "fidelity_minus_std": 0.2556,
+      "sparsity_mean": 0.6987,
+      "sparsity_std": 0.0511,
+      "deletion_auc_mean": 0.4481,
+      "deletion_auc_std": 0.1996,
+      "insertion_auc_mean": 0.5043,
+      "insertion_auc_std": 0.2229,
+      "stability_mean": 0.2912,
+      "stability_std": 0.1761
+    },
+    {
+      "explainer": "pg_explainer",
+      "n_graphs": 150,
+      "fidelity_plus_mean": -0.0078,
+      "fidelity_plus_std": 0.1168,
+      "fidelity_minus_mean": -0.0352,
+      "fidelity_minus_std": 0.2527,
+      "sparsity_mean": 0.6987,
+      "sparsity_std": 0.0511,
+      "deletion_auc_mean": 0.5206,
+      "deletion_auc_std": 0.2723,
+      "insertion_auc_mean": 0.4216,
+      "insertion_auc_std": 0.1586,
+      "stability_mean": 0.99,
+      "stability_std": 0.0666
+    },
+    {
+      "explainer": "random",
+      "n_graphs": 150,
+      "fidelity_plus_mean": 0.0077,
+      "fidelity_plus_std": 0.1671,
+      "fidelity_minus_mean": -0.0349,
+      "fidelity_minus_std": 0.2363,
+      "sparsity_mean": 0.6987,
+      "sparsity_std": 0.0511,
+      "deletion_auc_mean": 0.4735,
+      "deletion_auc_std": 0.2139,
+      "insertion_auc_mean": 0.473,
+      "insertion_auc_std": 0.2248,
+      "stability_mean": NaN,
+      "stability_std": NaN
+    },
+    {
+      "explainer": "last_edge",
+      "n_graphs": 150,
+      "fidelity_plus_mean": 0.149,
+      "fidelity_plus_std": 0.2343,
+      "fidelity_minus_mean": -0.1419,
+      "fidelity_minus_std": 0.1372,
+      "sparsity_mean": 0.6987,
+      "sparsity_std": 0.0511,
+      "deletion_auc_mean": 0.4238,
+      "deletion_auc_std": 0.1935,
+      "insertion_auc_mean": 0.5127,
+      "insertion_auc_std": 0.2465,
+      "stability_mean": NaN,
+      "stability_std": NaN
+    }
+  ],
+  "timestamp": "2026-11-02T15:10:27.093009+00:00"
+}

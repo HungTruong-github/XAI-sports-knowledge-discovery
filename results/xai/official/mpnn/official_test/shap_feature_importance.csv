@@ -1,0 +1,11 @@
+﻿feature,mean_abs_shap
+final_x,0.0932
+final_y,0.0476
+start_x,0.0152
+sequence_length,0.0142
+mean_pass_distance,0.0129
+duration,0.0091
+n_players_involved,0.0083
+mean_pass_angle,0.0082
+start_y,0.0079
+n_passes,0.0062

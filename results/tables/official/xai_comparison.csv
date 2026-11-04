@@ -1,2 +1,5 @@
-﻿explainer,n_graphs,fidelity_plus_mean,fidelity_plus_std,fidelity_minus_mean,fidelity_minus_std,sparsity_mean,sparsity_std,deletion_auc_mean,deletion_auc_std,insertion_auc_mean,insertion_auc_std,stability_mean,stability_std
-gnn_explainer,5,-0.0506,0.0698,-0.0483,0.0435,0.39,0.2966,0.1475,0.1257,0.1541,0.1044,0.6267,0.3328
+﻿explainer,n_graphs,fidelity_plus_mean,fidelity_plus_std,fidelity_minus_mean,fidelity_minus_std,sparsity_mean,sparsity_std,deletion_auc_mean,deletion_auc_std,insertion_auc_mean,insertion_auc_std,stability_mean,stability_std,run_id,run_name,sample_mode,split,git_commit,checkpoint_sha256,provenance_status
+gnn_explainer,1222,0.0492,0.1563,-0.1116,0.2296,0.6939,0.0525,0.4041,0.197,0.4901,0.2272,0.2851,0.1818,20261102_181703,official,official,test,d897e9b0,afe94d38,OFFICIAL_VERIFIED
+pg_explainer,1222,-0.0125,0.1266,-0.0493,0.2429,0.6939,0.0525,0.4892,0.2698,0.4009,0.1535,0.9872,0.064,20261102_181703,official,official,test,d897e9b0,afe94d38,OFFICIAL_VERIFIED
+random,1222,0.0,0.1518,-0.0496,0.2219,0.6939,0.0525,0.4451,0.22,0.4447,0.2154,,,20261102_181703,official,official,test,d897e9b0,afe94d38,OFFICIAL_VERIFIED
+last_edge,1222,0.1237,0.2329,-0.1542,0.1407,0.6939,0.0525,0.4054,0.1929,0.48,0.2449,,,20261102_181703,official,official,test,d897e9b0,afe94d38,OFFICIAL_VERIFIED

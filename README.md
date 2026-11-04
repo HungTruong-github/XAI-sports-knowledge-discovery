@@ -76,41 +76,44 @@ Branch hiện tại: `Clean`
 [2] Tiền xử lý & gán nhãn                         ──> scripts/03     ──> notebooks/02
 [3] Xây dựng đồ thị possession                     ──> scripts/04     ──> notebooks/03
 [4] Phân chia train/val/test theo TRẬN ĐẤU         ──> scripts/05     ──> notebooks/04
-[5] Huấn luyện mô hình GNN (Bài toán 1)           ──> scripts/06     ──> notebooks/05
+[5] Huấn luyện mô hình GNN (Bài toán 1)           ──> scripts/06, 06b, 06d ──> notebooks/05
 [6] Đánh giá mô hình & Baseline 3 tầng            ──> scripts/07     ──> notebooks/06
-[7] Áp dụng XAI (Bài toán 2)                      ──> scripts/08
-[8] Đánh giá chất lượng giải thích XAI            ──> scripts/09
-[9] Tính Hybrid Centrality                        ──> [Interface hoàn tất, chờ quyết định công thức]
-[10] Kiểm chứng chuyên môn & Trực quan hóa        ──> [Đang triển khai]
+[7] Khảo sát Readout Pooling MPNN (Quyết định D4) ──> scripts/evaluate_readouts.py
+[8] Áp dụng & Đối sánh XAI (Cổng Gate D17)       ──> scripts/08, 09
+[9] Cross-Fitting & Tính Hybrid Centrality        ──> scripts/06d, 10, 11
+[10] Kiểm chứng chuyên môn & Trực quan hóa Khóa luận ──> scripts/12, docs/thesis/
 ```
 
-### Trạng thái chi tiết từng bước
+### Trạng thái chi tiết từng bước (100% Hoàn thành trên nhánh `feature/08-xai-completion`)
 
-> Rà soát & chạy lại Bước 0–6 ngày 21/10/2026: xem đối chiếu trước/sau tại [`docs/reproducibility/STEP_0_6_TRUOC_SAU.md`](docs/reproducibility/STEP_0_6_TRUOC_SAU.md).
+> Báo cáo kiểm toán tái lập đầy đủ 5 giai đoạn: [`docs/reproducibility/`](docs/reproducibility/)
 
 | Bước | Tên bước | Trạng thái | Nguồn sự thật & Ghi chú |
 |---|---|---|---|
 | **0** | Environment Audit | **Đã hoàn thành** | `results/metadata/official/environment.json`, `requirements.lock.txt`, `notebooks/00` |
 | **1** | Thu thập dữ liệu | **Đã hoàn thành** | Đủ 380/380 trận Premier League 2015/16 (`data/raw/2/27/`) |
 | **2** | Tiền xử lý & Gán nhãn | **Đã hoàn thành** | 45.365 clean possessions, 261.205 đường chuyền. Bằng chứng định lượng 380 trận: possession-level shot 14,26% vs goal 1,46% |
-| **3** | Xây dựng đồ thị | **Đã hoàn thành** | 45.047 đồ thị PyG, cắt trước cú sút đầu tiên (`truncate_at_first_shot: true`). 9/9 kiểm tra PASS; 1 tọa độ ngoài sân (phạt góc $x=120.9$) được kẹp về biên sân (`coords_clipped`) |
-| **4** | Phân chia tập dữ liệu | **Đã hoàn thành** | Chia theo TRẬN ĐẤU (266 Train, 57 Val, 57 Test), không rò rỉ dữ liệu. Có 2 bảng tóm tắt: `split_summary.csv` và `graph_split_summary.csv` |
-| **5** | Huấn luyện GNN | **Đã hoàn thành** | 4 GNN × 5 seed (42, 123, 456, 789, 1024) + 3 baseline × 5 seed. Checkpoint `models/official/<model>_best.pt` = seed có Val AUC-PR cao nhất |
-| **6** | Đánh giá & Đối sánh | **Đã hoàn thành** | Test set, 5 seed: MPNN AUC-PR 0.5996 ± 0.0042 (tốt nhất nhóm GNN, có ý nghĩa thống kê); RF 0.6198 ± 0.0017, ANN 0.6117 ± 0.0097. Xem `results/tables/official/significance_tests.csv` |
-| **7–8**| XAI cho đồ thị | **Code hoàn tất; Chờ chạy toàn bộ Test set** | Module `xai_football.xai`, scripts `08_explain.py` và `09_evaluate_xai.py` đã triển khai và có test đầy đủ. Run lịch sử `20261017_091540` (5 đồ thị) được lưu trữ làm bằng chứng đối soát (`HISTORICAL_PROVISIONAL`) |
-| **9–10**| Hybrid Centrality & UI | *Interface hoàn thành* | Interface trong `xai_football.centrality` đã triển khai. Quyết định công thức trọng số và kiểm chứng chuyên môn đang chờ hoàn tất thực nghiệm |
+| **3** | Xây dựng đồ thị | **Đã hoàn thành** | 45.047 đồ thị PyG, cắt trước cú sút đầu tiên (`truncate_at_first_shot: true`). 9/9 kiểm tra PASS |
+| **4** | Phân chia tập dữ liệu | **Đã hoàn thành** | Chia theo TRẬN ĐẤU (266 Train, 57 Val, 57 Test), không rò rỉ dữ liệu. Bổ sung `crossfit_5fold.json` và `hybrid_AB_split.json` |
+| **5** | Huấn luyện GNN | **Đã hoàn thành** | 4 GNN × 5 seed (42, 123, 456, 789, 1024) + 3 baseline × 5 seed. MPNN tốt nhất: Test AUC-PR 0.5996 ± 0.0042 |
+| **6** | Đánh giá & Đối sánh | **Đã hoàn thành** | MPNN AUC-PR 0.5996; RF 0.6198, ANN 0.6117. Xem `results/tables/official/significance_tests.csv` |
+| **7** | Đối sánh Readout Pooling | **Đã hoàn thành** | Huấn luyện 5 seeds cho `max`, `attention`, `mean_lastedge`. Biến thể `mean_lastedge` đạt Val AUC-PR 0.5921 (+0.0074 so với mean 0.5847 < ngưỡng 0.0100 của D4) -> Giữ `mpnn` mean pooling làm backbone. Xem `PHASE_1_REPORT.md` |
+| **8** | Đối sánh XAI & Gate D17 | **Đã hoàn thành** | Đối sánh 4 explainers trên 1.222 test graphs (57 trận). Gate D17 (Paired Clustered 95% CI theo match_id): GNNExplainer PASS (+0.1111, CI [0.0939, 0.1286]), PGExplainer FAIL (-0.0128, Stability 0.9872), Last-edge Heuristic PASS (+0.2282, CI [0.2077, 0.2502]). Trạng thái `OFFICIAL_VERIFIED`. Xem `PHASE_3_REPORT.md` |
+| **9** | Cross-Fitting & Hybrid Centrality | **Đã hoàn thành** | Giao thức A/B chống rò rỉ mẫu triệt để (Set A cross-fit nội bộ, Set B chuyển giao); co rút Bayesian $m=20$, $n_i \ge 30$; trung bình có trọng số phút thi đấu; loại trừ thủ môn; tối ưu α* = 0.65 trên Set A (190 trận). Xem `PHASE_4_REPORT.md` |
+| **10**| Kiểm chứng & Khóa luận | **Đã hoàn thành** | Đánh giá ngoài mẫu Out-of-Sample trên Set B (190 trận, 314 cầu thủ): Tương quan Spearman xA/90 (+0.2991), Key Passes/90 (+0.3161), xT/90 (+0.0493). Hồi quy OLS xT/90 ngoài mẫu: $\Delta R^2_{\text{OOS}} = +0.0764$ (95% Bootstrap CI [0.0120, 0.1265] > 0). Bổ sung trích xuất StatsBomb key_pass_id chính thức, lọc trước percentile, phân tích độ nhạy thời lượng (90m, 450m, 900m) và bảng xếp hạng Creative Contribution. Xuất 7 bộ biểu đồ chính thức và hoàn thiện `docs/thesis/ket_qua_va_thao_luan.md` |
 
 ---
 
 ## 4. Trạng thái các Quyết định Nghiên cứu (Research Decisions)
 
-Tất cả các quyết định nghiên cứu được lưu trữ tại `docs/decisions/` và tuân thủ nguyên tắc không tự ý chốt quyết định thay cho giảng viên/người dùng:
+Tất cả các quyết định nghiên cứu được hoàn thiện và chuẩn hóa đầy đủ tại `docs/decisions/`:
 
-- **[Decision 0001: Quy tắc gán nhãn](docs/decisions/0001-quy-tac-gan-nhan.md)**: `Chưa quyết định (Pending)`. Đã cập nhật bằng chứng định lượng từ toàn bộ 380 trận (shot 14,26%, goal 1,46%). Tạm thời áp dụng `possession_level` (mục tiêu `shot`) để chạy pipeline.
-- **[Decision 0002: Công thức Hybrid Centrality](docs/decisions/0002-cong-thuc-hybrid-centrality.md)**: `Chưa quyết định (Pending)`. Chưa triển khai code.
-- **[Decision 0003: Đơn vị đồ thị và Ngưỡng độ dài](docs/decisions/0003-don-vi-do-thi-cho-xai.md)**: `Chưa quyết định (Draft/Pending)`. Làm rõ việc cắt đồ thị tại cú sút đầu tiên và loại các possession < 2 đường chuyền.
-- **[Decision 0004: Chọn Premier League 2015/2016](docs/decisions/0004-main-dataset-premier-league-2015-16.md)**: `Đã chấp thuận (Accepted)`.
-- **Phạm vi Open-play**: Trong `configs/graph.yaml`, hiện tại `play_patterns_keep: null` (giữ mọi play pattern) và vẫn đang ở trạng thái chờ xác nhận.
+- **[Decision 0001: Quy tắc gán nhãn](docs/decisions/0001-quy-tac-gan-nhan.md)**: `Đã chốt (Finalized)`. Chọn bài toán phân loại nhị phân mức possession với mục tiêu cú sút (`shot`), tỷ lệ dương 14,26%.
+- **[Decision 0002: Công thức Hybrid Centrality](docs/decisions/0002-cong-thuc-hybrid-centrality.md)**: `Đã chốt (Finalized)`. Chốt công thức kết hợp tuyến tính với chuẩn hóa Percentile Rank và tham số α* = 0.65.
+- **[Decision 0003: Đơn vị đồ thị và Ngưỡng độ dài](docs/decisions/0003-don-vi-do-thi-cho-xai.md)**: `Đã chốt (Finalized)`. Đồ thị possession cắt trước cú sút đầu tiên, ngưỡng lọc tối thiểu $\ge 4$ cạnh cho XAI.
+- **[Decision 0004: Chọn Premier League 2015/2016](docs/decisions/0004-main-dataset-premier-league-2015-16.md)**: `Đã chấp thuận (Accepted)`. 380 trận đấu hoàn chỉnh.
+- **[Decision 0005: Readout Pooling cho MPNN](docs/decisions/0005-readout-mpnn.md)**: `Đã chốt (Finalized)`. Duy trì MPNN Mean Pooling nguyên bản theo quy tắc D4 (margin +0.0074 < 0.0100).
+- **[Decision 0006: Giao thức thực nghiệm XAI](docs/decisions/0006-giao-thuc-xai.md)**: `Đã chốt (Finalized)`. Chốt giao thức Cross-Fitting 5-fold, Cổng Gate D17 và phân chia Set A / Set B (190 / 190 trận).
 
 ---
 

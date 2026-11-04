@@ -1,47 +1,52 @@
 # ============================================================
 # Bước 9 — Hybrid Centrality (ĐÓNG GÓP NGHIÊN CỨU CHÍNH)
-# Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 9
+# Tham chiếu: docs/Quy_trinh_XAI_Football.md, mục 9 và docs/decisions/0002-cong-thuc-hybrid-centrality.md
 # ============================================================
-#
-# CẢNH BÁO: công thức chính thức CHƯA ĐƯỢC ĐỊNH NGHĨA trong báo cáo
-# tiến độ. Phải chốt và ghi lại tại
-#     docs/decisions/0002-cong-thuc-hybrid-centrality.md
-# trước khi triển khai. Hệ số alpha KHÔNG được chọn tùy ý, phải trình
-# bày rõ cách xác định để hội đồng không đặt câu hỏi về tính thủ công,
-# thiếu căn cứ của công thức (mục 12 - Rủi ro).
-# ------------------------------------------------------------
 
-# Thành phần 1 - centrality truyền thống (mục 9.1)
+# Thành phần 1 - centrality truyền thống (D13)
 traditional:
-  aggregate_level: null    # TODO: "match" | "season"
-  measures:
+  aggregate_level: "match_to_season_weighted"  # Gộp theo mùa bằng trung bình có trọng số số phút
+  min_minutes_per_match: 30                    # Chỉ tính trận cầu thủ đá từ 30 phút
+  weight_by: "pass_count"                      # Trọng số = số lần chuyền
+  distance_by: "inverse_weight"                # Khoảng cách = 1 / trọng số
+  primary_measure: "betweenness"               # Độ đo chính: betweenness
+  combine_measures: "primary_betweenness"      # Sử dụng betweenness làm chỉ số chính
+  sensitivity_measures:
     degree_in: true
     degree_out: true
-    betweenness: true
     closeness: true
     eigenvector: true
-  combine_measures: null   # TODO: cách gộp nhiều độ đo thành 1 giá trị
 
-# Thành phần 2 - điểm quan trọng từ XAI (mục 9.2)
+# Thành phần 2 - điểm quan trọng từ XAI (D12)
 xai_importance:
-  source_explainer: null   # TODO: chốt sau khi đối sánh ở Bước 8
-  aggregation: null        # TODO: "mean" | "weighted_mean"
-  min_possessions: null    # TODO: số possession tối thiểu để một cầu thủ
-                           #       được tính, tránh nhiễu do cỡ mẫu nhỏ
+  source_explainer: "pg_explainer"             # Sử dụng PGExplainer với tính ổn định cao 0.9872
+  aggregation: "mean_with_global_shrinkage"    # Trung bình importance có co về trung bình toàn cục
+  shrinkage_m: 20                              # Tham số co m = 20 lần tham gia
+  min_possessions: 30                          # Ngưỡng lọc tối thiểu 30 lần tham gia
+  include_last_edge_ablation: true             # Biến thể loại cạnh cuối
 
-# Kết hợp (mục 9.3)
+# Kết hợp (D14, D15, D16)
 combination:
-  normalization: null      # TODO: "minmax" | "zscore"
+  normalization: "percentile_rank"             # Chuẩn hóa percentile rank trên cầu thủ đủ điều kiện
+  sensitivity_normalization: "zscore"
+  exclude_goalkeepers: true                    # Loại thủ môn khỏi bảng xếp hạng
   formula: "alpha * centrality_norm + (1 - alpha) * xai_importance_norm"
-  alpha: null              # TODO: dò trên tập VALIDATION, không chọn tay
+  alpha: 0.65                                  # Tối ưu hóa trên tập Set A theo D16 (alpha* = 0.65)
   alpha_search_range: [0.0, 1.0]
   alpha_search_step: 0.05
-  alpha_selection_criterion: null   # TODO: tiêu chí chọn alpha (mục 9.4)
+  alpha_selection_criterion: "spearman_xt_with_reliability_constraint"
+  split_half_min_reliability_ratio: 0.7        # Ràng buộc độ tin cậy chia đôi >= 0.7 * max_reliability
 
-# Kiểm chứng (mục 9.4)
+# Chia A/B 380 trận (D15)
+split_ab:
+  strategy: "disjoint_half_matches_per_team"
+  seed: 42
+  split_file: "data/splits/hybrid_AB_split.json"
+
+# Kiểm chứng (D16)
 validation:
-  compare_with_traditional_only: true   # baseline Tầng 3(b)
-  reference_metrics:                    # đối chiếu face validity
+  compare_with_traditional_only: true
+  reference_metrics:
     - "key_passes"
     - "assists"
     - "xA"
