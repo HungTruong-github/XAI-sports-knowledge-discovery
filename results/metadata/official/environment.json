@@ -23,14 +23,14 @@
   "cuda_device_name": "CPU only",
   "git": {
     "branch": "feature/08-xai-completion",
-    "commit_sha": "76fadfa8a4ffc26c48e79a4704b89514765d48a6",
+    "commit_sha": "7192e5f0dc9448985bf76dc038b4662d7cca622b",
     "clean_working_tree": false
   },
   "config_hashes": {
     "configs/data.yaml": "4f71e0683123038e77d343fcba30bb58bd42497f3e1da9218ad11ea263785d2b",
     "configs/data_pilot.yaml": "9f6df979afff6b8d160ac6a7620151aecbf8eba822d1796f1eabf08bd0fb0704",
     "configs/graph.yaml": "068a38cdda6b0f8e349eb88f93d34ae3fb5b0976787020b47109ac78212ac0ba",
-    "configs/hybrid_centrality.yaml": "b28092149e4b4693d2b78c19ba397e96d9d5b6bd5f2b1b2129dd9a2be0041ca4",
+    "configs/hybrid_centrality.yaml": "c968ebf0967a4fb1481aef199024f7189ac371584ba766226276cbce244fac17",
     "configs/model/baseline_tabular.yaml": "497f740384feb5a4b97ab16903e37b46514c08a912be29a01c9cc22a2571a1fc",
     "configs/model/gatv2.yaml": "eefff6218b25c1643229b98d68df87d2a39a6460fb201e881f8d3fcd045036ad",
     "configs/model/gcn.yaml": "599fe80ac58e7cd51d3748f7382ec1240ddebf5d179181a1131b3854fbe343f8",

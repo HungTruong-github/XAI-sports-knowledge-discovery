@@ -1,8 +1,8 @@
 {
   "repository": "HungTruong-github/XAI-sports-knowledge-discovery",
   "branch": "feature/08-xai-completion",
-  "commit_sha": "76fadfa8a4ffc26c48e79a4704b89514765d48a6",
-  "audit_timestamp": "2026-11-07T16:10:53.115833+00:00",
+  "commit_sha": "7192e5f0dc9448985bf76dc038b4662d7cca622b",
+  "audit_timestamp": "2026-11-07T17:39:52.823515+00:00",
   "environment": {
     "os": "Windows-11-10.0.26200-SP0",
     "python_version": "3.12.0",
@@ -26,7 +26,7 @@
     "cuda_device_name": "CPU only",
     "git": {
       "branch": "feature/08-xai-completion",
-      "commit_sha": "76fadfa8a4ffc26c48e79a4704b89514765d48a6",
+      "commit_sha": "7192e5f0dc9448985bf76dc038b4662d7cca622b",
       "clean_working_tree": false,
       "is_git_repo": true
     },
@@ -36,7 +36,7 @@
     "configs/data.yaml": "4f71e0683123038e77d343fcba30bb58bd42497f3e1da9218ad11ea263785d2b",
     "configs/data_pilot.yaml": "9f6df979afff6b8d160ac6a7620151aecbf8eba822d1796f1eabf08bd0fb0704",
     "configs/graph.yaml": "068a38cdda6b0f8e349eb88f93d34ae3fb5b0976787020b47109ac78212ac0ba",
-    "configs/hybrid_centrality.yaml": "b28092149e4b4693d2b78c19ba397e96d9d5b6bd5f2b1b2129dd9a2be0041ca4",
+    "configs/hybrid_centrality.yaml": "c968ebf0967a4fb1481aef199024f7189ac371584ba766226276cbce244fac17",
     "configs/model/baseline_tabular.yaml": "497f740384feb5a4b97ab16903e37b46514c08a912be29a01c9cc22a2571a1fc",
     "configs/model/gatv2.yaml": "eefff6218b25c1643229b98d68df87d2a39a6460fb201e881f8d3fcd045036ad",
     "configs/model/gcn.yaml": "599fe80ac58e7cd51d3748f7382ec1240ddebf5d179181a1131b3854fbe343f8",
@@ -169,7 +169,7 @@
         "requirements.lock.txt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:09:06.434253+00:00"
+      "timestamp": "2026-11-07T17:39:00.149593+00:00"
     },
     {
       "name": "config_hashes_posix_compatible",
@@ -182,18 +182,18 @@
         "configs"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:09:06.435249+00:00"
+      "timestamp": "2026-11-07T17:39:00.149593+00:00"
     },
     {
       "name": "git_provenance_recorded",
       "step": 0,
       "status": "PASS",
-      "details": "Branch: feature/08-xai-completion | Commit: 76fadfa8",
+      "details": "Branch: feature/08-xai-completion | Commit: 7192e5f0",
       "expected": true,
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:09:06.435249+00:00"
+      "timestamp": "2026-11-07T17:39:00.149593+00:00"
     },
     {
       "name": "git_clean_working_tree_verified",
@@ -204,7 +204,7 @@
       "observed": false,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:09:06.435249+00:00"
+      "timestamp": "2026-11-07T17:39:00.149593+00:00"
     },
     {
       "name": "collection_summary_tables_exist",
@@ -218,7 +218,7 @@
         "results/tables/official/dataset_inventory.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:09:06.437200+00:00"
+      "timestamp": "2026-11-07T17:39:00.150594+00:00"
     },
     {
       "name": "raw_match_and_lineup_counts_verified",
@@ -231,7 +231,7 @@
         "data/raw/2/27"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:09:06.496161+00:00"
+      "timestamp": "2026-11-07T17:39:00.163593+00:00"
     },
     {
       "name": "raw_event_count_matches_report",
@@ -244,7 +244,7 @@
         "results/tables/official/collection_report.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:01.152170+00:00"
+      "timestamp": "2026-11-07T17:39:27.399830+00:00"
     },
     {
       "name": "preprocessing_summary_tables_exist",
@@ -258,7 +258,7 @@
         "results/tables/official/sanity_checks.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:01.153168+00:00"
+      "timestamp": "2026-11-07T17:39:27.399830+00:00"
     },
     {
       "name": "sanity_checks_all_pass",
@@ -271,7 +271,7 @@
         "results/tables/official/sanity_checks.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:01.181133+00:00"
+      "timestamp": "2026-11-07T17:39:27.403733+00:00"
     },
     {
       "name": "clean_possessions_count_verified",
@@ -284,7 +284,7 @@
         "data/interim/official/possessions.parquet"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:01.594514+00:00"
+      "timestamp": "2026-11-07T17:39:27.560890+00:00"
     },
     {
       "name": "possession_unique_keys_verified",
@@ -297,7 +297,7 @@
         "data/interim/official/possessions.parquet"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:01.600516+00:00"
+      "timestamp": "2026-11-07T17:39:27.564902+00:00"
     },
     {
       "name": "min_passes_filter_verified",
@@ -308,7 +308,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:01.601514+00:00"
+      "timestamp": "2026-11-07T17:39:27.564902+00:00"
     },
     {
       "name": "regular_periods_only_verified",
@@ -319,7 +319,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:01.601514+00:00"
+      "timestamp": "2026-11-07T17:39:27.565902+00:00"
     },
     {
       "name": "pass_coordinates_and_players_non_null",
@@ -330,7 +330,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:01.609443+00:00"
+      "timestamp": "2026-11-07T17:39:27.569902+00:00"
     },
     {
       "name": "decision_0001_research_approval_status",
@@ -343,7 +343,7 @@
         "docs/decisions/0001-quy-tac-gan-nhan.md"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:01.610530+00:00"
+      "timestamp": "2026-11-07T17:39:27.570903+00:00"
     },
     {
       "name": "feature_names_json_dimensions_verified",
@@ -357,7 +357,7 @@
         "results/tables/official/graph_checks.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:01.628158+00:00"
+      "timestamp": "2026-11-07T17:39:27.571905+00:00"
     },
     {
       "name": "total_graphs_count_verified",
@@ -370,7 +370,7 @@
         "data/processed/official/graphs.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:28.298440+00:00"
+      "timestamp": "2026-11-07T17:39:39.559514+00:00"
     },
     {
       "name": "positive_graphs_count_verified",
@@ -381,7 +381,7 @@
       "observed": 6153,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:28.528960+00:00"
+      "timestamp": "2026-11-07T17:39:39.634275+00:00"
     },
     {
       "name": "graph_tensors_dimensions_match_schema",
@@ -392,7 +392,7 @@
       "observed": true,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:28.663525+00:00"
+      "timestamp": "2026-11-07T17:39:39.721912+00:00"
     },
     {
       "name": "no_edges_after_first_shot_verified",
@@ -403,7 +403,7 @@
       "observed": 0,
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:30.252654+00:00"
+      "timestamp": "2026-11-07T17:39:40.291213+00:00"
     },
     {
       "name": "normalized_coordinates_strictly_in_unit_interval",
@@ -414,7 +414,7 @@
       "observed": "[0.0000, 1.0000]",
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:31.578249+00:00"
+      "timestamp": "2026-11-07T17:39:40.725521+00:00"
     },
     {
       "name": "player_role_temporal_assumption_documented",
@@ -425,7 +425,7 @@
       "observed": "Documented",
       "evidence_paths": [],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:31.578249+00:00"
+      "timestamp": "2026-11-07T17:39:40.725521+00:00"
     },
     {
       "name": "matches_disjoint_and_counts_verified",
@@ -440,7 +440,7 @@
         "data/splits/test_matches.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:31.633870+00:00"
+      "timestamp": "2026-11-07T17:39:40.733635+00:00"
     },
     {
       "name": "graph_split_counts_verified",
@@ -453,7 +453,7 @@
         "results/tables/official/graph_split_summary.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:31.797949+00:00"
+      "timestamp": "2026-11-07T17:39:40.819766+00:00"
     },
     {
       "name": "multi_seed_metrics_artifact_present",
@@ -466,7 +466,7 @@
         "results/reproducibility/all_models_test_metrics_all_seeds.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:31.887580+00:00"
+      "timestamp": "2026-11-07T17:39:40.868288+00:00"
     },
     {
       "name": "b5_gcn_multi_seed_and_checkpoint_verified",
@@ -479,7 +479,7 @@
         "models/official/gcn_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:31.939119+00:00"
+      "timestamp": "2026-11-07T17:39:40.878337+00:00"
     },
     {
       "name": "b5_mpnn_multi_seed_and_checkpoint_verified",
@@ -492,7 +492,7 @@
         "models/official/mpnn_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:31.980364+00:00"
+      "timestamp": "2026-11-07T17:39:40.887297+00:00"
     },
     {
       "name": "b5_gatv2_multi_seed_and_checkpoint_verified",
@@ -505,7 +505,7 @@
         "models/official/gatv2_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:32.022537+00:00"
+      "timestamp": "2026-11-07T17:39:40.893294+00:00"
     },
     {
       "name": "b5_graphsage_multi_seed_and_checkpoint_verified",
@@ -518,7 +518,7 @@
         "models/official/graphsage_best.pt"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:32.061633+00:00"
+      "timestamp": "2026-11-07T17:39:40.900411+00:00"
     },
     {
       "name": "b5_baselines_multi_seed_complete",
@@ -531,7 +531,7 @@
         "results/reproducibility/baselines_aggregate_summary.json"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:32.062633+00:00"
+      "timestamp": "2026-11-07T17:39:40.901292+00:00"
     },
     {
       "name": "model_comparison_has_all_7_models_5_seeds",
@@ -544,7 +544,7 @@
         "results/tables/official/model_comparison.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:32.110266+00:00"
+      "timestamp": "2026-11-07T17:39:40.907286+00:00"
     },
     {
       "name": "model_comparison_means_and_std_verified_from_all_seeds_metrics",
@@ -558,7 +558,7 @@
         "results/reproducibility/all_models_test_metrics_all_seeds.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:32.163264+00:00"
+      "timestamp": "2026-11-07T17:39:40.923306+00:00"
     },
     {
       "name": "model_metric_ci_file_present",
@@ -571,7 +571,7 @@
         "results/tables/official/model_metric_ci.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:32.164263+00:00"
+      "timestamp": "2026-11-07T17:39:40.923306+00:00"
     },
     {
       "name": "significance_tests_has_21_pairs_across_3_metrics",
@@ -584,7 +584,7 @@
         "results/tables/official/significance_tests.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:32.190878+00:00"
+      "timestamp": "2026-11-07T17:39:40.927934+00:00"
     },
     {
       "name": "holm_bonferroni_adjustment_validity",
@@ -597,7 +597,7 @@
         "results/tables/official/significance_tests.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:32.201161+00:00"
+      "timestamp": "2026-11-07T17:39:40.931936+00:00"
     },
     {
       "name": "independent_cluster_bootstrap_verification",
@@ -611,7 +611,7 @@
         "results/tables/official/significance_tests.csv"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:53.032185+00:00"
+      "timestamp": "2026-11-07T17:39:52.820572+00:00"
     },
     {
       "name": "experiment_manifest_checkpoint_shas_verified",
@@ -624,7 +624,7 @@
         "results/metadata/official/experiment_manifest.json"
       ],
       "command_or_source": "audit_steps_0_6",
-      "timestamp": "2026-11-07T16:10:53.054732+00:00"
+      "timestamp": "2026-11-07T17:39:52.822481+00:00"
     }
   ],
   "evidence_paths": [

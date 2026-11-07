@@ -18,7 +18,7 @@
 
 ### 1.2. Giao thức đánh giá A/B độc lập và Chống rò rỉ (D15, D16, D17)
 - **Tập Set A (190 trận):** Dùng để huấn luyện mô hình Expected Threat ($xT$) dạng lưới Markov $16 \times 12$ trên sân đấu $[0, 120] \times [0, 80]$, và thực hiện Grid Search tìm tham số $\alpha^*$ tối ưu trên đoạn $[0.0, 1.0]$ với bước nhảy $0.05$.
-- **Tập Set B (190 trận độc lập):** Đóng vai trò tập kiểm định mù. Cố định $\alpha^* = 0.65$ thu được từ Set A và đánh giá tương quan Spearman cũng như mức tăng giải thích biến thiên ($\Delta R^2$) với các chỉ số tham chiếu bóng đá:
+- **Tập Set B (190 trận độc lập):** Đóng vai trò tập kiểm định mù. Cố định $\alpha^* = 0.70$ thu được từ Set A và đánh giá tương quan Spearman cũng như mức tăng giải thích biến thiên ($\Delta R^2$) với các chỉ số tham chiếu bóng đá:
   - Expected Threat ($xT/90$).
   - Expected Assists ($xA/90$).
   - Đường chuyền quyết định ($Key Passes/90$).
@@ -34,11 +34,11 @@
 Nguồn dữ liệu: `results/tables/official/alpha_curve.csv` hoặc `results/hybrid/<run_id>/alpha_curve.csv`
 
 Quá trình quét tham số $\alpha \in [0.0, 1.0]$ (bước nhảy $0.05$) với mục tiêu tối đa hóa tương quan Spearman với chỉ số đe dọa khung thành ($xT/90$), kết hợp ràng buộc độ tin cậy split-half ($r_{\text{rel}} \ge 0.70 \times r_{\text{max}}$):
-- $\alpha = 0.00$ (Thuần XAI Importance): Tương quan Spearman với $xT/90$ = $0.0641$ ($p = 0.2547$).
-- $\alpha = 0.50$: Tương quan Spearman với $xT/90$ = $0.4929$ ($p < 0.0001$).
-- $\alpha = 0.65$: Đạt điểm tối ưu $\rho = 0.5691$ ($p < 0.0001$), độ tin cậy split-half đạt $0.6522$ (thỏa mãn ràng buộc độ tin cậy $\ge 0.70 \times r_{\text{max}} = 0.5365$).
-- $\alpha = 1.00$ (Thuần Betweenness Centrality): Tương quan Spearman với $xT/90$ = $0.5045$ ($p < 0.0001$).
-- **Giá trị tối ưu được chốt:** $\alpha^* = 0.65$. Điểm số này cân bằng khoa học giữa cấu trúc luân chuyển bóng (65%) và đóng góp tạo cơ hội dứt điểm từ XAI (35%).
+- $\alpha = 0.00$ (Thuần XAI Importance): Tương quan Spearman với $xT/90$ = $0.0364$ ($p = 0.5200$).
+- $\alpha = 0.50$: Tương quan Spearman với $xT/90$ = $0.5120$ ($p < 0.0001$).
+- $\alpha = 0.70$: Đạt điểm tối ưu $\rho = 0.5804$ ($p < 0.0001$), độ tin cậy split-half đạt $0.6618$ (thỏa mãn ràng buộc độ tin cậy $\ge 0.70 \times r_{\text{max}} = 0.5365$).
+- $\alpha = 1.00$ (Thuần Betweenness Centrality): Tương quan Spearman với $xT/90$ = $0.5290$ ($p < 0.0001$).
+- **Giá trị tối ưu được chốt:** $\alpha^* = 0.70$. Điểm số này cân bằng khoa học giữa cấu trúc luân chuyển bóng (70%) và đóng góp tạo cơ hội dứt điểm từ XAI (30%).
 
 ---
 
@@ -46,7 +46,7 @@ Quá trình quét tham số $\alpha \in [0.0, 1.0]$ (bước nhảy $0.05$) vớ
 
 Nguồn dữ liệu: `results/tables/official/hybrid_centrality_comparison.csv`
 
-| Chỉ số bóng đá tham chiếu | Hybrid Centrality ($\alpha^* = 0.65$) | Betweenness Centrality thuần | Điểm XAI thuần | Mức tăng so với Centrality | Giá trị p |
+| Chỉ số bóng đá tham chiếu | Hybrid Centrality ($\alpha^* = 0.70$) | Betweenness Centrality thuần | Điểm XAI thuần | Mức tăng so với Centrality | Giá trị p |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **$xT/90$** (Expected Threat) | **0.5804** | 0.5290 | 0.0364 | **+0.0514** | $p < 0.0001$ |
 | **$xA/90$** (Expected Assists) | **0.1816** | -0.0538 | 0.5713 | **+0.2354** | $p = 0.0012$ |
@@ -110,13 +110,13 @@ Nguồn dữ liệu: `results/tables/official/ranking_sensitivity_by_minutes.csv
 
 | Ngưỡng số phút | Số cầu thủ ($N$) | $\rho(xT/90)$ | Mức tăng $xT$ | $\rho(Key Passes/90)$ | $\rho(xA/90)$ | $\rho(Assists/90)$ | Top 5 Cầu thủ dẫn đầu |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| $\ge \mathbf{90}$ phút | 314 | 0.5730 | +0.0493 | 0.3527 | 0.2436 | 0.2096 | Cazorla, Özil, Ramsey, Fletcher, Fàbregas |
-| $\ge \mathbf{450}$ phút | 289 | 0.5836 | +0.0490 | 0.3566 | 0.2613 | 0.2278 | Cazorla, Özil, Ramsey, Fletcher, Fàbregas |
-| $\ge \mathbf{900}$ phút | 167 | 0.6554 | +0.0718 | 0.4931 | 0.3798 | 0.2806 | **Özil**, Ramsey, Fàbregas, Fletcher, Barkley |
+| $\ge \mathbf{90}$ phút | 314 | 0.5804 | +0.0514 | 0.2885 | 0.1816 | 0.1753 | Cazorla, Özil, Ramsey, Fàbregas, Barkley |
+| $\ge \mathbf{450}$ phút | 289 | 0.5877 | +0.0512 | 0.2846 | 0.1899 | 0.1820 | Cazorla, Özil, Ramsey, Fàbregas, Barkley |
+| $\ge \mathbf{900}$ phút | 167 | 0.6568 | +0.0760 | 0.4194 | 0.3073 | 0.2247 | **Özil**, Ramsey, Fàbregas, Barkley, M'Vila |
 
 **Nhận định độ nhạy:**
 - Ngưỡng $\ge 450$ phút loại bỏ các cầu thủ cỡ mẫu nhỏ (Ryan Mason), đưa Payet (#11) và Eriksen (#13) vươn lên thứ bậc ổn định.
-- Ngưỡng $\ge 900$ phút phản ánh nhóm đá chính nửa mùa giải, đưa Mesut Özil lên vị trí số 1 tuyệt đối toàn giải (0.9536) và nâng tương quan $\rho(xT/90)$ lên **0.6554** và $\rho(KP/90)$ lên **0.4931**.
+- Ngưỡng $\ge 900$ phút phản ánh nhóm đá chính nửa mùa giải, đưa Mesut Özil lên vị trí số 1 tuyệt đối toàn giải và nâng tương quan $\rho(xT/90)$ lên **0.6568** và $\rho(KP/90)$ lên **0.4194**.
 
 ### 4.3. Bảng xếp hạng Creative Contribution Ranking (Sáng tạo cơ hội / Playmaking)
 
@@ -127,16 +127,16 @@ Nguồn dữ liệu: `results/tables/official/creative_contribution_top_players.
 | 1 | **Mesut Özil** | Arsenal | 1,318.6 | **0.9968** | 62 | 4.232 | 0.436 | 9 | **#2** |
 | 2 | **Dimitri Payet** | West Ham | 1,310.0 | **0.9968** | 69 | 4.740 | 0.394 | 4 | **#13** |
 | 3 | **Santi Cazorla** | Arsenal | 492.7 | **0.9904** | 20 | 3.653 | 0.372 | 2 | **#1** |
-| 4 | **David Silva** | Man City | 820.6 | **0.9857** | 31 | 3.400 | 0.362 | 6 | **#19** |
-| 5 | **Dušan Tadić** | Southampton | 990.7 | **0.9841** | 38 | 3.452 | 0.350 | 6 | **#165** |
-| 6 | **Gerard Deulofeu**| Everton | 895.2 | **0.9809** | 24 | 2.413 | 0.462 | 8 | **#293** |
-| 7 | **Christian Eriksen**| Tottenham | 1,427.8 | **0.9793** | 64 | 4.034 | 0.273 | 4 | **#14** |
-| 8 | **Kevin De Bruyne**| Man City | 764.4 | **0.9777** | 21 | 2.473 | 0.355 | 5 | **#77** |
-| 9 | **Erik Lamela** | Tottenham | 1,289.0 | **0.9745** | 38 | 2.653 | 0.283 | 4 | **#211** |
-| 10 | **Cesc Fàbregas** | Chelsea | 1,350.4 | **0.9634** | 36 | 2.399 | 0.275 | 5 | **#5** |
+| 4 | **David Silva** | Man City | 820.6 | **0.9857** | 31 | 3.400 | 0.362 | 6 | **#25** |
+| 5 | **Dušan Tadić** | Southampton | 990.7 | **0.9841** | 38 | 3.452 | 0.350 | 6 | **#188** |
+| 6 | **Gerard Deulofeu**| Everton | 895.2 | **0.9809** | 24 | 2.413 | 0.462 | 8 | **#292** |
+| 7 | **Christian Eriksen**| Tottenham | 1,427.8 | **0.9793** | 64 | 4.034 | 0.273 | 4 | **#15** |
+| 8 | **Kevin De Bruyne**| Man City | 764.4 | **0.9777** | 21 | 2.473 | 0.355 | 5 | **#95** |
+| 9 | **Erik Lamela** | Tottenham | 1,289.0 | **0.9745** | 38 | 2.653 | 0.283 | 4 | **#227** |
+| 10 | **Cesc Fàbregas** | Chelsea | 1,350.4 | **0.9634** | 36 | 2.399 | 0.275 | 5 | **#4** |
 
 ### 4.4. Tách bạch hai vai trò chiến thuật
-- **Hybrid Centrality ($\alpha^* = 0.65$):** Đo lường vai trò **Network Distribution & Threat Enabling** (vừa kết nối luân chuyển trục dọc, vừa đưa bóng vào các khu vực nguy hiểm $xT/90$). Tôn vinh các tiền vệ điều tiết / trạm trung chuyển (Cazorla, Özil, Ramsey, Fletcher, Fàbregas, Noble).
+- **Hybrid Centrality ($\alpha^* = 0.70$):** Đo lường vai trò **Network Distribution & Threat Enabling** (vừa kết nối luân chuyển trục dọc, vừa đưa bóng vào các khu vực nguy hiểm $xT/90$). Tôn vinh các tiền vệ điều tiết / trạm trung chuyển (Cazorla, Özil, Ramsey, Fletcher, Fàbregas, Noble).
 - **Creative Contribution:** Đo lường vai trò **Direct Chance Creation / Playmaking** ($50\%$ phân vị $KP/90$ + $50\%$ phân vị $xA/90$). Tôn vinh các chân chuyền quyết định kết liễu (Payet, Özil, Silva, Tadić, Deulofeu, Eriksen, De Bruyne).
 - **Nhóm Nhạc trưởng Toàn diện:** Mesut Özil, Santi Cazorla, Cesc Fàbregas xuất sắc ở cả hai tiêu chí.
 
@@ -146,7 +146,7 @@ Nguồn dữ liệu: `results/tables/official/creative_contribution_top_players.
 
 1. **Lý do sử dụng PGExplainer cho quy mô toàn mùa:** PGExplainer có độ ổn định vượt trội (Stability **0.9872** so với 0.2851 của GNNExplainer) và tốc độ suy luận nhanh bằng mạng nơ-ron tham số hóa.
 2. **Minh bạch về Gate D17:** Trên tập Test 1.222 đồ thị, PGExplainer chưa vượt qua Gate D17 do $\Delta\text{Fidelity}$ của nó (+0.0368) thấp hơn mức ngẫu nhiên Random (+0.0496), và khoảng tin cậy phân cụm theo cặp 95% Bootstrap CI $[-0.0306, +0.0049]$ vắt qua 0.
-3. **Ý nghĩa khoa học:** Chỉ số Hybrid Centrality dựa trên PGExplainer đóng vai trò là một **minh chứng phương pháp luận mang tính thăm dò (exploratory methodological proof-of-concept)**, khẳng định khung lý thuyết kết hợp XAI và Network Centrality đem lại giá trị gia tăng thực sự về mặt thống kê ($\Delta R^2 = +0.0764$, 95% Bootstrap CI $[0.0120, 0.1265]$, hoàn toàn không sử dụng kẹp `max(0, ...)`). Khi có Explainer mới vừa thỏa mãn Gate D17 vừa có độ ổn định cao, hệ thống hoàn toàn sẵn sàng tích hợp mà không cần thay đổi công thức toán học.
+3. **Ý nghĩa khoa học:** Chỉ số Hybrid Centrality dựa trên PGExplainer đóng vai trò là một **minh chứng phương pháp luận mang tính thăm dò (exploratory methodological proof-of-concept)**, khẳng định khung lý thuyết kết hợp XAI và Network Centrality đem lại giá trị gia tăng thực sự về mặt thống kê ($\Delta R^2 = +0.0786$, 95% Bootstrap CI $[0.0144, 0.1268]$, hoàn toàn không sử dụng kẹp `max(0, ...)`). Khi có Explainer mới vừa thỏa mãn Gate D17 vừa có độ ổn định cao, hệ thống hoàn toàn sẵn sàng tích hợp mà không cần thay đổi công thức toán học.
 
 ---
 

@@ -142,8 +142,17 @@ def compute_match_traditional_centrality(
             mins = match_minutes_map.get((mid, pid))
             if mins is None:
                 if match_minutes_map:
-                    logger.debug("Cầu thủ %s trong trận %s không có trong lineups minutes map; gán 90.0", pid, mid)
-                mins = 90.0
+                    p_events = m_passes[(m_passes["player_id"] == pid) | (m_passes["pass_recipient_id"] == pid)]
+                    if not p_events.empty and "minute" in p_events.columns:
+                        mins = max(1.0, float(p_events["minute"].max() - p_events["minute"].min() + 1.0))
+                    else:
+                        mins = 1.0
+                    logger.warning(
+                        "Cầu thủ %s trong trận %s không có trong lineups minutes map; ước tính %s phút (không gán 90.0 mặc định)",
+                        pid, mid, mins
+                    )
+                else:
+                    mins = 90.0
 
             rec = {
                 "match_id": mid,

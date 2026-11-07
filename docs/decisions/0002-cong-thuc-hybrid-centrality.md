@@ -19,7 +19,7 @@ Hybrid Centrality là **đóng góp chính** của đề tài. Mục tiêu là k
 $$\text{HybridCentrality}(v) = \alpha \cdot \text{Centrality}_{\text{norm}}(v) + (1 - \alpha) \cdot \text{XAIImportance}_{\text{norm}}(v)$$
 
 - **Chuẩn hóa (D14):** Sử dụng Percentile Rank trên tập cầu thủ đủ điều kiện thi đấu (loại thủ môn do đặc thù vị trí không tham gia chuỗi chuyền bóng thông thường). Thử nghiệm z-score làm phân tích độ nhạy.
-- **Hệ số $\alpha$ (D16):** Dò lưới $\alpha \in [0.0, 1.0]$ với bước nhảy 0.05 trên tập A. Tiêu chí chọn $\alpha$: tối đa hóa hệ số tương quan hạng Spearman giữa Hybrid Centrality và chỉ số đe dọa kỳ vọng ($xT$) trên 90 phút, đi kèm ràng buộc độ tin cậy chia đôi (split-half reliability giữa các trận chẵn/lẻ theo ngày thi đấu) tối thiểu bằng $0.7 \times \text{max\_reliability}$ trên lưới.
+- **Hệ số $\alpha$ (D16):** Dò lưới $\alpha \in [0.0, 1.0]$ với bước nhảy 0.05 trên tập A. Tiêu chí chọn $\alpha$: tối đa hóa hệ số tương quan hạng Spearman giữa Hybrid Centrality và chỉ số đe dọa kỳ vọng ($xT$) trên 90 phút, đi kèm ràng buộc độ tin cậy chia đôi (split-half reliability giữa các trận chẵn/lẻ theo ngày thi đấu) tối thiểu bằng $0.7 \times \text{max\_reliability}$ trên lưới. Giá trị tối ưu đạt được trên Set A là $\alpha^* = 0.70$ (sau khi phân tách mạng chuyền bóng độc lập theo từng đội).
 
 ### 2. Thành phần 1: Centrality truyền thống (D13)
 - Tính toán trên mạng chuyền bóng của toàn đội theo từng trận đấu (bao gồm mọi đường chuyền thành công, trọng số cạnh bằng số lần chuyền bóng, khoảng cách = $1 / \text{trọng số}$).

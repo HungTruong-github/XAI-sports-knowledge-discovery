@@ -90,6 +90,9 @@ def compute_player_minutes(
                 for pos in positions:
                     t_from = _parse_time_str(pos.get("from"), default_val=0.0)
                     t_to = _parse_time_str(pos.get("to"), default_val=90.0)
+                    # Cầu thủ vào sân ở phút bù giờ (from >= 90.0) và thi đấu đến hết trận (to is None)
+                    if pos.get("to") is None and t_from >= 90.0:
+                        t_to = max(t_from + 1.0, 95.0)
                     duration = max(0.0, t_to - t_from)
                     total_p_mins += duration
 

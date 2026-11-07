@@ -31,7 +31,7 @@ combination:
   sensitivity_normalization: "zscore"
   exclude_goalkeepers: true                    # Loại thủ môn khỏi bảng xếp hạng
   formula: "alpha * centrality_norm + (1 - alpha) * xai_importance_norm"
-  alpha: 0.65                                  # Tối ưu hóa trên tập Set A theo D16 (alpha* = 0.65)
+  alpha: 0.70                                  # Tối ưu hóa trên tập Set A theo D16 (alpha* = 0.70 sau khi tách mạng theo từng đội)
   alpha_search_range: [0.0, 1.0]
   alpha_search_step: 0.05
   alpha_selection_criterion: "spearman_xt_with_reliability_constraint"
