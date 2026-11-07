@@ -23,13 +23,16 @@ Giai đoạn 2 tập trung chuẩn hoá toàn diện giao thức giải thích m
 - **LastEdgeExplainer:** Baseline quy tắc nghiệp vụ gán trọng số 1.0 cho đường chuyền cuối cùng (chuẩn bị dứt điểm) và 0.0 cho tất cả các đường chuyền trước đó.
 - Cả 4 explainers (`gnn_explainer`, `pg_explainer`, `random`, `last_edge`) đã được tích hợp vào hàm xuất xưởng `build_explainer()`.
 
-### 2.3. Lấy mẫu phân tầng tất định (Quyết định D7)
+### 2.3. Lấy mẫu phân tầng tất định (Quyết định D7 & D2)
 - Tạo module `src/xai_football/xai/sampling.py` với hàm `stratified_sample()`:
   - Lọc ngưỡng chặt chẽ: chỉ giữ các đồ thị có từ `min_edges` cạnh trở lên (mặc định D2: `min_edges = 4`).
   - Phân tầng cân bằng theo lớp (dương/âm) và theo quy mô đồ thị: 4 cạnh, 5–6 cạnh, $\ge 7$ cạnh.
   - Phủ đều tất cả 57 trận đấu thuộc tập kiểm thử (Test set).
   - Tái lập tất định tuyệt đối theo `seed=42`.
   - Tự động xuất manifest kiểm kê `sample_manifest.csv` lưu lại `match_id`, `possession_id`, `size_bucket`, `play_pattern`.
+- **Dòng chảy chọn mẫu chính thức (Sample Selection Flow):**
+  - Tập Test gồm 6.646 đồ thị từ 57 trận đấu. Lọc $E \ge 4$ cạnh còn 4.432 đồ thị (gồm 611 đồ thị dương và 3.821 đồ thị âm).
+  - Để bảo đảm cân bằng lớp nghiêm ngặt 1:1 (tránh méo mó Fidelity do mất cân bằng lớp), toàn bộ 611 đồ thị dương được chọn và ghép đôi với 611 đồ thị âm phân tầng cân bằng, tạo thành tập mẫu chính thức gồm **1.222 đồ thị** (đạt 100% mẫu dương hợp lệ của tập Test).
 
 ### 2.4. Tổng hợp điểm cầu thủ & Khử thiên lệch (Quyết định D12)
 - Cập nhật hàm `aggregate_player_importance()`:

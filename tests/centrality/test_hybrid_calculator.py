@@ -126,3 +126,30 @@ def test_optimize_alpha_on_set_a_with_reliability():
     assert len(curve_df) > 0
     assert "split_half_reliability" in curve_df.columns
     assert "meets_reliability_constraint" in curve_df.columns
+
+
+def test_compute_match_traditional_centrality_multi_team():
+    """Kiểm tra mạng chuyền bóng được tách độc lập theo từng đội trong cùng trận đấu."""
+    rows = [
+        # Đội 100: P10 -> P20 -> P30
+        {"match_id": 1, "team_id": 100, "event_type": "Pass", "player_id": 10, "player_name": "P10", "pass_recipient_id": 20, "pass_outcome": None},
+        {"match_id": 1, "team_id": 100, "event_type": "Pass", "player_id": 20, "player_name": "P20", "pass_recipient_id": 30, "pass_outcome": None},
+        {"match_id": 1, "team_id": 100, "event_type": "Pass", "player_id": 30, "player_name": "P30", "pass_recipient_id": 20, "pass_outcome": None},
+        {"match_id": 1, "team_id": 100, "event_type": "Pass", "player_id": 20, "player_name": "P20", "pass_recipient_id": 10, "pass_outcome": None},
+        # Đội 200: P40 -> P50 -> P60
+        {"match_id": 1, "team_id": 200, "event_type": "Pass", "player_id": 40, "player_name": "P40", "pass_recipient_id": 50, "pass_outcome": None},
+        {"match_id": 1, "team_id": 200, "event_type": "Pass", "player_id": 50, "player_name": "P50", "pass_recipient_id": 60, "pass_outcome": None},
+        {"match_id": 1, "team_id": 200, "event_type": "Pass", "player_id": 60, "player_name": "P60", "pass_recipient_id": 50, "pass_outcome": None},
+        {"match_id": 1, "team_id": 200, "event_type": "Pass", "player_id": 50, "player_name": "P50", "pass_recipient_id": 40, "pass_outcome": None},
+    ]
+    df = pd.DataFrame(rows)
+    cent = compute_match_traditional_centrality(df)
+    assert len(cent) == 6
+    # P20 và P50 đóng vai trò trung tâm trong đội của họ
+    p20 = cent[cent["player_id"] == 20].iloc[0]
+    p50 = cent[cent["player_id"] == 50].iloc[0]
+    assert p20["betweenness"] > 0.0
+    assert p50["betweenness"] > 0.0
+    # Mẫu số chuẩn hóa của mạng 3 người: normalized betweenness của cầu thủ trung tâm là 1.0
+    assert np.isclose(p20["betweenness"], 1.0)
+    assert np.isclose(p50["betweenness"], 1.0)

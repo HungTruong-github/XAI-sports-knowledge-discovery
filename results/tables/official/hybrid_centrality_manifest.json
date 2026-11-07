@@ -1,6 +1,6 @@
 {
   "step": "Phase 4: Hybrid Centrality Official Evaluation (Leak-free Out-of-Sample Protocol)",
-  "run_id": "20261104_104154",
+  "run_id": "20261107_160647",
   "clean_working_tree": false,
   "d17_note": "Gate D17 Note: PGExplainer achieved high cross-run stability (0.9872) for large-scale inference, but its Delta Fidelity (+0.0368) was lower than the Random baseline (+0.0496), failing strict Gate D17 criteria. Consequently, this player-level Hybrid Centrality evaluation serves as an exploratory methodological proof-of-concept demonstrating how GNN-XAI can be integrated with network centrality once a Gate D17-compliant explainer is available.",
   "decisions": {
@@ -11,117 +11,117 @@
     "D16": "Grid search alpha on Set A with split-half reliability constraint, evaluate Out-of-Sample on Set B",
     "D17": "Gate D17 exploratory validation of PGExplainer in downstream metric formulation"
   },
-  "optimal_alpha": 0.65,
+  "optimal_alpha": 0.7,
   "set_a_matches": 190,
   "set_b_matches": 190,
   "n_players_evaluated_set_b": 314,
   "spearman_correlations_set_b": {
     "xt_per_90": {
       "hybrid_centrality": {
-        "spearman": 0.573,
+        "spearman": 0.5804,
         "p_value": 0.0
       },
       "pure_centrality": {
-        "spearman": 0.5237,
+        "spearman": 0.529,
         "p_value": 0.0
       },
       "pure_xai": {
         "spearman": 0.0364,
         "p_value": 0.52
       },
-      "gain_over_centrality": 0.0493
+      "gain_over_centrality": 0.0514
     },
     "xA_per_90": {
       "hybrid_centrality": {
-        "spearman": 0.2436,
-        "p_value": 0.0
+        "spearman": 0.1816,
+        "p_value": 0.0012
       },
       "pure_centrality": {
-        "spearman": -0.0554,
-        "p_value": 0.3275
+        "spearman": -0.0538,
+        "p_value": 0.342
       },
       "pure_xai": {
         "spearman": 0.5713,
         "p_value": 0.0
       },
-      "gain_over_centrality": 0.2991
+      "gain_over_centrality": 0.2354
     },
     "key_passes_per_90": {
       "hybrid_centrality": {
-        "spearman": 0.3527,
+        "spearman": 0.2885,
         "p_value": 0.0
       },
       "pure_centrality": {
-        "spearman": 0.0367,
-        "p_value": 0.5173
+        "spearman": 0.0376,
+        "p_value": 0.5073
       },
       "pure_xai": {
         "spearman": 0.5889,
         "p_value": 0.0
       },
-      "gain_over_centrality": 0.3161
+      "gain_over_centrality": 0.251
     },
     "assists_per_90": {
       "hybrid_centrality": {
-        "spearman": 0.2096,
-        "p_value": 0.0002
+        "spearman": 0.1753,
+        "p_value": 0.0018
       },
       "pure_centrality": {
-        "spearman": 0.0287,
-        "p_value": 0.6126
+        "spearman": 0.0307,
+        "p_value": 0.5882
       },
       "pure_xai": {
         "spearman": 0.3466,
         "p_value": 0.0
       },
-      "gain_over_centrality": 0.1809
+      "gain_over_centrality": 0.1446
     }
   },
   "out_of_sample_ols_regression_xt": {
-    "r2_pure_centrality": 0.2409,
-    "r2_full_model": 0.3173,
-    "delta_r2": 0.0764,
+    "r2_pure_centrality": 0.2455,
+    "r2_full_model": 0.3241,
+    "delta_r2": 0.0786,
     "ci_95_bootstrap": [
-      0.012,
-      0.1265
+      0.0144,
+      0.1268
     ],
     "statistically_significant": true
   },
   "sensitivity_analysis": {
     "threshold_90m": {
       "n_players": 314,
-      "spearman_xt90": 0.573,
-      "gain_xt90": 0.0493,
+      "spearman_xt90": 0.5804,
+      "gain_xt90": 0.0514,
       "top_5_players": [
         "Santiago Cazorla González",
         "Mesut Özil",
         "Aaron Ramsey",
-        "Darren Fletcher",
-        "Francesc Fàbregas i Soler"
+        "Francesc Fàbregas i Soler",
+        "Ross Barkley"
       ]
     },
     "threshold_450m": {
       "n_players": 289,
-      "spearman_xt90": 0.5836,
-      "gain_xt90": 0.049,
+      "spearman_xt90": 0.5877,
+      "gain_xt90": 0.0512,
       "top_5_players": [
         "Santiago Cazorla González",
         "Mesut Özil",
         "Aaron Ramsey",
-        "Darren Fletcher",
-        "Francesc Fàbregas i Soler"
+        "Francesc Fàbregas i Soler",
+        "Ross Barkley"
       ]
     },
     "threshold_900m": {
       "n_players": 167,
-      "spearman_xt90": 0.6554,
-      "gain_xt90": 0.0718,
+      "spearman_xt90": 0.6568,
+      "gain_xt90": 0.076,
       "top_5_players": [
         "Mesut Özil",
         "Aaron Ramsey",
         "Francesc Fàbregas i Soler",
-        "Darren Fletcher",
-        "Ross Barkley"
+        "Ross Barkley",
+        "Yann Gérard M''Vila"
       ]
     }
   },
@@ -133,7 +133,7 @@
   },
   "git": {
     "branch": "feature/08-xai-completion",
-    "commit_sha": "afd6520d1351c2b367471cc94c154af039f6fba5",
+    "commit_sha": "76fadfa8a4ffc26c48e79a4704b89514765d48a6",
     "clean_working_tree": false,
     "is_git_repo": true
   },

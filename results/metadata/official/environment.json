@@ -4,7 +4,7 @@
   "architecture": "AMD64",
   "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
   "packages": {
-    "torch": "2.14.0+cpu",
+    "torch": "2.15.0+cpu",
     "torch_geometric": "2.8.0.post1",
     "pandas": "3.0.1",
     "numpy": "2.5.4",
@@ -23,7 +23,7 @@
   "cuda_device_name": "CPU only",
   "git": {
     "branch": "feature/08-xai-completion",
-    "commit_sha": "afd6520d1351c2b367471cc94c154af039f6fba5",
+    "commit_sha": "76fadfa8a4ffc26c48e79a4704b89514765d48a6",
     "clean_working_tree": false
   },
   "config_hashes": {

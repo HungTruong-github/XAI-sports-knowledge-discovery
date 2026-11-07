@@ -48,10 +48,10 @@ Nguồn dữ liệu: `results/tables/official/hybrid_centrality_comparison.csv`
 
 | Chỉ số bóng đá tham chiếu | Hybrid Centrality ($\alpha^* = 0.65$) | Betweenness Centrality thuần | Điểm XAI thuần | Mức tăng so với Centrality | Giá trị p |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **$xT/90$** (Expected Threat) | **0.5730** | 0.5237 | 0.0364 | **+0.0493** | $p < 0.0001$ |
-| **$xA/90$** (Expected Assists) | **0.2436** | -0.0554 | 0.5713 | **+0.2991** | $p < 0.0001$ |
-| **$Key Passes/90$** | **0.3527** | 0.0367 | 0.5889 | **+0.3161** | $p < 0.0001$ |
-| **$Assists/90$** | **0.2096** | 0.0287 | 0.3466 | **+0.1809** | $p = 0.0002$ |
+| **$xT/90$** (Expected Threat) | **0.5804** | 0.5290 | 0.0364 | **+0.0514** | $p < 0.0001$ |
+| **$xA/90$** (Expected Assists) | **0.1816** | -0.0538 | 0.5713 | **+0.2354** | $p = 0.0012$ |
+| **$Key Passes/90$** | **0.2885** | 0.0376 | 0.5889 | **+0.2510** | $p < 0.0001$ |
+| **$Assists/90$** | **0.1753** | 0.0307 | 0.3466 | **+0.1446** | $p = 0.0018$ |
 
 ### 3.1. Đối sánh đa biến thể kiểm chứng đối chứng (Ablation Baselines) trên Set B:
 
@@ -59,24 +59,24 @@ Nguồn dữ liệu: `results/tables/official/hybrid_centrality_baselines_compar
 
 | Biến thể kiểm chứng | $\rho(xT/90)$ | $\rho(xA/90)$ | $\rho(Key Passes/90)$ | $\rho(Assists/90)$ |
 | :--- | :---: | :---: | :---: | :---: |
-| Pure Centrality (Betweenness, $\alpha = 1.0$) | 0.5237 | -0.0554 | 0.0367 | 0.0287 |
+| Pure Centrality (Betweenness, $\alpha = 1.0$) | 0.5290 | -0.0538 | 0.0376 | 0.0307 |
 | Pure XAI (PGExplainer Full, $\alpha = 0.0$) | 0.0364 | 0.5713 | 0.5889 | 0.3466 |
-| Pure XAI Control (No Last Edge, $\alpha = 0.0$) | 0.1337 | 0.1461 | 0.1451 | 0.1103 |
-| **Hybrid Centrality (Full, $\alpha^* = 0.65$)** | **0.5730** | **0.2436** | **0.3527** | **0.2096** |
-| Hybrid Control (No Last Edge, $\alpha = 0.65$) | 0.5729 | 0.2435 | 0.3526 | 0.2095 |
+| Pure XAI Control (No Last Edge, $\alpha = 0.0$) | 0.0703 | 0.0934 | 0.1583 | 0.0855 |
+| **Hybrid Centrality (Full, $\alpha^* = 0.70$)** | **0.5804** | **0.1816** | **0.2885** | **0.1753** |
+| Hybrid Control (No Last Edge, $\alpha = 0.70$) | 0.5802 | 0.1814 | 0.2885 | 0.1751 |
 
 **Nhận định cơ chế nhãn chia sẻ và kiểm chứng đối chứng:**
 - Điểm XAI thuần có tương quan rất cao với $Key Passes/90$ ($0.5889$) và $xA/90$ ($0.5713$) do mô hình GNN dự đoán possession có cú sút hay không, mà cú sút bắt nguồn trực tiếp từ key passes (nhãn chia sẻ tự nhiên).
-- Khi loại bỏ cạnh cuối cùng (`No Last Edge`), tương quan với Key Passes giảm mạnh từ $0.5889$ xuống $0.1451$, chứng minh điểm XAI thực sự phân bổ trọng số lớn cho pha dọn cỗ quyết định, đồng thời tương quan với $xT/90$ tăng từ $0.0364$ lên $0.1337$ (nắm bắt cấu trúc tịnh tiến bóng trước đó).
-- Hybrid Centrality ($\alpha^* = 0.65$) dung hòa xuất sắc hai thái cực: giữ vững năng lực đại diện luân chuyển bóng ($xT/90 = 0.5730$) đồng thời phản ánh rõ nét đóng góp tạo cơ hội ($Key Passes/90 = 0.3527$).
+- Khi loại bỏ cạnh cuối cùng (`No Last Edge`), tương quan với Key Passes giảm mạnh từ $0.5889$ xuống $0.1583$, chứng minh điểm XAI thực sự phân bổ trọng số lớn cho pha dọn cỗ quyết định, đồng thời tương quan với $xT/90$ tăng từ $0.0364$ lên $0.0703$ (nắm bắt cấu trúc tịnh tiến bóng trước đó).
+- Hybrid Centrality ($\alpha^* = 0.70$) dung hòa xuất sắc hai thái cực: giữ vững năng lực đại diện luân chuyển bóng ($xT/90 = 0.5804$) đồng thời phản ánh rõ nét đóng góp tạo cơ hội ($Key Passes/90 = 0.2885$).
 
 ### Phân tích hồi quy OLS ngoài mẫu (Out-of-Sample) và Mức tăng giải thích ($\Delta R^2_{\text{OOS}}$):
-- Quy trình kiểm định độc lập triệt để: Mô hình OLS được ước lượng trọng số trên **Set A**, sau đó cố định hệ số và đánh giá dự báo ngoài mẫu trực tiếp trên **Set B** với $N = 314$ cầu thủ:
-  - Mô hình nền tảng (chỉ dùng Betweenness Centrality): $R^2_{\text{base, OOS}} = 0.2409$.
-  - Mô hình kết hợp đầy đủ (Betweenness Centrality + XAI Importance): $R^2_{\text{full, OOS}} = 0.3173$.
-  - Mức gia tăng giải thích ngoài mẫu: $\Delta R^2_{\text{OOS}} = +0.0764$.
-  - Khoảng tin cậy 95% Bootstrap ngoài mẫu (1,000 lần lấy mẫu theo cặp): $[0.0120, 0.1265]$.
-  - **Kết luận thống kê:** Khoảng tin cậy 95% bootstrap hoàn toàn tách rời phía trên 0 ($0.0120 > 0$). Điều này chứng minh thành phần XAI Importance mang lại giá trị gia tăng thực sự có ý nghĩa thống kê ngoài mẫu (tăng hơn 7.6% độ biến thiên giải thích cho $xT/90$), loại bỏ hoàn toàn nguy cơ quá khớp cục bộ.
+- Quy trình kiểm định độc lập triệt để: Mô hình OLS được ước lượng trọng số trên **Set A**, sau đó cố định hệ số và đánh giá dự báo ngoài mẫu trực tiếp trên **Set B** với $N = 313$ cầu thủ:
+  - Mô hình nền tảng (chỉ dùng Betweenness Centrality): $R^2_{\text{base, OOS}} = 0.2455$.
+  - Mô hình kết hợp đầy đủ (Betweenness Centrality + XAI Importance): $R^2_{\text{full, OOS}} = 0.3241$.
+  - Mức gia tăng giải thích ngoài mẫu: $\Delta R^2_{\text{OOS}} = +0.0786$.
+  - Khoảng tin cậy 95% Bootstrap ngoài mẫu (1,000 lần lấy mẫu theo cặp): $[0.0144, 0.1268]$.
+  - **Kết luận thống kê:** Khoảng tin cậy 95% bootstrap hoàn toàn tách rời phía trên 0 ($0.0144 > 0$). Điều này chứng minh thành phần XAI Importance mang lại giá trị gia tăng thực sự có ý nghĩa thống kê ngoài mẫu (tăng gần 7.9% độ biến thiên giải thích cho $xT/90$), loại bỏ hoàn toàn nguy cơ quá khớp cục bộ.
 
 ---
 
@@ -88,21 +88,21 @@ Nguồn dữ liệu: `results/tables/official/hybrid_centrality_top_players.csv`
 
 | Hạng | Cầu thủ | Câu lạc bộ | Số phút (Set B) | Hybrid Centrality | Rank Centrality | Rank XAI | Key Passes | KP/90 | $xA/90$ | $xT/90$ | Kiến tạo |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| 1 | **Santi Cazorla** | Arsenal | 492.7 | **0.9637** | 0.9649 | 0.9617 | 20 | 3.653 | 0.372 | 0.5721 | 2 |
-| 2 | **Mesut Özil** | Arsenal | 1,318.6 | **0.9498** | 0.9521 | 0.9457 | 62 | 4.232 | 0.436 | 0.4691 | 9 |
-| 3 | **Aaron Ramsey** | Arsenal | 990.0 | **0.9034** | 0.9872 | 0.7476 | 16 | 1.455 | 0.123 | 0.3578 | 1 |
-| 4 | **Darren Fletcher** | West Brom | 1,620.3 | **0.8807** | 0.9265 | 0.7955 | 10 | 0.555 | 0.057 | 0.1696 | 1 |
-| 5 | **Cesc Fàbregas** | Chelsea | 1,350.4 | **0.8792** | 1.0000 | 0.6550 | 36 | 2.399 | 0.275 | 0.3962 | 5 |
-| 6 | **James Morrison** | West Brom | 840.3 | **0.8719** | 0.9681 | 0.6933 | 14 | 1.499 | 0.123 | 0.1959 | 2 |
-| 7 | **Ross Barkley** | Everton | 1,825.6 | **0.8642** | 0.9425 | 0.7188 | 40 | 1.972 | 0.199 | 0.2149 | 6 |
-| 8 | **Yann M'Vila** | Sunderland | 1,170.0 | **0.8550** | 0.9936 | 0.5974 | 17 | 1.308 | 0.070 | 0.1562 | 0 |
-| 9 | **Mark Noble** | West Ham | 1,533.9 | **0.8387** | 0.9840 | 0.5687 | 25 | 1.467 | 0.098 | 0.2067 | 3 |
-| 10 | **Wes Hoolahan** | Norwich | 855.2 | **0.8372** | 0.9457 | 0.6358 | 13 | 1.368 | 0.117 | 0.2077 | 2 |
-| 11 | **Ryan Mason** | Tottenham | 361.2 | **0.8356** | 0.9776 | 0.5719 | 6 | 1.495 | 0.086 | 0.2012 | 0 |
-| 12 | **Idrissa Gueye** | Aston Villa | 1,386.8 | **0.8267** | 0.9105 | 0.6709 | 15 | 0.973 | 0.046 | 0.1226 | 0 |
-| 13 | **Dimitri Payet** | West Ham | 1,310.0 | **0.8256** | 0.8435 | 0.7923 | 69 | 4.740 | 0.394 | 0.3814 | 4 |
-| 14 | **Christian Eriksen**| Tottenham | 1,427.8 | **0.8134** | 0.7955 | 0.8466 | 64 | 4.034 | 0.273 | 0.3391 | 4 |
-| 15 | **Troy Deeney** | Watford | 1,951.7 | **0.8128** | 0.7636 | 0.9042 | 34 | 1.568 | 0.246 | 0.1290 | 4 |
+| 1 | **Santi Cazorla** | Arsenal | 492.7 | **0.9684** | 0.9712 | 0.9617 | 20 | 3.653 | 0.372 | 0.5721 | 2 |
+| 2 | **Mesut Özil** | Arsenal | 1,318.6 | **0.9502** | 0.9521 | 0.9457 | 62 | 4.232 | 0.436 | 0.4691 | 9 |
+| 3 | **Aaron Ramsey** | Arsenal | 990.0 | **0.9153** | 0.9872 | 0.7476 | 16 | 1.455 | 0.123 | 0.3578 | 1 |
+| 4 | **Cesc Fàbregas** | Chelsea | 1,350.4 | **0.8942** | 0.9968 | 0.6550 | 36 | 2.399 | 0.275 | 0.3962 | 5 |
+| 5 | **Ross Barkley** | Everton | 1,825.6 | **0.8799** | 0.9489 | 0.7188 | 40 | 1.972 | 0.199 | 0.2149 | 6 |
+| 6 | **Darren Fletcher** | West Brom | 1,620.3 | **0.8783** | 0.9137 | 0.7955 | 10 | 0.555 | 0.057 | 0.1696 | 1 |
+| 7 | **James Morrison** | West Brom | 840.3 | **0.8767** | 0.9553 | 0.6933 | 14 | 1.499 | 0.123 | 0.1959 | 2 |
+| 8 | **Yann M'Vila** | Sunderland | 1,170.0 | **0.8748** | 0.9936 | 0.5974 | 17 | 1.308 | 0.070 | 0.1562 | 0 |
+| 9 | **Mark Noble** | West Ham | 1,533.9 | **0.8594** | 0.9840 | 0.5687 | 25 | 1.467 | 0.098 | 0.2067 | 3 |
+| 10 | **Ryan Mason** | Tottenham | 361.2 | **0.8559** | 0.9776 | 0.5719 | 6 | 1.495 | 0.086 | 0.2012 | 0 |
+| 11 | **Wes Hoolahan** | Norwich | 855.2 | **0.8482** | 0.9393 | 0.6358 | 13 | 1.368 | 0.117 | 0.2077 | 2 |
+| 12 | **Idrissa Gueye** | Aston Villa | 1,386.8 | **0.8454** | 0.9201 | 0.6709 | 15 | 0.973 | 0.046 | 0.1226 | 0 |
+| 13 | **Dimitri Payet** | West Ham | 1,310.0 | **0.8415** | 0.8626 | 0.7923 | 69 | 4.740 | 0.394 | 0.3814 | 4 |
+| 14 | **Jordan Henderson**| Liverpool | 576.9 | **0.8335** | 0.9649 | 0.5272 | 10 | 1.560 | 0.171 | 0.2819 | 1 |
+| 15 | **Christian Eriksen**| Tottenham | 1,427.8 | **0.8310** | 0.8243 | 0.8466 | 64 | 4.034 | 0.273 | 0.3391 | 4 |
 
 ### 4.2. Phân tích độ nhạy theo thời lượng thi đấu (Sensitivity Analysis)
 

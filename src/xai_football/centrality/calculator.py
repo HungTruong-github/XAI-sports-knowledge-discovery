@@ -81,10 +81,20 @@ def compute_match_traditional_centrality(
             "closeness", "eigenvector", "matches_played"
         ])
 
-    match_grouped = passes.groupby("match_id")
+    has_team = "team_id" in passes.columns
+    group_cols = ["match_id", "team_id"] if has_team else ["match_id"]
+    match_grouped = passes.groupby(group_cols)
     match_records = []
 
-    for mid, m_passes in match_grouped:
+    for grp_key, m_passes in match_grouped:
+        if has_team:
+            mid, tid = grp_key
+            mid = int(mid)
+            tid = int(tid) if pd.notna(tid) else None
+        else:
+            mid = int(grp_key[0]) if isinstance(grp_key, (tuple, list)) else int(grp_key)
+            tid = None
+
         # Nếu có thông tin lọc số phút, chỉ giữ đường chuyền giữa các cầu thủ đủ điều kiện
         if valid_players_by_match is not None and mid in valid_players_by_match:
             valid_set = valid_players_by_match[mid]
@@ -95,7 +105,7 @@ def compute_match_traditional_centrality(
         if m_passes.empty:
             continue
 
-        # Xây dựng đồ thị có hướng có trọng số (số đường chuyền u -> v)
+        # Xây dựng đồ thị có hướng có trọng số (số đường chuyền u -> v) theo từng đội
         G = nx.DiGraph()
         edge_weights = m_passes.groupby(["player_id", "pass_recipient_id"]).size()
 
@@ -129,8 +139,13 @@ def compute_match_traditional_centrality(
 
         for n in G.nodes():
             pid = int(n)
-            mins = match_minutes_map.get((mid, pid), 90.0)
-            match_records.append({
+            mins = match_minutes_map.get((mid, pid))
+            if mins is None:
+                if match_minutes_map:
+                    logger.debug("Cầu thủ %s trong trận %s không có trong lineups minutes map; gán 90.0", pid, mid)
+                mins = 90.0
+
+            rec = {
                 "match_id": mid,
                 "player_id": pid,
                 "minutes": mins,
@@ -139,7 +154,10 @@ def compute_match_traditional_centrality(
                 "degree_out": float(deg_out.get(n, 0.0)),
                 "closeness": float(clos.get(n, 0.0)),
                 "eigenvector": float(eig.get(n, 0.0)),
-            })
+            }
+            if tid is not None:
+                rec["team_id"] = tid
+            match_records.append(rec)
 
     if not match_records:
         return pd.DataFrame()
