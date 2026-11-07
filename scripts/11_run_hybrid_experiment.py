@@ -529,10 +529,11 @@ def main() -> int:
     sens_df.to_csv(out_dir / "ranking_sensitivity_by_minutes.csv", index=False, encoding="utf-8-sig")
 
     # 13. Manifest lưu trữ cấu hình, kết quả và nguồn gốc dữ liệu (Provenance)
+    git_info = get_git_info()
     manifest = {
         "step": "Phase 4: Hybrid Centrality Official Evaluation (Leak-free Out-of-Sample Protocol)",
         "run_id": run_id,
-        "clean_working_tree": True,
+        "clean_working_tree": bool(git_info.get("clean_working_tree", False)),
         "d17_note": (
             "Gate D17 Note: PGExplainer achieved high cross-run stability (0.9872) for large-scale inference, "
             "but its Delta Fidelity (+0.0368) was lower than the Random baseline (+0.0496), failing strict Gate D17 criteria. "
@@ -561,7 +562,7 @@ def main() -> int:
         },
         "sensitivity_analysis": sens_summary_manifest,
         "xai_provenance": xai_source_info,
-        "git": get_git_info(),
+        "git": git_info,
         "tables": {
             "comparison": "results/tables/official/hybrid_centrality_comparison.csv",
             "baselines_comparison": "results/tables/official/hybrid_centrality_baselines_comparison.csv",

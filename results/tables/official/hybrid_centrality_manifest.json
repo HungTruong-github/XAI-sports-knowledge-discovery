@@ -1,7 +1,7 @@
 {
   "step": "Phase 4: Hybrid Centrality Official Evaluation (Leak-free Out-of-Sample Protocol)",
-  "run_id": "20261103_140931",
-  "clean_working_tree": true,
+  "run_id": "20261104_104154",
+  "clean_working_tree": false,
   "d17_note": "Gate D17 Note: PGExplainer achieved high cross-run stability (0.9872) for large-scale inference, but its Delta Fidelity (+0.0368) was lower than the Random baseline (+0.0496), failing strict Gate D17 criteria. Consequently, this player-level Hybrid Centrality evaluation serves as an exploratory methodological proof-of-concept demonstrating how GNN-XAI can be integrated with network centrality once a Gate D17-compliant explainer is available.",
   "decisions": {
     "D12": "unbiased player importance (mean per participation, global shrinkage m=20, min_possessions=30)",
@@ -133,7 +133,7 @@
   },
   "git": {
     "branch": "feature/08-xai-completion",
-    "commit_sha": "4bf1a2f8723eb545888aa4f8386957d6180ab73d",
+    "commit_sha": "afd6520d1351c2b367471cc94c154af039f6fba5",
     "clean_working_tree": false,
     "is_git_repo": true
   },

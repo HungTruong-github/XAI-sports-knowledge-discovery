@@ -24,13 +24,14 @@ nhóm đã cam kết với giảng viên ở mục 1.3 Tầng 2. Nếu mỗi bac
 cấu hình huấn luyện khác nhau thì không thể kết luận chênh lệch hiệu năng
 đến từ kiến trúc.
 
-## Các giá trị `null` với ghi chú `TODO`
+## Trạng thái các Quyết định Nghiên cứu (Decision Records)
 
-Những chỗ này là **quyết định nghiên cứu chưa chốt**, cố ý để trống thay vì
-điền bừa. Xem `docs/decisions/` để biết cần trả lời câu hỏi gì trước khi điền:
+Toàn bộ các quyết định nghiên cứu then chốt đã được chốt và phản ánh đầy đủ trong cấu hình (xem `docs/decisions/`):
 
-- `data.yaml → labeling` → [quyết định 0001](../docs/decisions/0001-quy-tac-gan-nhan.md)
-- `hybrid_centrality.yaml → combination` → [quyết định 0002](../docs/decisions/0002-cong-thuc-hybrid-centrality.md)
+- `data.yaml → labeling`: Đã chốt theo [Quyết định 0001](../docs/decisions/0001-quy-tac-gan-nhan.md) (bài toán phân loại nhị phân cấp possession, nhãn cú sút `shot`, tỷ lệ dương 14,26%).
+- `hybrid_centrality.yaml → combination`: Đã chốt theo [Quyết định 0002](../docs/decisions/0002-cong-thuc-hybrid-centrality.md) (chuẩn hóa Percentile Rank, tham số tối ưu $\alpha^* = 0.65$ từ Set A có ràng buộc độ tin cậy chia đôi).
+- `configs/model/mpnn.yaml`: Duy trì MPNN Mean Pooling nguyên bản làm backbone chính thức theo [Quyết định 0005](../docs/decisions/0005-readout-mpnn.md) (quy tắc D4).
+- `configs/xai.yaml`: Chốt cấu hình XAI, Gate D17 và Cross-fitting theo [Quyết định 0006](../docs/decisions/0006-giao-thuc-xai.md).
 
 ## Cấu hình cục bộ
 

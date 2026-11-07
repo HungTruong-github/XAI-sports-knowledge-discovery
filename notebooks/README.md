@@ -1,6 +1,6 @@
 # notebooks/ — Jupyter Notebooks Khảo sát & Tái lập (Reproducibility)
 
-Thư mục này chứa 7 Jupyter Notebooks chính thức phục vụ mục tiêu giải thích, phân tích định lượng và trực quan hóa từng bước trong pipeline của dự án **XAI-Football**.
+Thư mục này chứa **11 Jupyter Notebooks chính thức (Bước 00 đến 10)** phục vụ mục tiêu giải thích, phân tích định lượng và trực quan hóa từng bước trong pipeline của đề tài **XAI-Football**.
 
 ## 1. Nguyên tắc thiết kế
 1. **Không nhân đôi logic nghiệp vụ**: Mọi logic tiền xử lý, dựng đồ thị, huấn luyện và đánh giá được import từ `src/xai_football/` và gọi qua các entry point trong `scripts/`.
@@ -19,7 +19,7 @@ Thư mục này chứa 7 Jupyter Notebooks chính thức phục vụ mục tiêu
 
 ---
 
-## 2. Danh mục Notebook & Thứ tự thực thi
+## 2. Danh mục Notebook & Thứ tự thực thi (11/11 Notebooks Đã hoàn thành)
 
 | Thứ tự | File Notebook | Bước Pipeline | Nội dung & Đầu ra chính | Trạng thái |
 |---|---|---|---|---|
@@ -30,7 +30,10 @@ Thư mục này chứa 7 Jupyter Notebooks chính thức phục vụ mục tiêu
 | **04** | `04_match_level_split.ipynb` | Bước 4 — Phân chia tập | Phân tầng theo TRẬN ĐẤU (Train 70%, Val 15%, Test 15%). Báo cáo phân bố đồ thị sau khi dựng graph (`graph_split_summary.csv`). Kiểm tra chống rò rỉ dữ liệu (leakage checks). | **Đã hoàn thành** |
 | **05** | `05_model_training.ipynb` | Bước 5 — Huấn luyện GNN | Trình bày cấu hình siêu tham số chung, theo dõi quá trình hội tụ loss và validation AUC-PR của MPNN, GCN, GATv2, GraphSAGE. Cơ chế multi-seed và early stopping. | **Đã hoàn thành** |
 | **06** | `06_model_evaluation.ipynb` | Bước 6 — Đánh giá | Đối sánh công bằng 7 mô hình: GNN (Tầng 2) vs Baselines phi đồ thị (Tầng 3). Trực quan hóa PR curve, ROC curve, Brier score từ prediction scores thật. | **Đã hoàn thành** |
-| **07–10** | *Chưa triển khai* | Bước 7–10 — XAI & Khám phá tri thức | Giải thích bằng GNNExplainer/PGExplainer, công thức Hybrid Centrality, so sánh với xT, phát hiện tri thức chiến thuật. | **Chưa triển khai** |
+| **07** | `07_readout_pooling_comparison.ipynb` | Bước 7 — Readout Pooling | Khảo sát 4 biến thể Readout MPNN (mean, max, attention, mean_lastedge) qua 5 seeds. Thực thi Quyết định D4: Giữ MPNN mean pooling làm backbone chính thức. | **Đã hoàn thành** |
+| **08** | `08_xai_explanation_and_gate_d17.ipynb` | Bước 8 — Giải thích & Gate D17 | Đối sánh 4 explainers trên 1.222 đồ thị Test. Kiểm định Cổng Gate D17 (Paired Clustered 95% CI vs Random). Phân tích vai trò then chốt của đường chuyền cuối cùng. | **Đã hoàn thành** |
+| **09** | `09_crossfit_hybrid_centrality.ipynb` | Bước 9 — Tối ưu hóa Set A | Giao thức A/B sạch rò rỉ (190 / 190 trận); 5-fold cross-fitting; Bayesian shrinkage m=20; huấn luyện xT trên Set A; Grid Search tìm alpha* = 0.65 có ràng buộc độ tin cậy chia đôi. | **Đã hoàn thành** |
+| **10** | `10_oos_validation_and_case_studies.ipynb` | Bước 10 — Kiểm chứng ngoài mẫu | Đánh giá ngoài mẫu trên Set B (314 cầu thủ, >= 90m); OLS Delta R^2 = +0.0764 (95% CI [0.0120, 0.1265]); đối sánh No-Last-Edge ablation; độ nhạy và bảng Creative Contribution; pitch plots 2D. | **Đã hoàn thành** |
 
 ---
 
@@ -86,7 +89,14 @@ for nb_file in sorted(Path('notebooks').glob('*.ipynb')):
   - `06_model_auc_comparison.png`, `.svg`
   - `06_pr_roc_curves.png`, `.svg`
   - `06_brier_score_comparison.png`, `.svg`
-- **Metadata**: `results/metadata/official/environment.json`.
+  - `07_readout_comparison.png`, `.svg`
+  - `08_xai_fidelity_comparison.png`, `.svg`
+  - `08_xai_sparsity_fidelity_curves.png`, `.svg`
+  - `09_hybrid_alpha_optimization.png`, `.svg`
+  - `09_hybrid_vs_centrality_scatter.png`, `.svg`
+  - `10_top_players_ranking_shift.png`, `.svg`
+  - `10_case_study_pitch_plots.png`, `.svg`
+- **Metadata**: `results/metadata/official/environment.json`, `hybrid_centrality_manifest.json`.
 - **Bảng số liệu**: `results/tables/official/`.
 
 ---

@@ -33,10 +33,9 @@ Pipeline gồm hai nhánh chính chạy nối tiếp: **nhánh dự đoán** (b�
 ## 1. Thu thập dữ liệu (Data Collection)
 
 ### 1.1. Nguồn dữ liệu
-- **StatsBomb Open Data** — nguồn duy nhất (đã chốt ở phần trao đổi trước), gồm các subset:
-  - Bundesliga 2023/24 (toàn bộ mùa giải, event data chi tiết)
-  - UEFA Champions League (các mùa có sẵn trong Open Data)
-  - Có thể mở rộng thêm La Liga / World Cup nếu cần tăng cỡ mẫu, miễn giữ cùng một nhà cung cấp.
+- **StatsBomb Open Data** — nguồn dữ liệu mở sự kiện chi tiết của StatsBomb.
+- **Tập dữ liệu chính thức (chốt theo [Quyết định 0004](decisions/0004-main-dataset-premier-league-2015-16.md)):** Ngoại hạng Anh (Premier League) mùa giải 2015/2016 (`competition_id: 2`, `season_id: 27`), bao gồm trọn vẹn **380 trận đấu**, 45.365 pha kiểm soát bóng sạch và 45.047 đồ thị PyG.
+- *Ghi chú lịch sử:* Trong giai đoạn khảo sát ban đầu (tháng 8/2026), đề tài từng khảo sát kế hoạch Bundesliga 2023/24 hoặc Champions League; sau khi phát hiện các tập này chỉ có khoảng 52 trận hoặc không đủ trọn vẹn một mùa giải, nhóm đã thông qua Quyết định 0004 chuyển giao sang toàn bộ 380 trận Premier League 2015/16 để đảm bảo tính bao quát và quy chuẩn thống kê.
 
 ### 1.2. Công cụ lấy dữ liệu
 - Thư viện `statsbombpy` (Python) hoặc gọi trực tiếp REST/JSON từ repo GitHub `statsbomb/open-data`.

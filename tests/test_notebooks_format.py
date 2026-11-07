@@ -17,6 +17,10 @@ EXPECTED_NOTEBOOKS = [
     "04_match_level_split.ipynb",
     "05_model_training.ipynb",
     "06_model_evaluation.ipynb",
+    "07_readout_pooling_comparison.ipynb",
+    "08_xai_explanation_and_gate_d17.ipynb",
+    "09_crossfit_hybrid_centrality.ipynb",
+    "10_oos_validation_and_case_studies.ipynb",
 ]
 
 REQUIRED_SECTIONS = [

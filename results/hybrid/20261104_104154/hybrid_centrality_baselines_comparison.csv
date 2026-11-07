@@ -1,0 +1,6 @@
+﻿variant,xt_per_90,xA_per_90,key_passes_per_90,assists_per_90
+"Pure Centrality (Betweenness, alpha=1.0)",0.5237,-0.0554,0.0367,0.0287
+"Pure XAI (PGExplainer Full, alpha=0.0)",0.0364,0.5713,0.5889,0.3466
+"Pure XAI Control (No Last Edge, alpha=0.0)",0.1337,0.1461,0.1451,0.1103
+"Hybrid Centrality (Full, alpha=0.65)",0.573,0.2436,0.3527,0.2096
+"Hybrid Control (No Last Edge, alpha=0.65)",0.5729,0.2435,0.3526,0.2095
