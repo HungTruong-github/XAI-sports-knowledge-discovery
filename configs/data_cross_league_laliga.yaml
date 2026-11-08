@@ -1,0 +1,38 @@
+# ============================================================
+# Cấu hình Mở rộng — Cross-League Zero-Shot Evaluation (La Liga 2015/16)
+# Mục tiêu: Đánh giá ngoài mẫu (Zero-shot External Test) trên La Liga
+# ============================================================
+
+run_name: "cross_league_laliga"
+source: statsbomb_open_data
+
+competitions:
+  - name: "La Liga"
+    season: "2015/2016"
+    competition_id: 11
+    season_id: 27
+
+expected_matches: 380
+
+paths:
+  raw: "data/raw"
+  interim: "data/interim"
+  processed: "data/processed"
+
+preprocessing:
+  min_passes_per_possession: 2   # loại possession quá ngắn (mục 2.2)
+  drop_extra_time: true          # loại hiệp phụ / luân lưu
+  drop_missing_coordinates: true
+  impute_coordinates: false      # KHÔNG suy diễn tọa độ
+
+pitch:
+  length: 120
+  width: 80
+  normalize_attack_direction: true
+  force_flip_misoriented: false
+
+labeling:
+  mode: "possession_level"
+  target: "shot"
+  shot_window_seconds: null
+

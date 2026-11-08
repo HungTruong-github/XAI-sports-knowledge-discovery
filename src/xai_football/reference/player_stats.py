@@ -157,7 +157,10 @@ def compute_player_reference_stats(
             df = df[df["match_id"].isin(match_ids)]
 
         kp_rows: list[dict[str, Any]] = []
-        grouped = df.groupby(["match_id", "possession_id"])
+        # Tối ưu hóa tốc độ: chỉ nhóm các possession thực sự có cú sút (loại bỏ >90% possession rỗng)
+        shot_poss = df[df["event_type"] == "Shot"][["match_id", "possession_id"]].drop_duplicates()
+        df_shots = pd.merge(df, shot_poss, on=["match_id", "possession_id"], how="inner")
+        grouped = df_shots.groupby(["match_id", "possession_id"])
         for (_, _), group in grouped:
             shots = group[group["event_type"] == "Shot"].sort_values("event_index")
             if shots.empty:
@@ -271,6 +274,9 @@ def compute_player_reference_stats(
 
                 if kp_records:
                     ref_match_df = pd.DataFrame(kp_records)
+                    if c_path is not None:
+                        c_path.parent.mkdir(parents=True, exist_ok=True)
+                        ref_match_df.to_parquet(c_path, index=False)
                     kp_df = ref_match_df.groupby("player_id").agg(
                         player_name=("player_name", "last"),
                         team_name=("team_name", "last"),

@@ -1,0 +1,252 @@
+{
+  "title": "Cross-League Zero-Shot Evaluation (Premier League 2015/16 -> La Liga 2015/16)",
+  "source_domain": {
+    "competition": "Premier League",
+    "season": "2015/2016",
+    "competition_id": 2,
+    "season_id": 27,
+    "matches": 380,
+    "trained_models_dir": "models\\official"
+  },
+  "target_domain": {
+    "competition": "La Liga",
+    "season": "2015/2016",
+    "competition_id": 11,
+    "season_id": 27,
+    "matches": 380,
+    "total_graphs": 46480,
+    "processed_dir": "data/processed/cross_league_laliga",
+    "events_path": "data/interim/cross_league_laliga/events.parquet"
+  },
+  "rq1_model_transfer": {
+    "models_evaluated": [
+      "MPNN",
+      "GCN",
+      "GATV2",
+      "GRAPHSAGE"
+    ],
+    "best_model": "MPNN",
+    "summary": [
+      {
+        "model": "MPNN",
+        "epl_test_auc_pr": 0.5996,
+        "laliga_zero_shot_auc_pr": 0.5768,
+        "auc_pr_ci_95": "[0.5638, 0.5901]",
+        "delta_auc_pr": -0.0228,
+        "degradation_pct": -3.81,
+        "epl_test_auc_roc": 0.8757,
+        "laliga_zero_shot_auc_roc": 0.8849,
+        "auc_roc_ci_95": "[0.8803, 0.8897]",
+        "delta_auc_roc": 0.0092,
+        "epl_test_brier": 0.1302,
+        "laliga_zero_shot_brier": 0.0964,
+        "brier_ci_95": "[0.0944, 0.0985]",
+        "threshold_applied": 0.7446,
+        "accuracy": 0.9033,
+        "precision": 0.6677,
+        "recall": 0.4125,
+        "f1": 0.51
+      },
+      {
+        "model": "GCN",
+        "epl_test_auc_pr": 0.4526,
+        "laliga_zero_shot_auc_pr": 0.3337,
+        "auc_pr_ci_95": "[0.3219, 0.3463]",
+        "delta_auc_pr": -0.1189,
+        "degradation_pct": -26.27,
+        "epl_test_auc_roc": 0.831,
+        "laliga_zero_shot_auc_roc": 0.7992,
+        "auc_roc_ci_95": "[0.7937, 0.8043]",
+        "delta_auc_roc": -0.0318,
+        "epl_test_brier": 0.1688,
+        "laliga_zero_shot_brier": 0.1774,
+        "brier_ci_95": "[0.1751, 0.1799]",
+        "threshold_applied": 0.6354,
+        "accuracy": 0.7855,
+        "precision": 0.3027,
+        "recall": 0.5818,
+        "f1": 0.3982
+      },
+      {
+        "model": "GATV2",
+        "epl_test_auc_pr": 0.462,
+        "laliga_zero_shot_auc_pr": 0.297,
+        "auc_pr_ci_95": "[0.2859, 0.3085]",
+        "delta_auc_pr": -0.165,
+        "degradation_pct": -35.71,
+        "epl_test_auc_roc": 0.8407,
+        "laliga_zero_shot_auc_roc": 0.7658,
+        "auc_roc_ci_95": "[0.7600, 0.7716]",
+        "delta_auc_roc": -0.0749,
+        "epl_test_brier": 0.1534,
+        "laliga_zero_shot_brier": 0.1773,
+        "brier_ci_95": "[0.1756, 0.1792]",
+        "threshold_applied": 0.6173,
+        "accuracy": 0.8291,
+        "precision": 0.3194,
+        "recall": 0.3545,
+        "f1": 0.336
+      },
+      {
+        "model": "GRAPHSAGE",
+        "epl_test_auc_pr": 0.5159,
+        "laliga_zero_shot_auc_pr": 0.3845,
+        "auc_pr_ci_95": "[0.3713, 0.3986]",
+        "delta_auc_pr": -0.1314,
+        "degradation_pct": -25.48,
+        "epl_test_auc_roc": 0.8504,
+        "laliga_zero_shot_auc_roc": 0.8237,
+        "auc_roc_ci_95": "[0.8186, 0.8292]",
+        "delta_auc_roc": -0.0267,
+        "epl_test_brier": 0.146,
+        "laliga_zero_shot_brier": 0.2216,
+        "brier_ci_95": "[0.2189, 0.2245]",
+        "threshold_applied": 0.6536,
+        "accuracy": 0.735,
+        "precision": 0.2828,
+        "recall": 0.7628,
+        "f1": 0.4126
+      }
+    ]
+  },
+  "rq2_xai_transfer": {
+    "explainers_evaluated": [
+      "gnn_explainer",
+      "last_edge",
+      "random"
+    ],
+    "gate_d17_compliance": {
+      "gnn_explainer": "FAIL",
+      "last_edge": "PASS",
+      "random": "REF"
+    },
+    "summary": [
+      {
+        "explainer": "gnn_explainer",
+        "n_graphs": 40,
+        "fidelity_plus_mean": 0.0343,
+        "fidelity_plus_std": 0.1595,
+        "fidelity_minus_mean": -0.1192,
+        "fidelity_minus_std": 0.2344,
+        "sparsity_mean": 0.6925,
+        "gate_d17_delta_fid_diff": "0.0822",
+        "gate_d17_ci_95": "[-0.0229, 0.1868]",
+        "gate_d17_status": "FAIL"
+      },
+      {
+        "explainer": "last_edge",
+        "n_graphs": 40,
+        "fidelity_plus_mean": 0.1018,
+        "fidelity_plus_std": 0.2419,
+        "fidelity_minus_mean": -0.1292,
+        "fidelity_minus_std": 0.13,
+        "sparsity_mean": 0.6925,
+        "gate_d17_delta_fid_diff": "0.1598",
+        "gate_d17_ci_95": "[0.0338, 0.3048]",
+        "gate_d17_status": "PASS"
+      },
+      {
+        "explainer": "random",
+        "n_graphs": 40,
+        "fidelity_plus_mean": 0.0061,
+        "fidelity_plus_std": 0.126,
+        "fidelity_minus_mean": -0.0651,
+        "fidelity_minus_std": 0.2607,
+        "sparsity_mean": 0.6925,
+        "gate_d17_delta_fid_diff": "REF",
+        "gate_d17_ci_95": NaN,
+        "gate_d17_status": "REF"
+      }
+    ]
+  },
+  "rq3_hybrid_centrality": {
+    "frozen_alpha": 0.7,
+    "shrinkage_m": 20.0,
+    "min_possessions": 30,
+    "players_evaluated": 445,
+    "correlations": [
+      {
+        "metric": "xt_per_90",
+        "hybrid_centrality_spearman": 0.5602,
+        "hybrid_p_value": 0.0,
+        "pure_centrality_spearman": 0.5064,
+        "centrality_p_value": 0.0,
+        "pure_xai_spearman": -0.0598,
+        "xai_p_value": 0.2082,
+        "gain_over_centrality": "+0.0537",
+        "ols_delta_r2": 0.0477,
+        "ols_delta_r2_ci_95": "[0.0210, 0.0896]"
+      },
+      {
+        "metric": "xA_per_90",
+        "hybrid_centrality_spearman": 0.1287,
+        "hybrid_p_value": 0.0066,
+        "pure_centrality_spearman": -0.1429,
+        "centrality_p_value": 0.0025,
+        "pure_xai_spearman": 0.6107,
+        "xai_p_value": 0.0,
+        "gain_over_centrality": "+0.2716",
+        "ols_delta_r2": 0.3067,
+        "ols_delta_r2_ci_95": "[0.2475, 0.3729]"
+      },
+      {
+        "metric": "key_passes_per_90",
+        "hybrid_centrality_spearman": 0.1465,
+        "hybrid_p_value": 0.002,
+        "pure_centrality_spearman": -0.127,
+        "centrality_p_value": 0.0073,
+        "pure_xai_spearman": 0.6122,
+        "xai_p_value": 0.0,
+        "gain_over_centrality": "+0.2734",
+        "ols_delta_r2": 0.3272,
+        "ols_delta_r2_ci_95": "[0.2619, 0.3977]"
+      },
+      {
+        "metric": "assists_per_90",
+        "hybrid_centrality_spearman": 0.1465,
+        "hybrid_p_value": 0.0019,
+        "pure_centrality_spearman": -0.0175,
+        "centrality_p_value": 0.7128,
+        "pure_xai_spearman": 0.3388,
+        "xai_p_value": 0.0,
+        "gain_over_centrality": "+0.1640",
+        "ols_delta_r2": 0.1137,
+        "ols_delta_r2_ci_95": "[0.0663, 0.1683]"
+      }
+    ],
+    "top_5_players": [
+      {
+        "player_name": "Éver Maximiliano David Banega",
+        "team_name": "Sevilla",
+        "hybrid_centrality": 0.8738738738738738
+      },
+      {
+        "player_name": "Francisco Portillo Soler",
+        "team_name": "Real Betis",
+        "hybrid_centrality": 0.8637387387387387
+      },
+      {
+        "player_name": "Jorge Resurrección Merodio",
+        "team_name": "Atlético Madrid",
+        "hybrid_centrality": 0.8531531531531532
+      },
+      {
+        "player_name": "Pablo Fornals Malla",
+        "team_name": "Málaga",
+        "hybrid_centrality": 0.8394144144144143
+      },
+      {
+        "player_name": "Daniel Ceballos Fernández",
+        "team_name": "Real Betis",
+        "hybrid_centrality": 0.8355855855855856
+      }
+    ]
+  },
+  "git": {
+    "branch": "extend",
+    "commit_sha": "819daa20d856849da0d9ed7d2585a71ab08d3861",
+    "clean_working_tree": false,
+    "is_git_repo": true
+  },
+  "timestamp": "2026-11-08T13:05:25.531875+00:00"
+}

@@ -1,0 +1,5 @@
+﻿metric,hybrid_centrality_spearman,hybrid_p_value,pure_centrality_spearman,centrality_p_value,pure_xai_spearman,xai_p_value,gain_over_centrality,ols_delta_r2,ols_delta_r2_ci_95
+xt_per_90,0.5602,0.0,0.5064,0.0,-0.0598,0.2082,+0.0537,0.0477,"[0.0210, 0.0896]"
+xA_per_90,0.1287,0.0066,-0.1429,0.0025,0.6107,0.0,+0.2716,0.3067,"[0.2475, 0.3729]"
+key_passes_per_90,0.1465,0.002,-0.127,0.0073,0.6122,0.0,+0.2734,0.3272,"[0.2619, 0.3977]"
+assists_per_90,0.1465,0.0019,-0.0175,0.7128,0.3388,0.0,+0.1640,0.1137,"[0.0663, 0.1683]"

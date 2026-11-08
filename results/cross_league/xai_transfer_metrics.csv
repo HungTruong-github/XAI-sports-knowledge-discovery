@@ -1,0 +1,4 @@
+﻿explainer,n_graphs,fidelity_plus_mean,fidelity_plus_std,fidelity_minus_mean,fidelity_minus_std,sparsity_mean,gate_d17_delta_fid_diff,gate_d17_ci_95,gate_d17_status
+gnn_explainer,40,0.0343,0.1595,-0.1192,0.2344,0.6925,0.0822,"[-0.0229, 0.1868]",FAIL
+last_edge,40,0.1018,0.2419,-0.1292,0.13,0.6925,0.1598,"[0.0338, 0.3048]",PASS
+random,40,0.0061,0.126,-0.0651,0.2607,0.6925,REF,N/A,REF

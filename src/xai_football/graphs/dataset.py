@@ -225,8 +225,9 @@ def save_graphs(
     graphs: list[Data],
     index_df: pd.DataFrame,
     graph_cfg: dict[str, Any],
-    out_dir: Path,
+    out_dir: Path | str,
 ) -> None:
+    out_dir = Path(out_dir)
     node_cfg = (graph_cfg.get("nodes") or {}).get("features") or {}
     edge_cfg = (graph_cfg.get("edges") or {}).get("features") or {}
     torch.save(graphs, out_dir / "graphs.pt")
@@ -241,9 +242,10 @@ def save_graphs(
     logger.info("Đã ghi %d đồ thị vào %s", len(graphs), out_dir)
 
 
-def load_graphs(out_dir: Path) -> tuple[list[Data], pd.DataFrame, dict[str, list[str]]]:
+def load_graphs(out_dir: Path | str) -> tuple[list[Data], pd.DataFrame, dict[str, list[str]]]:
     """Nạp lại cache. weights_only=False vì tệp chứa đối tượng Data (do chính
     pipeline sinh ra, không phải tệp từ nguồn ngoài)."""
+    out_dir = Path(out_dir)
     graphs = torch.load(out_dir / "graphs.pt", weights_only=False)
     index_df = pd.read_parquet(out_dir / "graph_index.parquet")
     names = load_json(out_dir / "feature_names.json")
