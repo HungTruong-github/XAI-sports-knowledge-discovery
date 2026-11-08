@@ -152,3 +152,4 @@ Bảng xếp hạng Top 15 cầu thủ La Liga được mô hình MPNN huấn lu
    - Toàn bộ kết quả bảng biểu: `results/cross_league/model_transfer_metrics.csv`, `xai_transfer_metrics.csv`, `hybrid_centrality_metrics.csv`, `hybrid_centrality_top_players.csv`, `cross_league_manifest.json`.
    - Bộ hình ảnh trực quan chất lượng xuất bản: `results/figures/12_cross_league_performance_degradation.svg`, `results/figures/13_cross_league_laliga_top_players.svg`.
    - Unit tests độc lập bảo đảm tính toàn vẹn: `tests/test_cross_league.py` (5/5 PASS, 100%).
+
